@@ -5,9 +5,13 @@ const {
   getPublicTheme,
   updateTheme,
   resetTheme,
+  getPublicDisplayMode,
+  updateDisplayMode,
+  resetDisplayMode,
 } = require("../controllers/settingsController");
 const {
   validateThemeUpdate,
+  validateDisplayModeUpdate,
 } = require("../validators/settingsValidator");
 
 /**
@@ -56,5 +60,49 @@ router.get("/public/theme", getPublicTheme);
  */
 router.patch("/settings/theme", validateThemeUpdate, updateTheme);
 router.delete("/settings/theme", resetTheme);
+
+/**
+ * @swagger
+ * /public/display-mode:
+ *   get:
+ *     summary: Get the current display mode (no auth)
+ *     tags: [Settings]
+ *     responses:
+ *       200: { description: Display mode config used by /office-guide kiosks }
+ */
+router.get("/public/display-mode", getPublicDisplayMode);
+
+/**
+ * @swagger
+ * /settings/display-mode:
+ *   patch:
+ *     summary: Update the public display mode
+ *     tags: [Settings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mode:
+ *                 type: string
+ *                 enum: [guide_only, announcements_only, both]
+ *               rotation_seconds:
+ *                 type: integer
+ *                 minimum: 5
+ *                 maximum: 3600
+ *     responses:
+ *       200: { description: Updated display mode }
+ *   delete:
+ *     summary: Reset display mode to defaults
+ *     tags: [Settings]
+ */
+router.patch(
+  "/settings/display-mode",
+  validateDisplayModeUpdate,
+  updateDisplayMode
+);
+router.delete("/settings/display-mode", resetDisplayMode);
 
 module.exports = router;

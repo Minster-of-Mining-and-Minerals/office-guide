@@ -30,11 +30,11 @@ const rawBaseQuery = fetchBaseQuery({
       // 401 and the reauth wrapper below will handle cleanup.
     }
     headers.set("accept", "application/json");
-    // Only set content-type for requests that actually carry a JSON
-    // body. Fixing this lets us keep FormData uploads working later.
-    if (!headers.has("content-type")) {
-      headers.set("content-type", "application/json");
-    }
+    // Intentionally NOT setting `content-type` here. RTK Query's
+    // `fetchBaseQuery` sets `application/json` automatically when the
+    // body is a plain object, and correctly OMITS it for `FormData`
+    // (so the browser adds the multipart boundary). Setting it here
+    // would break every multipart upload (announcement media, etc.).
     return headers;
   },
 });
@@ -76,6 +76,8 @@ export const baseApi = createApi({
     "Offices",
     "SignageSummary",
     "Theme",
+    "Announcements",
+    "DisplayMode",
   ],
   endpoints: () => ({}),
 });

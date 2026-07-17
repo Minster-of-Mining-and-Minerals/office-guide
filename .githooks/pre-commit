@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Repo-root git hook. Enable once per clone with:
+#
+#   git config core.hooksPath .githooks
+#
+# What it does: runs Impeccable's deterministic detector against the
+# frontend UI files staged in this commit. Fails the commit when hits
+# are found so AI-slop patterns (nested cards, tiny body text, gray
+# text on tinted backgrounds, WCAG failures, etc.) don't sneak in.
+#
+# No LLM, no API key, no network — pure regex + AST on your local files.
+
+set -euo pipefail
+
+# ANSI helpers — kept minimal so the output stays legible in dumb terminals.
+BOLD=$(tput bold 2>/dev/null || echo "")
+DIM=$(tput dim 2>/dev/null || echo "")
+RED=$(tput setaf 1 2>/dev/null || echo "")
+YELLOW=$(tput setaf 3 2>/dev/null || echo "")
+GREEN=$(tput setaf 2 2>/dev/null || echo "")
+RESET=$(tput sgr0 2>/dev/null || echo "")
+
+# Collect staged, currently-existing frontend UI files. Restrict to the
+# extensions Impeccable actually parses (JSX/TSX/HTML/CSS) so we don't
+# waste time on JSON/MD/config churn.
+# Git pathspecs need the :(glob) magic-word for ** to match nested paths;
+# without it, ** is a literal double-star and matches nothing useful.
+mapfile -t STAGED < <(
+  git diff --name-only --cached --diff-filter=ACM \
+    -- ':(glob)frontend/src/**/*.tsx' \
+       ':(glob)frontend/src/**/*.jsx' \
+       ':(glob)frontend/src/**/*.html' \
+       ':(glob)frontend/src/**/*.css' \
+    2>/dev/null
+)
+
+if [[ ${#STAGED[@]} -eq 0 ]]; then
+  # Nothing UI-relevant staged; short-circuit silently so backend-only
+  # commits are as fast as they were before this hook existed.
+  exit 0
+fi
+
+# Impeccable is a frontend devDep, so run through frontend/'s node_modules
+# rather than a global npx (much faster on repeat invocations).
+DETECTOR="frontend/node_modules/.bin/impeccable"
+if [[ ! -x "$DETECTOR" ]]; then
+  echo "${YELLOW}⚠ impeccable CLI not found at ${DETECTOR}. Run 'npm install' in frontend/ then re-commit.${RESET}"
+  # Don't block the commit for a missing devDep — that's a setup problem,
+  # not an AI-slop signal. Warn and pass.
+  exit 0
+fi
+
+echo "${BOLD}▸ Impeccable pre-commit design check${RESET} ${DIM}(${#STAGED[@]} file(s))${RESET}"
+
+# Rewrite the staged paths so they're relative to frontend/ — the detector
+# resolves paths from its cwd.
+REL_PATHS=()
+for f in "${STAGED[@]}"; do
+  REL_PATHS+=("${f#frontend/}")
+done
+
+if ( cd frontend && "./node_modules/.bin/impeccable" detect "${REL_PATHS[@]}" ); then
+  echo "${GREEN}✓ No design issues detected in staged frontend files.${RESET}"
+  exit 0
+else
+  echo ""
+  echo "${RED}✗ Impeccable found design issues in staged files.${RESET}"
+  echo "${DIM}  · Fix inline, then re-stage and re-commit.${RESET}"
+  echo "${DIM}  · Or bypass this one commit with: git commit --no-verify${RESET}"
+  echo "${DIM}  · Full scan: (cd frontend && npm run design:lint)${RESET}"
+  exit 1
+fi

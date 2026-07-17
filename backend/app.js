@@ -23,6 +23,7 @@ const floorRoutes = require("./routers/floorRoutes");
 const officeRoutes = require("./routers/officeRoutes");
 const signageRoutes = require("./routers/signageRoutes");
 const settingsRoutes = require("./routers/settingsRoutes");
+const announcementRoutes = require("./routers/announcementRoutes");
 
 // const issueFileAttachmentRoutes = require("./routers/issueAttachmentRoutes");
 // const fileAttachmentRoutes = require("./routers/attachementRoutes");
@@ -114,6 +115,7 @@ app.use("/api/floors", floorRoutes);
 app.use("/api/offices", officeRoutes);
 app.use("/api", signageRoutes);
 app.use("/api", settingsRoutes);
+app.use("/api", announcementRoutes);
 
 // app.use("/api/issue-attachments", issueFileAttachmentRoutes);
 // app.use("/api/attachments", fileAttachmentRoutes);

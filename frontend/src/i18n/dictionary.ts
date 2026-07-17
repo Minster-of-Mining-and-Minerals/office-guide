@@ -69,6 +69,12 @@ const en = {
 
   // ── Locale toggle ──
   language: "Language",
+
+  // ── Announcements (public carousel) ──
+  announcements: "Announcements",
+  noAnnouncementsTitle: "No announcements to show.",
+  noAnnouncementsSubtitle:
+    "The admin has not published any announcements yet.",
 } as const;
 
 // A key-preserving translation for AM. Every key present in `en` must exist
@@ -119,6 +125,10 @@ const am: typeof en = {
   unavailableSubtitle: "እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ።",
 
   language: "ቋንቋ",
+
+  announcements: "ማስታወቂያዎች",
+  noAnnouncementsTitle: "ምንም ማስታወቂያ የለም።",
+  noAnnouncementsSubtitle: "አስተዳዳሪው ገና ማስታወቂያ አላሳተመም።",
 };
 
 export type DictKey = keyof typeof en;

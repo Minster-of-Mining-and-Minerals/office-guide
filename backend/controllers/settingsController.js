@@ -3,6 +3,7 @@ const { emitSignageUpdate } = require("../utils/signageEvents");
 
 // Single canonical settings key for the public-facing theme.
 const THEME_KEY = "public_theme";
+const DISPLAY_MODE_KEY = "display_mode";
 
 /**
  * Defaults used when the DB row is missing OR when a client-supplied theme
@@ -116,10 +117,120 @@ const resetTheme = async (req, res) => {
   }
 };
 
+/**
+ * Display-mode settings for the public /office-guide screen. Drives which
+ * content the kiosk shows:
+ *   - "guide_only"          — office directory only (default legacy behavior)
+ *   - "announcements_only"  — full-screen announcement carousel only
+ *   - "both"                — alternates between the guide and the carousel
+ *                             on a `rotation_seconds` cadence
+ *
+ * `rotation_seconds` is only consulted when `mode === "both"`. Clamped to
+ * a sensible range in the validator so a `1` doesn't burn CPU on every
+ * kiosk.
+ */
+const DEFAULT_DISPLAY_MODE = Object.freeze({
+  mode: "guide_only",
+  rotation_seconds: 60,
+});
+
+const ALLOWED_MODES = new Set(["guide_only", "announcements_only", "both"]);
+
+/**
+ * Public read of the current display mode.
+ * GET /api/public/display-mode
+ */
+const getPublicDisplayMode = async (_req, res) => {
+  try {
+    const row = await AppSetting.findByPk(DISPLAY_MODE_KEY);
+    const stored = (row && row.value) || {};
+    const merged = { ...DEFAULT_DISPLAY_MODE, ...stored };
+    // Guard against stale/invalid persisted values.
+    if (!ALLOWED_MODES.has(merged.mode)) merged.mode = DEFAULT_DISPLAY_MODE.mode;
+    if (
+      typeof merged.rotation_seconds !== "number" ||
+      !Number.isFinite(merged.rotation_seconds) ||
+      merged.rotation_seconds < 5
+    ) {
+      merged.rotation_seconds = DEFAULT_DISPLAY_MODE.rotation_seconds;
+    }
+    return res.status(200).json({ success: true, data: merged });
+  } catch (err) {
+    console.error("getPublicDisplayMode error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * Admin partial update. Validator has already checked shape/values.
+ * PATCH /api/settings/display-mode
+ */
+const updateDisplayMode = async (req, res) => {
+  try {
+    const row = await AppSetting.findByPk(DISPLAY_MODE_KEY);
+    const stored = (row && row.value) || {};
+    const incoming = req.body || {};
+
+    const merged = { ...DEFAULT_DISPLAY_MODE, ...stored };
+    if (incoming.mode !== undefined) merged.mode = incoming.mode;
+    if (incoming.rotation_seconds !== undefined) {
+      merged.rotation_seconds = incoming.rotation_seconds;
+    }
+
+    if (row) {
+      row.value = merged;
+      await row.save();
+    } else {
+      await AppSetting.create({ key: DISPLAY_MODE_KEY, value: merged });
+    }
+
+    emitSignageUpdate(req, { scope: "display_mode" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Display mode updated.",
+      data: merged,
+    });
+  } catch (err) {
+    console.error("updateDisplayMode error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * Reset display mode to defaults (deletes the row).
+ * DELETE /api/settings/display-mode
+ */
+const resetDisplayMode = async (req, res) => {
+  try {
+    await AppSetting.destroy({ where: { key: DISPLAY_MODE_KEY } });
+    emitSignageUpdate(req, { scope: "display_mode" });
+    return res.status(200).json({
+      success: true,
+      message: "Display mode reset.",
+      data: DEFAULT_DISPLAY_MODE,
+    });
+  } catch (err) {
+    console.error("resetDisplayMode error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getPublicTheme,
   updateTheme,
   resetTheme,
   DEFAULT_THEME,
   THEME_KEY,
+  getPublicDisplayMode,
+  updateDisplayMode,
+  resetDisplayMode,
+  DEFAULT_DISPLAY_MODE,
+  DISPLAY_MODE_KEY,
 };

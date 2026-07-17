@@ -34,3 +34,36 @@ exports.validateThemeUpdate = (req, res, next) => {
   req.body = value;
   next();
 };
+
+// ─── Display mode ───────────────────────────────────────────────────
+
+const displayModeUpdateSchema = Joi.object({
+  mode: Joi.string()
+    .valid("guide_only", "announcements_only", "both")
+    .optional()
+    .messages({
+      "any.only":
+        "Mode must be one of guide_only, announcements_only, both.",
+    }),
+  // 5s minimum keeps the kiosk from thrashing between guide/carousel;
+  // 1 hour upper bound is a defensive cap.
+  rotation_seconds: Joi.number()
+    .integer()
+    .min(5)
+    .max(3600)
+    .optional()
+    .messages({
+      "number.min": "Rotation must be at least 5 seconds.",
+      "number.max": "Rotation must be at most 3600 seconds (1 hour).",
+    }),
+}).min(1);
+
+exports.validateDisplayModeUpdate = (req, res, next) => {
+  const { error, value } = displayModeUpdateSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+  if (error) return respond(res, error);
+  req.body = value;
+  next();
+};

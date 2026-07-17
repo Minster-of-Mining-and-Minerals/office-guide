@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  BookOpenIcon,
   CheckCircle2Icon,
+  Layers2Icon,
   Loader2Icon,
   MapPinIcon,
+  MegaphoneIcon,
+  MonitorPlayIcon,
   PaletteIcon,
   RotateCcwIcon,
   SaveIcon,
@@ -17,6 +21,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   useGetPublicThemeQuery,
@@ -24,6 +34,12 @@ import {
   useUpdateThemeMutation,
   type PublicTheme,
 } from "@/redux/api/themeApi";
+import {
+  useGetPublicDisplayModeQuery,
+  useResetDisplayModeMutation,
+  useUpdateDisplayModeMutation,
+} from "@/redux/api/displayModeApi";
+import type { DisplayModeValue } from "@/redux/types/signage";
 
 // ─── Curated presets ────────────────────────────────────────────────
 // Each preset is a complete theme so light+dark can never end up on the
@@ -291,7 +307,7 @@ export default function AppearancePage() {
       const saved = await updateTheme(draft).unwrap();
       setDraft(saved);
       toast.success(
-        "Appearance updated. Open tabs will refresh automatically."
+        "Theme updated. Open tabs will refresh automatically."
       );
     } catch (err) {
       const msg =
@@ -325,7 +341,9 @@ export default function AppearancePage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* ─── Header ────────────────────────────────────────────── */}
+      {/* ─── Page header ─────────────────────────────────────────
+          Compact — mode & theme have their own per-tab save/reset
+          buttons so we don't need any actions at the page level. */}
       <div className="relative overflow-hidden rounded-2xl border border-golden-classic/30 bg-gradient-to-br from-golden-metallic/70 via-white to-golden-metallic/40 p-6 shadow-sm">
         <div
           className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full opacity-30 blur-2xl"
@@ -334,66 +352,130 @@ export default function AppearancePage() {
         <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-12 w-12 rounded-xl bg-white border border-golden-classic/40 flex items-center justify-center text-golden-dark shadow-sm">
-              <PaletteIcon className="h-5 w-5" />
+              <MonitorPlayIcon className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-2xl font-semibold text-golden-dark">
-                Appearance
+                Display
               </h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-                Pick a preset, or fine-tune the colors used on the public
-                office guide. Changes go live instantly on any open tab.
+                Control what the public office-guide screen shows
+                (<span className="font-medium">Mode</span>) and how it looks
+                (<span className="font-medium">Theme</span>). Changes go
+                live on every open kiosk without a reload.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              onClick={onRevert}
-              disabled={!dirty}
-              className="border-golden-classic/40 text-golden-dark"
+          <Button
+            variant="outline"
+            asChild
+            className="border-golden-classic/40 text-golden-dark"
+          >
+            <a
+              href="/office-guide"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Revert
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onReset}
-              disabled={resetState.isLoading}
-              className="border-golden-classic/40 text-golden-dark"
-            >
-              {resetState.isLoading ? (
-                <Loader2Icon className="h-4 w-4 animate-spin" />
-              ) : (
-                <RotateCcwIcon className="h-4 w-4" />
-              )}
-              Reset defaults
-            </Button>
-            <Button
-              onClick={onSave}
-              disabled={!canSave || updateState.isLoading}
-              className="bg-golden-dark hover:bg-golden-darkHover text-primary-foreground shadow-md"
-            >
-              {updateState.isLoading ? (
-                <Loader2Icon className="h-4 w-4 animate-spin" />
-              ) : (
-                <SaveIcon className="h-4 w-4" />
-              )}
-              Save changes
-            </Button>
-          </div>
+              <BookOpenIcon className="h-4 w-4" />
+              Preview kiosk
+            </a>
+          </Button>
         </div>
-
-        {dirty && (
-          <div className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 text-[11px] font-medium">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-            Unsaved changes — remember to click Save.
-          </div>
-        )}
       </div>
 
-      {/* ─── Presets ───────────────────────────────────────────── */}
-      <section>
+      {/* ─── Tabs ────────────────────────────────────────────────
+          Mode is first because it's the higher-level decision — pick
+          what plays before you style it. */}
+      <Tabs defaultValue="mode" className="gap-4">
+        <TabsList className="h-11 bg-golden-metallic/50 border border-golden-classic/25 p-1">
+          <TabsTrigger
+            value="mode"
+            className="data-[state=active]:bg-white data-[state=active]:text-golden-dark data-[state=active]:shadow-sm px-4 gap-2"
+          >
+            <Layers2Icon className="h-4 w-4" />
+            Mode
+          </TabsTrigger>
+          <TabsTrigger
+            value="theme"
+            className="data-[state=active]:bg-white data-[state=active]:text-golden-dark data-[state=active]:shadow-sm px-4 gap-2"
+          >
+            <PaletteIcon className="h-4 w-4" />
+            Theme
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ─── Mode tab ───────────────────────────────────────── */}
+        <TabsContent value="mode" className="space-y-4">
+          <DisplayModeSection />
+        </TabsContent>
+
+        {/* ─── Theme tab ──────────────────────────────────────── */}
+        <TabsContent value="theme" className="space-y-6">
+          {/* Theme-scoped action bar — sits above the presets so it's the
+              first thing an admin sees after switching to this tab. */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-2xl border border-golden-classic/25 bg-white p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-golden-metallic/60 border border-golden-classic/30 flex items-center justify-center text-golden-dark">
+                <PaletteIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
+                  Theme
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+                  Pick a preset or fine-tune the colors used on the public
+                  office guide.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                onClick={onRevert}
+                disabled={!dirty}
+                className="border-golden-classic/40 text-golden-dark"
+              >
+                Revert
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onReset}
+                disabled={resetState.isLoading}
+                className="border-golden-classic/40 text-golden-dark"
+              >
+                {resetState.isLoading ? (
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RotateCcwIcon className="h-4 w-4" />
+                )}
+                Reset defaults
+              </Button>
+              <Button
+                onClick={onSave}
+                disabled={!canSave || updateState.isLoading}
+                className="bg-golden-dark hover:bg-golden-darkHover text-primary-foreground shadow-md"
+              >
+                {updateState.isLoading ? (
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SaveIcon className="h-4 w-4" />
+                )}
+                Save theme
+              </Button>
+            </div>
+          </div>
+
+          {dirty && (
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 text-[11px] font-medium">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Unsaved theme changes — click Save theme.
+            </div>
+          )}
+
+          {/* Presets */}
+          <section>
         <div className="flex items-baseline justify-between mb-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
             Curated presets
@@ -555,12 +637,14 @@ export default function AppearancePage() {
               className="text-[11px] text-center"
               style={{ color: textOn(draft.page_bg), opacity: 0.55 }}
             >
-              Two cards shown so you can judge density. Click Save to apply
-              everywhere.
+              Two cards shown so you can judge density. Click Save theme to
+              apply everywhere.
             </p>
           </div>
         </div>
       </section>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -719,5 +803,243 @@ function PreviewCard({
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Display mode section ─────────────────────────────────────────
+
+type ModeCard = {
+  id: DisplayModeValue;
+  title: string;
+  description: string;
+  icon: typeof BookOpenIcon;
+};
+
+const MODE_CARDS: ModeCard[] = [
+  {
+    id: "guide_only",
+    title: "Office Guide only",
+    description:
+      "Kiosks show the scrollable office directory. Announcements are ignored.",
+    icon: BookOpenIcon,
+  },
+  {
+    id: "announcements_only",
+    title: "Announcements only",
+    description:
+      "Full-screen carousel of your uploaded images and videos. The directory is hidden.",
+    icon: MegaphoneIcon,
+  },
+  {
+    id: "both",
+    title: "Both (alternating)",
+    description:
+      "Kiosks flip between the office directory and the announcement carousel on a timer.",
+    icon: Layers2Icon,
+  },
+];
+
+function DisplayModeSection() {
+  const { data: serverMode, isLoading } = useGetPublicDisplayModeQuery();
+  const [updateMode, updateState] = useUpdateDisplayModeMutation();
+  const [resetMode, resetState] = useResetDisplayModeMutation();
+
+  const [mode, setMode] = useState<DisplayModeValue>("guide_only");
+  const [rotation, setRotation] = useState<number>(60);
+
+  useEffect(() => {
+    if (serverMode) {
+      setMode(serverMode.mode);
+      setRotation(serverMode.rotation_seconds);
+    }
+  }, [serverMode]);
+
+  const dirty =
+    !!serverMode &&
+    (serverMode.mode !== mode ||
+      (mode === "both" && serverMode.rotation_seconds !== rotation));
+
+  const invalidRotation =
+    mode === "both" &&
+    (!Number.isFinite(rotation) || rotation < 5 || rotation > 3600);
+
+  const canSave = dirty && !invalidRotation;
+
+  const onSave = async () => {
+    try {
+      const payload: {
+        mode: DisplayModeValue;
+        rotation_seconds?: number;
+      } = { mode };
+      if (mode === "both") payload.rotation_seconds = rotation;
+      await updateMode(payload).unwrap();
+      toast.success("Display mode updated. Open screens will swap live.");
+    } catch (err) {
+      const msg =
+        (err as { data?: { message?: string } })?.data?.message ??
+        "Could not save the display mode.";
+      toast.error(msg);
+    }
+  };
+
+  const onReset = async () => {
+    try {
+      const restored = await resetMode().unwrap();
+      setMode(restored.mode);
+      setRotation(restored.rotation_seconds);
+      toast.success("Display mode reset to Office Guide only.");
+    } catch {
+      toast.error("Could not reset the display mode.");
+    }
+  };
+
+  return (
+    <section className="rounded-2xl border border-golden-classic/25 bg-white p-5 shadow-sm space-y-5">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-start gap-3">
+          <div className="h-10 w-10 rounded-xl bg-golden-metallic/60 border border-golden-classic/30 flex items-center justify-center text-golden-dark">
+            <MonitorPlayIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
+              Display Mode
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+              Controls what the public Office Guide screen shows. Changes go
+              live on every open kiosk without a reload.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={onReset}
+            disabled={resetState.isLoading}
+            className="border-golden-classic/40 text-golden-dark"
+          >
+            {resetState.isLoading ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : (
+              <RotateCcwIcon className="h-4 w-4" />
+            )}
+            Reset
+          </Button>
+          <Button
+            onClick={onSave}
+            disabled={!canSave || updateState.isLoading}
+            className="bg-golden-dark hover:bg-golden-darkHover text-primary-foreground shadow-md"
+          >
+            {updateState.isLoading ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : (
+              <SaveIcon className="h-4 w-4" />
+            )}
+            Save mode
+          </Button>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="py-8 flex items-center justify-center">
+          <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {MODE_CARDS.map((card) => {
+              const active = mode === card.id;
+              const Icon = card.icon;
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => setMode(card.id)}
+                  className={cn(
+                    "text-left rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md flex flex-col gap-2",
+                    active
+                      ? "border-golden-classic ring-2 ring-golden-classic/40 bg-golden-metallic/40"
+                      : "border-golden-classic/25 bg-white hover:border-golden-classic/60"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "h-8 w-8 rounded-lg flex items-center justify-center",
+                        active
+                          ? "bg-golden-dark text-white"
+                          : "bg-golden-metallic/70 text-golden-dark"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="text-sm font-semibold text-golden-dark">
+                      {card.title}
+                    </span>
+                    {active && (
+                      <CheckCircle2Icon className="ml-auto h-4 w-4 text-golden-dark" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    {card.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          {mode === "both" && (
+            <div className="rounded-xl border border-golden-classic/25 bg-golden-metallic/30 p-4 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label
+                    htmlFor="rotation_seconds"
+                    className="text-xs font-semibold text-golden-dark uppercase tracking-wider"
+                  >
+                    Rotation timer
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    How long the office guide is shown before flipping to
+                    the announcements carousel. The carousel then plays
+                    through once before flipping back.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Input
+                    id="rotation_seconds"
+                    type="number"
+                    min={5}
+                    max={3600}
+                    value={rotation}
+                    onChange={(e) =>
+                      setRotation(Number.parseInt(e.target.value, 10) || 0)
+                    }
+                    className={cn(
+                      "w-24 tabular-nums",
+                      invalidRotation &&
+                        "border-red-500 focus-visible:ring-red-500"
+                    )}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    seconds
+                  </span>
+                </div>
+              </div>
+              {invalidRotation && (
+                <p className="text-[11px] text-red-600">
+                  Choose between 5 and 3600 seconds.
+                </p>
+              )}
+            </div>
+          )}
+
+          {dirty && (
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 text-[11px] font-medium">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Unsaved mode changes — click Save mode.
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }

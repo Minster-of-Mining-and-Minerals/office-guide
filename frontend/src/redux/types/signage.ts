@@ -107,3 +107,54 @@ export type OfficeCreatePayload = {
   services_am?: string[];
 };
 export type OfficeUpdatePayload = Partial<OfficeCreatePayload>;
+
+/**
+ * Announcements displayed full-screen on the kiosk when the display mode
+ * setting includes announcements. The `media_url` is a relative path such
+ * as `/uploads/announcements/xxxxx.mp4` — resolve it against the API host
+ * (usually `NEXT_PUBLIC_BASE_URL` with a trailing `/api` stripped) before
+ * loading it in an `<img>` or `<video>`.
+ */
+export type AnnouncementMediaType = "image" | "video";
+
+export interface Announcement {
+  announcement_id: string;
+  title: string;
+  message: string | null;
+  media_type: AnnouncementMediaType | null;
+  media_url: string | null;
+  duration_seconds: number;
+  display_order: number;
+  audio_enabled: boolean;
+  is_visible: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AnnouncementListParams extends ListParams {
+  is_visible?: boolean;
+}
+
+export interface PublicAnnouncementsPayload {
+  server_time: string;
+  announcements: Announcement[];
+}
+
+/**
+ * Kiosk display mode — persisted in `app_settings` under the
+ * `display_mode` key. Drives what /office-guide shows.
+ */
+export type DisplayModeValue =
+  | "guide_only"
+  | "announcements_only"
+  | "both";
+
+export interface DisplayMode {
+  mode: DisplayModeValue;
+  /** Seconds between guide/announcement swap when mode === "both". */
+  rotation_seconds: number;
+}
+
+export type DisplayModeUpdatePayload = Partial<DisplayMode>;

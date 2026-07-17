@@ -283,7 +283,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <QuickAction href="/floors" label="New floor" hint="Add a level" Icon={Building2} />
           <QuickAction href="/offices" label="New office" hint="Add a room" Icon={DoorOpen} />
-          <QuickAction href="/appearance" label="Appearance" hint="Colors & presets" Icon={PaletteIcon} />
+          <QuickAction href="/appearance" label="Display" hint="Mode & theme" Icon={PaletteIcon} />
           <QuickAction href="/users" label="Users & roles" hint="Access control" Icon={ShieldCheckIcon} />
         </div>
       </section>
@@ -579,7 +579,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-base text-golden-dark">
-                  Current appearance
+                  Current theme
                 </CardTitle>
                 <p className="text-[11px] text-muted-foreground">
                   Live on the public guide.
