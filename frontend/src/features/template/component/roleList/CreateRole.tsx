@@ -85,10 +85,13 @@ export default function CreateRole() {
     setPermissionMatrix(matrix);
   }, [resourceGroups]);
 
-  // Populate form when role data is loaded (edit mode)
+  // Populate form when role data is loaded (edit mode).
+  // `getRoleById.transformResponse` already unwraps `response.data`, so
+  // `roleResponse` IS the Role. Reading `roleResponse.data` here was the
+  // reason the edit form used to render blank.
   useEffect(() => {
-    if (isEditMode && roleResponse?.data && resourceGroups.length > 0) {
-      const role = roleResponse.data;
+    if (isEditMode && roleResponse && resourceGroups.length > 0) {
+      const role = roleResponse as any;
 
       // Normalize role_type to lowercase internal/external
       const type =
@@ -233,6 +236,14 @@ export default function CreateRole() {
       return;
     }
 
+    // Backend Joi requires a description on create; without this guard the
+    // POST would silently return 400 and users would just see the button
+    // reset with no explanation.
+    if (!description.trim()) {
+      toast.error("Description is required");
+      return;
+    }
+
     const selectedPermissionIds = getSelectedPermissions();
 
     if (selectedPermissionIds.length === 0) {
@@ -252,7 +263,7 @@ export default function CreateRole() {
         }).unwrap();
 
         toast.success("Role updated successfully!");
-        router.push("/role");
+        router.push("/users/roles");
       } else {
         await createRole({
           name: name.trim(),

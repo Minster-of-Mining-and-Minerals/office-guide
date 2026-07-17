@@ -16,7 +16,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ message, onRetry }) => {
         <p className="text-red-600 text-lg mb-4">{message}</p>
         <div className="flex gap-3 justify-center">
           <Button
-            onClick={() => router.push("/role")}
+            onClick={() => router.push("/users/roles")}
             className="bg-[#094C81] hover:bg-[#073954]"
           >
             Back to Roles

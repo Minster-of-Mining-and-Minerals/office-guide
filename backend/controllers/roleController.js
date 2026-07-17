@@ -1,5 +1,10 @@
 // controllers/roleController.js
-const { Role, Permission, RolePermission } = require("../models");
+const {
+  Role,
+  Permission,
+  RolePermission,
+  UserRoles,
+} = require("../models");
 const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 const { Sequelize } = require("sequelize");
@@ -335,7 +340,7 @@ const deleteRole = async (req, res) => {
     }
 
     // Check if role is being used in project user roles
-    const roleInUse = await UserRole.findOne({
+    const roleInUse = await UserRoles.findOne({
       where: {
         role_id: id,
         is_active: true,

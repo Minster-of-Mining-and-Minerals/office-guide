@@ -3,16 +3,12 @@
 import React, { useEffect, useState, useMemo, useCallback, JSX } from "react";
 import {
   Shield,
-  Users,
-  Folder,
-  BarChart3,
-  Settings,
   Home,
   Users as UsersIcon,
-  Briefcase,
-  AlertCircle,
-  Building,
-  Layers,
+  Building2,
+  DoorOpen,
+  Palette,
+  KeyRound,
   Search,
   RefreshCw,
 } from "lucide-react";
@@ -49,21 +45,27 @@ export default function PermissionList() {
   const [togglePermissionMutation, { isLoading: isToggling }] =
     useTogglePermissionMutation();
 
-  // Resource icons mapping
+  // Resource icons — one per resource key returned by the API.
   const resourceIcons: ResourceIcons = {
     dashboard: <Home className="h-4 w-4" />,
+    floors: <Building2 className="h-4 w-4" />,
+    offices: <DoorOpen className="h-4 w-4" />,
+    appearance: <Palette className="h-4 w-4" />,
     users: <UsersIcon className="h-4 w-4" />,
     roles: <Shield className="h-4 w-4" />,
-    projects: <Folder className="h-4 w-4" />,
-    issues: <AlertCircle className="h-4 w-4" />,
-    issue_categories: <Layers className="h-4 w-4" />,
-    issue_flows: <BarChart3 className="h-4 w-4" />,
-    issue_priorities: <AlertCircle className="h-4 w-4" />,
-    human_resources: <Users className="h-4 w-4" />,
-    organization_structures: <Building className="h-4 w-4" />,
-    organizations: <Building className="h-4 w-4" />,
-    permissions: <Shield className="h-4 w-4" />,
-    system: <Settings className="h-4 w-4" />,
+    permissions: <KeyRound className="h-4 w-4" />,
+  };
+
+  // Friendly labels so admins see "Office Guide Appearance" rather than the
+  // raw `appearance` slug. Falls back to a Title Case of the resource key.
+  const resourceLabels: Record<string, string> = {
+    dashboard: "Dashboard",
+    floors: "Floors",
+    offices: "Offices",
+    appearance: "Office Guide Appearance",
+    users: "Users",
+    roles: "Roles",
+    permissions: "Permissions",
   };
 
   // Calculate statistics
@@ -111,6 +113,9 @@ export default function PermissionList() {
       const activeCount = permissions.filter((p) => p.is_active).length;
       return {
         resource,
+        label:
+          resourceLabels[resource] ??
+          resource.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
         icon: resourceIcons[resource] || <Shield className="h-4 w-4" />,
         permissions,
         isExpanded: expandedResource === resource,
@@ -118,7 +123,7 @@ export default function PermissionList() {
         totalCount: permissions.length,
       };
     });
-  }, [permissions, expandedResource, resourceIcons]);
+  }, [permissions, expandedResource, resourceIcons, resourceLabels]);
 
   // Filtered resource groups with search
   const filteredResourceGroups = useMemo(() => {
@@ -188,26 +193,26 @@ export default function PermissionList() {
         </div>
 
         {/* Permissions Accordion */}
-        <div className="w-full bg-white border border-gray-200 rounded-lg shadow">
-          <div className="p-6 border-b">
+        <div className="w-full bg-white border border-golden-classic/25 rounded-lg shadow-sm">
+          <div className="p-6 border-b border-golden-classic/20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-[#094C81]">
+                <h2 className="text-xl font-bold text-golden-dark">
                   Permissions List
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {permissions.length} total permissions • {stats.active} active
                   • {stats.inactive} inactive
                 </p>
               </div>
               <div className="relative w-full md:w-auto">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#094C81]" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-golden-dark" />
                 <Input
                   type="text"
                   placeholder="Search permissions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-64 pl-10 h-11 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#094C81] focus:border-[#094C81] outline-none transition-colors text-sm text-gray-700"
+                  className="w-full md:w-64 pl-10 h-11 pr-4 py-2 border border-input rounded-lg focus:ring-2 focus:ring-golden-dark focus:border-golden-dark outline-none transition-colors text-sm"
                 />
               </div>
             </div>

@@ -15,7 +15,16 @@ const { sendEmail } = require("../utils/sendEmail");
 const getUserTypes = async (req, res) => {
   try {
     const userTypes = await UserType.findAll({
-      attributes: ["name", "description", "created_at", "updated_at"],
+      // The primary key MUST be returned — the create/edit form uses
+      // this to build the payload. Without it the frontend can pick a
+      // type by name but has no id to send to /users.
+      attributes: [
+        "user_type_id",
+        "name",
+        "description",
+        "created_at",
+        "updated_at",
+      ],
       order: [["name", "ASC"]],
     });
 
@@ -104,7 +113,10 @@ const createUser = async (req, res) => {
     }
 
     // ====== Generate password ======
-    // const password = generateRandomPassword();
+    // Dev default — every newly created user starts with the literal
+    // password "password" so QA can log in as any of them without
+    // needing the email delivery pipeline to be online. Swap to
+    // `generateRandomPassword()` before a production deploy.
     const password = "password";
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -143,23 +155,45 @@ const createUser = async (req, res) => {
 
     await t.commit();
 
-    // ====== Send welcome email ======
-    await sendEmail(
-      email,
-      `Welcome to ${process.env.APP_NAME}!`,
-      `
+    // ====== Send welcome email (best-effort — don't block on SMTP) ======
+    try {
+      await sendEmail(
+        email,
+        `Welcome to ${process.env.APP_NAME || "Digital Signage"}!`,
+        `
       Dear ${full_name},
       Your account has been successfully created.
       Email: ${email}
       Temporary Password: ${password}
       Please change your password after first login.
     `
-    );
+      );
+    } catch (mailErr) {
+      // Log but do not fail the request — the account is already committed.
+      console.warn("[createUser] Welcome email failed:", mailErr.message);
+    }
+
+    // Re-fetch the user with associations and without the password hash.
+    const created = await User.findByPk(user.user_id, {
+      attributes: { exclude: ["password", "otp", "otp_expiry"] },
+      include: [
+        { model: UserType, as: "userType", attributes: ["user_type_id", "name"] },
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["role_id", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
 
     return res.status(201).json({
       success: true,
-      message: "User registered globally (no roles assigned yet)",
-      data: user,
+      message:
+        role_ids?.length > 0
+          ? "User created and roles assigned."
+          : "User created (no roles assigned).",
+      data: created,
     });
   } catch (error) {
     if (!t.finished) await t.rollback();
@@ -271,10 +305,23 @@ const updateUser = async (req, res) => {
 
     await t.commit();
 
+    const updated = await User.findByPk(user_id, {
+      attributes: { exclude: ["password", "otp", "otp_expiry"] },
+      include: [
+        { model: UserType, as: "userType", attributes: ["user_type_id", "name"] },
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["role_id", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+
     return res.status(200).json({
       success: true,
       message: "User updated successfully.",
-      data: user,
+      data: updated,
     });
   } catch (error) {
     if (!t.finished) await t.rollback();
@@ -287,44 +334,68 @@ const updateUser = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const {
-      // institute_id,
       user_type_id,
       is_active,
-      search, // optional: for name/email search
+      search, // optional: name/email/phone search
+      page: pageParam,
+      limit: limitParam,
     } = req.query;
+
+    // ====== Pagination ======
+    const page = Math.max(1, parseInt(pageParam, 10) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(limitParam, 10) || 10));
+    const offset = (page - 1) * limit;
 
     // ====== Build filters dynamically ======
     const whereClause = {};
-
-    // if (institute_id) whereClause.institute_id = institute_id;
     if (user_type_id) whereClause.user_type_id = user_type_id;
     if (is_active !== undefined) whereClause.is_active = is_active === "true";
 
     if (search) {
       whereClause[Op.or] = [
-        { full_name: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } },
-        { phone_number: { [Op.like]: `%${search}%` } },
+        { full_name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } },
+        { phone_number: { [Op.iLike]: `%${search}%` } },
       ];
     }
 
-    // ====== Fetch users with associations ======
-    const users = await User.findAll({
+    // ====== Fetch users with associations + total count ======
+    const { rows: users, count: totalItems } = await User.findAndCountAll({
       where: whereClause,
+      // NEVER return the bcrypt hash. Same policy is enforced in every
+      // other user handler below.
+      attributes: { exclude: ["password", "otp", "otp_expiry"] },
       include: [
         {
           model: UserType,
           as: "userType",
           attributes: ["user_type_id", "name"],
         },
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["role_id", "name"],
+          through: { attributes: [] },
+        },
       ],
       order: [["created_at", "DESC"]],
+      limit,
+      offset,
+      distinct: true, // required with `include` + `count`
     });
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
     return res.status(200).json({
       success: true,
       message: "Users fetched successfully.",
       data: users,
+      meta: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        itemsPerPage: limit,
+      },
     });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -344,6 +415,7 @@ const getUserById = async (req, res) => {
 
     // ====== Find user with relations ======
     const user = await User.findByPk(user_id, {
+      attributes: { exclude: ["password", "otp", "otp_expiry"] },
       include: [
         {
           model: UserType,

@@ -27,7 +27,7 @@ export const FooterActions: React.FC<FooterActionsProps> = ({
             type="button"
             variant="outline"
             className="min-w-[150px] text-[#094C81] text-base bg-gray-200 hover:bg-gray-300"
-            onClick={() => router.push("/role")}
+            onClick={() => router.push("/users/roles")}
             disabled={isLoading}
           >
             Cancel

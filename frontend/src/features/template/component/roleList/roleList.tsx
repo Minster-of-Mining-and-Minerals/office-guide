@@ -1,67 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "@/features/template/component/DataTable";
 import { TableLayout } from "@/features/template/component/TableLayout";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, MoreHorizontal } from "lucide-react";
+import {
+  Download,
+  Loader2Icon,
+  PencilIcon,
+  Plus,
+  Trash2Icon,
+} from "lucide-react";
+import { toast } from "sonner";
 
-import { useGetRolesQuery } from "@/redux/api/roleApi";
+import {
+  useDeleteRoleMutation,
+  useGetRolesQuery,
+} from "@/redux/api/roleApi";
 import type { Role } from "@/redux/types/auth";
 import type { FilterField, ActionButton } from "@/types/tableLayout";
 import { useRouter } from "next/navigation";
-
-const columns: ColumnDef<Role>[] = [
-  {
-    accessorKey: "name",
-    header: "Role Name",
-    cell: ({ row }) => (
-      <span className="font-medium text-blue-600">{row.getValue("name")}</span>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    accessorKey: "is_active",
-    header: "Status",
-    cell: ({ row }) => {
-      const isActive = row.getValue("is_active") as boolean;
-      return (
-        <Badge variant={isActive ? "default" : "secondary"}>
-          {isActive ? "Active" : "Inactive"}
-        </Badge>
-      );
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: () => (
-      <Button variant="ghost" size="icon">
-        <MoreHorizontal />
-      </Button>
-    ),
-  },
-];
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 export default function RoleList() {
   const { data = [], isLoading, isError, refetch } = useGetRolesQuery();
+  const [deleteRole, { isLoading: deleting }] = useDeleteRoleMutation();
   const router = useRouter();
-  // Pagination states
+
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [statusFilter, setStatusFilter] = useState("");
+
+  // Delete confirmation state
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
 
   const handlePagination = (index: number, size: number) => {
     setPageIndex(index);
     setPageSize(size);
   };
 
-  // Filters
-  const [statusFilter, setStatusFilter] = useState("");
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteRole(deleteTarget.role_id).unwrap();
+      toast.success("Role deleted");
+      setDeleteTarget(null);
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message ??
+          "Could not delete this role. It may still be assigned to a user."
+      );
+    }
+  };
+
+  // Columns need `router` and `setDeleteTarget` in scope, so we build them
+  // inside the component instead of at module top level.
+  const columns: ColumnDef<Role>[] = useMemo(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Role Name",
+        cell: ({ row }) => (
+          <span className="font-medium text-golden-dark">
+            {row.getValue("name")}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => (
+          <span className="text-muted-foreground text-sm">
+            {(row.getValue("description") as string) || "—"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "is_active",
+        header: "Status",
+        cell: ({ row }) => {
+          const isActive = row.getValue("is_active") as boolean;
+          return (
+            <Badge
+              variant={isActive ? "default" : "secondary"}
+              className={
+                isActive
+                  ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200"
+                  : ""
+              }
+            >
+              {isActive ? "Active" : "Inactive"}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => {
+          const role = row.original;
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-golden-metallic hover:text-golden-dark"
+                onClick={() =>
+                  router.push(`/users/roles/${role.role_id}`)
+                }
+                aria-label={`Edit ${role.name}`}
+              >
+                <PencilIcon className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                onClick={() => setDeleteTarget(role)}
+                aria-label={`Delete ${role.name}`}
+              >
+                <Trash2Icon className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [router]
+  );
 
   const filters: FilterField[] = [
     {
@@ -78,51 +146,93 @@ export default function RoleList() {
     },
   ];
 
-  // Actions
   const actions: ActionButton[] = [
     {
       label: "Export",
       icon: <Download className="h-4 w-4" />,
       variant: "outline",
-      onClick: () => console.log("Export clicked"),
+      onClick: () => toast.info("Export coming soon"),
     },
     {
       label: "New Role",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
-      onClick: () => router.push("roles/new"),
+      onClick: () => router.push("/users/roles/new"),
     },
   ];
 
-  // Apply filters locally (client-side)
   const filteredData = data.filter((role) => {
     if (statusFilter === "active") return role.is_active === true;
     if (statusFilter === "inactive") return role.is_active === false;
     return true;
   });
 
-  // Pagination slice
   const paginatedData = filteredData.slice(
     pageIndex * pageSize,
     pageIndex * pageSize + pageSize
   );
 
+  if (isError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+        <p className="text-sm font-medium text-red-800">
+          Could not load roles.
+        </p>
+        <Button
+          variant="outline"
+          onClick={refetch}
+          className="mt-3"
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <TableLayout
-      title="Role Management"
-      description="View and manage user roles"
-      actions={actions}
-      filters={filters}
-      filterColumnsPerRow={2}
-    >
-      <DataTable
-        columns={columns}
-        data={paginatedData}
-        totalPageCount={Math.ceil(filteredData.length / pageSize)}
-        handlePagination={handlePagination}
-        tablePageSize={pageSize}
-        currentIndex={pageIndex}
+    <>
+      <TableLayout
+        title="Role Management"
+        description="View and manage user roles"
+        actions={actions}
+        filters={filters}
+        filterColumnsPerRow={2}
+      >
+        {isLoading ? (
+          <div className="p-10 flex items-center justify-center">
+            <Loader2Icon className="h-5 w-5 animate-spin text-golden-dark" />
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={paginatedData}
+            totalPageCount={Math.ceil(filteredData.length / pageSize)}
+            handlePagination={handlePagination}
+            tablePageSize={pageSize}
+            currentIndex={pageIndex}
+          />
+        )}
+      </TableLayout>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete role"
+        description={
+          deleteTarget ? (
+            <>
+              This will permanently delete the{" "}
+              <span className="font-medium">{deleteTarget.name}</span> role.
+              If it is still assigned to any user, the delete will be
+              blocked.
+            </>
+          ) : null
+        }
+        confirmLabel="Delete role"
+        destructive
+        loading={deleting}
+        onConfirm={confirmDelete}
       />
-    </TableLayout>
+    </>
   );
 }

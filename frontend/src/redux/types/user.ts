@@ -61,3 +61,27 @@ export interface UpdateUserPayload {
 export interface ToggleUserStatusPayload {
   is_active: boolean;
 }
+
+// ─── Pagination helpers ────────────────────────────────────────────
+
+export interface PaginationMeta {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T[];
+  meta: PaginationMeta;
+}
+
+export interface UserListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  user_type_id?: string;
+  is_active?: boolean;
+}

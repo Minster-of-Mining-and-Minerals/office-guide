@@ -19,6 +19,11 @@ const authRoute = require("./routers/authRoutes");
 const permissionRoute = require("./routers/permissionRoutes");
 const changePasswordRoutes = require("./routers/passwordChangeRoutes");
 
+const floorRoutes = require("./routers/floorRoutes");
+const officeRoutes = require("./routers/officeRoutes");
+const signageRoutes = require("./routers/signageRoutes");
+const settingsRoutes = require("./routers/settingsRoutes");
+
 // const issueFileAttachmentRoutes = require("./routers/issueAttachmentRoutes");
 // const fileAttachmentRoutes = require("./routers/attachementRoutes");
 
@@ -105,6 +110,11 @@ app.use("/api/auth", authRoute);
 app.use("/api/change-password", changePasswordRoutes);
 app.use("/api/permissions", permissionRoute);
 
+app.use("/api/floors", floorRoutes);
+app.use("/api/offices", officeRoutes);
+app.use("/api", signageRoutes);
+app.use("/api", settingsRoutes);
+
 // app.use("/api/issue-attachments", issueFileAttachmentRoutes);
 // app.use("/api/attachments", fileAttachmentRoutes);
 
@@ -129,34 +139,64 @@ appServer.listen(appPort, () => {
 });
 
 // ================== Socket.IO Setup ==================
-const socketServer = http.createServer();
-const io = new Server(socketServer, {
+// A single Socket.IO instance is attached to the app HTTP server so kiosk pages
+// and user clients share the same endpoint. A legacy standalone server is also
+// spun up on SOCKET_PORT to keep any older clients working.
+const io = new Server(appServer, {
   cors: corsOptions,
+  path: "/socket.io",
 });
 
 const onlineUsers = new Map();
 
-io.on("connection", (socket) => {
-  const userId = socket.handshake.query.userId;
+const attachSocketHandlers = (socketServerIo) => {
+  socketServerIo.on("connection", (socket) => {
+    const { userId } = socket.handshake.query || {};
 
-  if (userId) {
-    onlineUsers.set(userId, socket.id);
-    console.log(` User ${userId} connected: ${socket.id}`);
-  }
+    if (userId) {
+      onlineUsers.set(userId, socket.id);
+      console.log(`User ${userId} connected: ${socket.id}`);
+    }
 
-  socket.on("disconnect", () => {
-    onlineUsers.delete(userId);
-    console.log(`User ${userId} disconnected`);
+    // Every connected socket (admin users, public office-guide, appearance
+    // preview, etc.) joins the broadcast room. Any admin edit fires an event
+    // into this room so open pages refetch without a manual reload.
+    socket.join("signage:all");
+
+    socket.on("disconnect", () => {
+      if (userId) onlineUsers.delete(userId);
+    });
   });
-});
+};
+
+attachSocketHandlers(io);
+
+// Legacy: keep a standalone server on SOCKET_PORT for any older clients.
+const legacySocketServer = http.createServer();
+const legacyIo = new Server(legacySocketServer, { cors: corsOptions });
+attachSocketHandlers(legacyIo);
 
 const socketPort = process.env.SOCKET_PORT || 5000;
-socketServer.listen(socketPort, () => {
-  console.log(`Socket.IO server running at http://localhost:${socketPort}`);
+legacySocketServer.listen(socketPort, () => {
+  console.log(`Socket.IO legacy server running at http://localhost:${socketPort}`);
 });
 
-// Make Socket.IO accessible globally
-app.set("socketio", io);
+// Make Socket.IO accessible from controllers via req.app.get("socketio").
+// Both the main and legacy io instances need to fire so kiosks connected via
+// either transport receive updates.
+const broadcastIo = {
+  to: (room) => ({
+    emit: (event, payload) => {
+      io.to(room).emit(event, payload);
+      legacyIo.to(room).emit(event, payload);
+    },
+  }),
+  emit: (event, payload) => {
+    io.emit(event, payload);
+    legacyIo.emit(event, payload);
+  },
+};
+app.set("socketio", broadcastIo);
 
 module.exports = { appServer, io, onlineUsers };
 

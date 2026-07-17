@@ -1,24 +1,40 @@
 import { baseApi } from "../baseApi";
-import { UserType, UserPosition, User } from "../types/user";
 import {
+  UserType,
+  UserPosition,
+  User,
   CreateUserPayload,
   UpdateUserPayload,
   ToggleUserStatusPayload,
+  PaginatedResponse,
+  UserListParams,
 } from "../types/user";
 
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /** ---------------------------
-     * GET ALL USERS
+     * GET ALL USERS (paginated)
+     *
+     * Returns the full `{ data, meta }` envelope so the list page can
+     * render "Page X of Y" without keeping a separate count query in
+     * sync. Callers pass `page`, `limit`, and optional filters.
      * --------------------------- */
-    getUsers: builder.query<
-      User[],
-      { user_type_id?: string; is_active?: boolean; search?: string } | void
-    >({
+    getUsers: builder.query<PaginatedResponse<User>, UserListParams | void>({
       query: (params) =>
         params ? { url: "/users", params } : { url: "/users" },
-      transformResponse: (response: any): User[] => response.data ?? [],
-      providesTags: ["User"],
+      // The controller already responds with the exact `PaginatedResponse`
+      // shape, so we don't unwrap `.data` here — the list page needs the
+      // meta block too.
+      providesTags: (result) =>
+        result?.data
+          ? [
+              ...result.data.map((u) => ({
+                type: "User" as const,
+                id: u.user_id,
+              })),
+              { type: "User" as const, id: "LIST" },
+            ]
+          : [{ type: "User" as const, id: "LIST" }],
     }),
 
     /** ---------------------------
@@ -49,7 +65,7 @@ export const userApi = baseApi.injectEndpoints({
         body,
       }),
       transformResponse: (response: any): User => response.data,
-      invalidatesTags: ["User"],
+      invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
 
     /** ---------------------------
@@ -63,7 +79,10 @@ export const userApi = baseApi.injectEndpoints({
           body: data,
         }),
         transformResponse: (response: any): User => response.data,
-        invalidatesTags: (_r, _e, { id }) => [{ type: "User", id }, "User"],
+        invalidatesTags: (_r, _e, { id }) => [
+          { type: "User", id },
+          { type: "User", id: "LIST" },
+        ],
       }
     ),
 
@@ -76,7 +95,10 @@ export const userApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       transformResponse: (response: any) => response,
-      invalidatesTags: ["User"],
+      invalidatesTags: (_r, _e, id) => [
+        { type: "User", id },
+        { type: "User", id: "LIST" },
+      ],
     }),
 
     /** ---------------------------
@@ -92,7 +114,10 @@ export const userApi = baseApi.injectEndpoints({
         body: data,
       }),
       transformResponse: (response: any): User => response.data,
-      invalidatesTags: (_r, _e, { id }) => [{ type: "User", id }, "User"],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "User", id },
+        { type: "User", id: "LIST" },
+      ],
     }),
 
     /** ---------------------------
@@ -104,7 +129,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "POST",
       }),
       transformResponse: (response: any) => response,
-      invalidatesTags: ["User"],
+      invalidatesTags: (_r, _e, id) => [{ type: "User", id }],
     }),
 
     /** ---------------------------

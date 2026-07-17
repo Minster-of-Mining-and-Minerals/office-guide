@@ -29,6 +29,8 @@ export interface PermissionStats {
 
 export interface ResourceGroup {
   resource: string;
+  /** Human-friendly title shown in the accordion header. */
+  label?: string;
   icon: JSX.Element;
   permissions: Permission[];
   isExpanded: boolean;

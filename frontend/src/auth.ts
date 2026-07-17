@@ -4,10 +4,13 @@ import { JWT } from "next-auth/jwt";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   secret: process.env.NEXTAUTH_SECRET,
+  // Match the backend JWT lifetime (JWT_EXPIRES_IN defaults to 7d in
+  // authController.js). Previously this was 5 minutes, which logged
+  // users out mid-session even when the backend token was still valid.
   session: {
     strategy: "jwt",
-    maxAge: 5 * 60,
-    updateAge: 25 * 60,
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    updateAge: 24 * 60 * 60,  // touch cookie once per day
   },
   pages: {
     signIn: "/login",
@@ -28,10 +31,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           accessToken: user.accessToken,
         };
       }
-      if (token.exp && token.exp < Date.now() / 1000) {
-        console.log("Token expired");
-        return null;
-      }
+      // Historically we returned `null` when `token.exp` had passed,
+      // but Auth.js v5 handles maxAge natively via the session config
+      // above. Returning null here corrupts the JWT flow and can lock
+      // legitimate users out mid-request, so we just pass the token
+      // through and let Auth.js expire it on schedule.
       return token;
     },
     async session({ session, token }) {

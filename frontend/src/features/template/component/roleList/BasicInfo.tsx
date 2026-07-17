@@ -86,6 +86,7 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              required
               className="w-full min-h-[44px] border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none resize-none"
             />
           </div>
