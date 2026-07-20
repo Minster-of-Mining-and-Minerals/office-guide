@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-17T20:45:00Z",
+  "title": "Design System: MoM Digital Signage",
+  "extensions": {
+    "colorMeta": {
+      "highland-petrol": {
+        "role": "primary",
+        "displayName": "Highland Petrol",
+        "canonical": "hsl(201, 85%, 18%)",
+        "tonalRamp": ["#020c14", "#051a2b", "#082a44", "#0b3b5c", "#155882", "#2b7cae", "#6ea9ce", "#b8d5e6"]
+      },
+      "ministry-brass": {
+        "role": "secondary",
+        "displayName": "Ministry Brass",
+        "canonical": "hsl(45, 80%, 40%)",
+        "tonalRamp": ["#2b1f07", "#553f0f", "#805e17", "#b8891f", "#d3a333", "#e2be5a", "#eed69a", "#f9edd0"]
+      },
+      "classic-brass": {
+        "role": "tertiary",
+        "displayName": "Classic Brass",
+        "canonical": "hsl(45, 100%, 50%)",
+        "tonalRamp": ["#333000", "#665f00", "#998f00", "#ccbf00", "#ffbf00", "#ffd54a", "#ffe38a", "#fff4c9"]
+      },
+      "soft-brass": {
+        "role": "tertiary",
+        "displayName": "Soft Brass",
+        "canonical": "hsl(42, 90%, 60%)",
+        "tonalRamp": ["#2d1f03", "#553d08", "#7c580d", "#a37312", "#c98d17", "#f5b444", "#f9d38a", "#fdedca"]
+      },
+      "metallic-brass": {
+        "role": "tertiary",
+        "displayName": "Metallic Brass",
+        "canonical": "hsl(43, 85%, 55%)",
+        "tonalRamp": ["#2b1f04", "#553f08", "#805e0c", "#a97b0f", "#ec9f18", "#f2b957", "#f6d18b", "#fce9c5"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0a0a0a",
+        "tonalRamp": ["#000000", "#0a0a0a", "#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#a3a3a3", "#d4d4d4", "#e5e5e5", "#f0f0f0", "#f5f5f5", "#fafafa", "#fdfdfd", "#ffffff"]
+      },
+      "quiet-surface": {
+        "role": "neutral",
+        "displayName": "Quiet Surface",
+        "canonical": "hsl(0, 0%, 96.1%)",
+        "tonalRamp": ["#525252", "#737373", "#a3a3a3", "#d4d4d4", "#e5e5e5", "#f0f0f0", "#f5f5f5", "#fafafa"]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "hsl(0, 0%, 89.8%)"
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "hsl(0, 0%, 45.1%)"
+      },
+      "destructive": {
+        "role": "state",
+        "displayName": "Destructive",
+        "canonical": "hsl(0, 84.2%, 60.2%)"
+      },
+      "success": {
+        "role": "state",
+        "displayName": "Success",
+        "canonical": "#0c6b3e"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Kiosk hero moments and page identity blocks. Never used on form headers."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles (Dashboard, Announcements, Display)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, section leaders, table headers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default paragraph and control label. Line length capped at 65-75ch for prose."
+      },
+      "label": {
+        "displayName": "Label (Kicker)",
+        "purpose": "Uppercase structural section markers only. Never as ornamental eyebrows above every section."
+      },
+      "amharic-body": {
+        "displayName": "Amharic Body",
+        "purpose": "Amharic Fidel gets its own body ramp: +1px size and +0.15 line-height over Latin because Fidel glyphs are visually taller and need vertical breathing room."
+      }
+    },
+    "shadows": [
+      {
+        "name": "state-response",
+        "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "purpose": "Card hover lift. Never present at rest."
+      },
+      {
+        "name": "floating-chrome",
+        "value": "0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.10)",
+        "purpose": "Dialogs, dropdowns, popovers that escape the document flow."
+      },
+      {
+        "name": "inner-well",
+        "value": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)",
+        "purpose": "Live-preview frames and inset-canvas containers."
+      },
+      {
+        "name": "focus-ring-brass",
+        "value": "0 0 0 3px rgba(184, 137, 31, 0.40)",
+        "purpose": "Focus indicator on interactive elements. Ministry Brass at 40% opacity, offset 2px."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-quart",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Default easing for state transitions. Snappy without bounce."
+      },
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Reveal / expand transitions where a more dramatic ease-out reads intentional."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Hover state changes, small transitions."
+      },
+      {
+        "name": "duration-standard",
+        "value": "220ms",
+        "purpose": "Default transition duration for panels, tabs, and other UI state changes."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single most important action in a view. Highland Petrol authority.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Save changes</button>",
+      "css": ".ds-btn-primary { background: #0b3b5c; color: #ffffff; padding: 10px 20px; border: none; border-radius: 10px; font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 0.95rem; letter-spacing: 0; cursor: pointer; transition: background 220ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-primary:hover { background: #082a44; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(184, 137, 31, 0.40); }"
+    },
+    {
+      "name": "Brass Primary Button",
+      "kind": "button",
+      "refersTo": "button-brass",
+      "description": "The commit moment — Save, Publish, Confirm. Ministry Brass carries the Ministry decision.",
+      "html": "<button class=\"ds-btn-brass\" type=\"button\">Publish announcement</button>",
+      "css": ".ds-btn-brass { background: #b8891f; color: #ffffff; padding: 10px 20px; border: none; border-radius: 10px; font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 0.95rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); cursor: pointer; transition: background 220ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-brass:hover { background: #a07515; } .ds-btn-brass:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(184, 137, 31, 0.40); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Reversible actions: Cancel, Revert, Back. Paper background with brass text and hairline gold border.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Revert</button>",
+      "css": ".ds-btn-outline { background: #ffffff; color: #b8891f; padding: 10px 20px; border: 1px solid rgba(184, 137, 31, 0.40); border-radius: 10px; font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 500; font-size: 0.95rem; cursor: pointer; transition: background 220ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-outline:hover { background: rgba(184, 137, 31, 0.08); } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(184, 137, 31, 0.40); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The canonical resting surface. 2xl-radius, hairline brass border, Paper background. No shadow at rest.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card-title\">Ministry Cabinet</h3><p class=\"ds-card-body\">Ground floor \u00b7 Directorate offices \u2022 8:30 AM \u2013 5:00 PM.</p></article>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid rgba(184, 137, 31, 0.25); border-radius: 24px; padding: 20px 24px; font-family: ui-sans-serif, system-ui, sans-serif; color: #0a0a0a; transition: box-shadow 220ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-card:hover { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); } .ds-card-title { font-size: 1.125rem; font-weight: 600; line-height: 1.35; color: #0b3b5c; margin: 0 0 6px 0; } .ds-card-body { font-size: 1rem; line-height: 1.55; color: #262626; margin: 0; max-width: 65ch; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text field with hairline border and Ministry Brass focus ring.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Office name</span><input class=\"ds-input\" type=\"text\" placeholder=\"e.g. Directorate of Licensing\" /></label>",
+      "css": ".ds-field { display: block; font-family: ui-sans-serif, system-ui, sans-serif; } .ds-field-label { display: block; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(11, 59, 92, 0.7); margin-bottom: 6px; } .ds-input { display: block; width: 100%; background: #ffffff; color: #0a0a0a; border: 1px solid #e5e5e5; border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 1rem; line-height: 1.55; transition: border-color 150ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-input::placeholder { color: #737373; } .ds-input:focus-visible { outline: none; border-color: #b8891f; box-shadow: 0 0 0 3px rgba(184, 137, 31, 0.40); }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filter and status chip. Quiet Surface at rest, Ministry Brass when active.",
+      "html": "<span class=\"ds-chip\">Ground floor</span><span class=\"ds-chip ds-chip-active\">All floors</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; background: #f5f5f5; color: #0b3b5c; padding: 4px 10px; border-radius: 9999px; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.8125rem; font-weight: 500; line-height: 1.2; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; user-select: none; } .ds-chip:hover { background: #e5e5e5; } .ds-chip-active { background: #b8891f; color: #ffffff; } .ds-chip-active:hover { background: #a07515; }"
+    },
+    {
+      "name": "Sidebar Menu Item",
+      "kind": "nav",
+      "refersTo": "sidebar-item",
+      "description": "Signature nav pattern. Metallic Brass on hover, Ministry Brass when active.",
+      "html": "<nav class=\"ds-sidebar\"><a class=\"ds-nav-item ds-nav-item-active\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"9\" rx=\"1\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"5\" rx=\"1\"></rect><rect x=\"14\" y=\"12\" width=\"7\" height=\"9\" rx=\"1\"></rect><rect x=\"3\" y=\"16\" width=\"7\" height=\"5\" rx=\"1\"></rect></svg><span>Dashboard</span></a><a class=\"ds-nav-item\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 21h18\"></path><path d=\"M5 21V7l7-4 7 4v14\"></path><path d=\"M9 9h2v2H9zM13 9h2v2h-2zM9 13h2v2H9zM13 13h2v2h-2z\"></path></svg><span>Floors</span></a></nav>",
+      "css": ".ds-sidebar { display: flex; flex-direction: column; gap: 8px; padding: 20px; background: #ffffff; border-radius: 16px; border: 1px solid rgba(184, 137, 31, 0.20); font-family: ui-sans-serif, system-ui, sans-serif; width: 260px; } .ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-radius: 8px; color: #0b3b5c; text-decoration: none; font-size: 1rem; font-weight: 500; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1), color 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-nav-item:hover { background: rgba(236, 159, 24, 0.20); } .ds-nav-item-active { background: #b8891f; color: #ffffff; } .ds-nav-item-active:hover { background: #b8891f; color: #ffffff; } .ds-nav-icon { width: 18px; height: 18px; flex-shrink: 0; }"
+    },
+    {
+      "name": "Bilingual Paired Field",
+      "kind": "custom",
+      "refersTo": "input",
+      "description": "The signature bilingual pattern used throughout the admin. English input + Amharic input, equal-weight, no visual primary.",
+      "html": "<div class=\"ds-bilingual\"><label class=\"ds-field\"><span class=\"ds-field-label\">Name (English)</span><input class=\"ds-input\" type=\"text\" placeholder=\"Ministry Cabinet\" /></label><label class=\"ds-field\"><span class=\"ds-field-label\">Name (\u12a0\u121b\u122d\u129b)</span><input class=\"ds-input ds-input-am\" type=\"text\" placeholder=\"\u12e8\u121a\u1292\u1235\u1275\u122d \u12ab\u1ቤ\u1274\" /></label></div>",
+      "css": ".ds-bilingual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-family: ui-sans-serif, system-ui, sans-serif; } .ds-bilingual .ds-field-label { display: block; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(11, 59, 92, 0.7); margin-bottom: 6px; } .ds-bilingual .ds-input { display: block; width: 100%; background: #ffffff; color: #0a0a0a; border: 1px solid #e5e5e5; border-radius: 8px; padding: 8px 12px; font-size: 1rem; line-height: 1.55; transition: border-color 150ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-bilingual .ds-input:focus-visible { outline: none; border-color: #b8891f; box-shadow: 0 0 0 3px rgba(184, 137, 31, 0.40); } .ds-bilingual .ds-input-am { font-family: 'Noto Sans Ethiopic', ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.7; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Federal Concierge",
+    "overview": "The system reads as an unmistakably state-run institution that has taken the trouble to welcome you. Every surface is warm enough for a citizen unfamiliar with digital wayfinding to feel invited, and formal enough that no one mistakes it for a startup product. Officialdom is a floor, not a ceiling: the Ministry's authority sits in the confidence of the type, the depth of Highland Petrol on the sidebar, the honest weight of Ministry Brass on primary actions — never in ornament, seals, or theatre.\n\nThe identity is carried by two colors, one script pair, and generous whitespace. Highland Petrol grounds the interface as a state-run touchpoint; Ministry Brass earns its place on the ~10% of surface that carries the decision. Nothing else needs to shout. Amharic Fidel is a first-class language throughout — its own line-height, its own comfortable size, never crammed into metrics tuned for Latin.\n\nThis system explicitly rejects the generic dark-gradient SaaS dashboard, the 2005-era government intranet, fake-corporate ministry aesthetics, any \"Africa cliche\" ornamentation, Web3 / crypto energy, startup cheerfulness, and the AI-slop defaults. If a page looks like it came from a generic AI generator, it has failed.",
+    "keyCharacteristics": [
+      "Bilingual by construction — English and Amharic Fidel are equal-weight throughout.",
+      "Two-color identity — Highland Petrol carries the surface, Ministry Brass carries the decision.",
+      "Flat by default — depth is a state response, not a resting condition.",
+      "Kiosk-native — the public screen isn't a shrunken desktop; it's built for 2–3 metre viewing.",
+      "Craft signals care — spacing, typography, and motion demonstrate the ministry's respect for its citizens."
+    ],
+    "rules": [
+      { "name": "The Two-Color Rule", "body": "Highland Petrol carries surface identity, Ministry Brass carries the decision. Everything else is neutral. If a design needs a third color, the answer is either weight, size, or a rule change — never a new hue.", "section": "colors" },
+      { "name": "The One Voice Rule", "body": "Ministry Brass appears on ≤ 10% of any given screen. Its rarity is the point. When a design shows brass on multiple cards, on borders, on chips, and on buttons in the same view, the surface has been diluted; strip it back to the single most important call-to-action.", "section": "colors" },
+      { "name": "The Bilingual Parity Rule", "body": "Amharic Fidel and Latin are equal-weight throughout. Fidel is never smaller, never lower-contrast, never in a fallback font stack. When both languages appear side by side, both get equal typographic weight; when only Amharic renders, the entire surface must read as native, not translated.", "section": "typography" },
+      { "name": "The Kicker Restraint Rule", "body": "The uppercase Label is reserved for structural section headers (sidebar section names, table column headers). Placing a small uppercase kicker above every content section is the current AI grammar tell — this system refuses it. Structure earns the label; ornament doesn't.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Every surface starts flat. If a component needs elevation, the reviewer's question is not \"what shadow?\" but \"what state is this responding to?\" Elevation is earned by interaction (hover, focus, active) or by legitimately escaping the document flow (dialog, popover) — never by design reflex.", "section": "elevation" },
+      { "name": "The No Nested Cards Rule", "body": "A raised surface inside another raised surface is always wrong. If content needs grouping inside a card, use spacing, a thin hairline, or a Quiet Surface panel — never a second card.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Highland Petrol as the surface identity color (sidebar, primary text, headers) and Ministry Brass strictly for the decision (primary CTA, active nav item, published-status indicator).",
+      "Do treat Amharic Fidel as a first-class language: same visual weight, its own line-height and size ramps, native font stack via next/font.",
+      "Do cap body prose line length at 65-75ch — including on the kiosk, where wider blocks become harder to scan across the room.",
+      "Do ensure body text hits ≥4.5:1 contrast (WCAG AA); ≥7:1 (AAA) is the target across both admin and kiosk surfaces.",
+      "Do use text-wrap: balance on H1-H3 for even line lengths, and text-wrap: pretty on long prose to reduce orphans.",
+      "Do respect prefers-reduced-motion on every animated element — every animation must have a defined stationary alternative.",
+      "Do verify contrast against the ambient light expected in the ministry lobby, not just the WCAG ratio in isolation."
+    ],
+    "donts": [
+      "Don't use a purple gradient hero, an Inter body font, nested cards, or tiny gray body text on a tinted near-white background. That specific combination is the AI-slop default that PRODUCT.md forbids.",
+      "Don't style this like a generic dark-gradient SaaS dashboard (Vercel / Stripe / Linear / crypto-tool aesthetic).",
+      "Don't revert to the 2005-era government intranet template — no tiny 11px body text, no blue underlined links as a default, no tables inside tables.",
+      "Don't decorate with \"Africa cliche\" motifs — no acacia trees, no giraffes, no traditional patterns applied as ornamental texture.",
+      "Don't use gradient text (background-clip: text with a gradient background). Decorative, never meaningful.",
+      "Don't use glassmorphism as a default. Blurs and glass surfaces are rare and purposeful, or they don't appear at all.",
+      "Don't use border-left greater than 1px as a colored accent on cards, list items, or callouts.",
+      "Don't stack cards inside cards. If a card needs internal grouping, use spacing or a Quiet Surface panel — never a second card.",
+      "Don't put a small uppercase kicker above every content section (the ABOUT / PROCESS / PRICING pattern).",
+      "Don't use numbered section markers as scaffolding (01 / 02 / 03) unless the section genuinely IS a sequence.",
+      "Don't ship a Corporate government aesthetic (stock handshake photos, generic globe icons, everything-blue).",
+      "Don't pair Geist with a similar-but-not-identical geometric sans (Inter, Manrope, DM Sans). Pair on a contrast axis or use Geist in multiple weights.",
+      "Don't animate CSS layout properties unless truly needed. Transform and opacity only, with ease-out-quart / quint / expo easing.",
+      "Don't ship any surface that looks like a generic AI generator produced it."
+    ]
+  }
+}

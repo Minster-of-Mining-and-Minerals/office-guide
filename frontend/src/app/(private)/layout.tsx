@@ -86,7 +86,7 @@ export default function PrivateLayout({
   if (status === "loading" || status === "unauthenticated") {
     return (
       <div className="min-h-screen w-full grid place-items-center bg-background">
-        <Loader2Icon className="h-6 w-6 animate-spin text-golden-dark" />
+        <Loader2Icon className="h-6 w-6 animate-spin text-golden-classic" />
       </div>
     );
   }
@@ -95,7 +95,7 @@ export default function PrivateLayout({
   if (isFirstLogin && !isChangePasswordPage) {
     return (
       <div className="min-h-screen w-full grid place-items-center bg-background">
-        <Loader2Icon className="h-6 w-6 animate-spin text-golden-dark" />
+        <Loader2Icon className="h-6 w-6 animate-spin text-golden-classic" />
       </div>
     );
   }
@@ -103,9 +103,9 @@ export default function PrivateLayout({
   return (
     <SidebarProvider>
       {!isFirstLogin && <AppSidebar />}
-      <SidebarInset>
+      <SidebarInset className="min-h-screen bg-[#0A1628]">
         <Header title={title || "Dashboard"} />
-        <div className="p-6">{children}</div>
+        <div className="p-6 min-h-[calc(100vh-5rem)]">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

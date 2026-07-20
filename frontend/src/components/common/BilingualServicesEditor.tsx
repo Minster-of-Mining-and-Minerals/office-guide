@@ -164,7 +164,7 @@ export function BilingualServicesEditor({
               <button
                 type="button"
                 onClick={() => removeAt(idx)}
-                className="h-4 w-4 shrink-0 rounded-full hover:bg-golden-dark/10 flex items-center justify-center text-golden-dark/70 hover:text-golden-dark"
+                className="h-4 w-4 shrink-0 rounded-full hover:bg-golden-classic/10 flex items-center justify-center text-golden-classic/70 hover:text-golden-classic"
                 aria-label={`Remove ${s}`}
               >
                 <XIcon className="h-3 w-3" />
@@ -178,7 +178,7 @@ export function BilingualServicesEditor({
                 className={cn(
                   "shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border",
                   step === "en"
-                    ? "bg-golden-dark text-white border-golden-dark"
+                    ? "bg-golden-classic text-black border-golden-classic"
                     : "text-muted-foreground border-input"
                 )}
               >
@@ -199,7 +199,7 @@ export function BilingualServicesEditor({
                 className={cn(
                   "shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border",
                   step === "am"
-                    ? "bg-golden-dark text-white border-golden-dark"
+                    ? "bg-golden-classic text-black border-golden-classic"
                     : "text-muted-foreground border-input"
                 )}
               >

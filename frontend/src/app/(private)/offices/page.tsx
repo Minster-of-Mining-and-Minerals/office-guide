@@ -411,25 +411,33 @@ export default function OfficesPage() {
         }}
         searchPlaceholder="Search name, department, or room number…"
         filters={
-          <Select
-            value={floorFilter}
-            onValueChange={(v) => {
-              setFloorFilter(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-56">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All floors</SelectItem>
-              {floors.map((f) => (
-                <SelectItem key={f.floor_id} value={f.floor_id}>
-                  {formatFloorLabel(f)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant={floorFilter === "all" ? "default" : "outline"}
+              onClick={() => {
+                setFloorFilter("all");
+                setPage(1);
+              }}
+              size="sm"
+              className={floorFilter === "all" ? "bg-golden-classic text-black hover:bg-golden-classic/80" : ""}
+            >
+              All floors
+            </Button>
+            {floors.map((f) => (
+              <Button
+                key={f.floor_id}
+                variant={floorFilter === f.floor_id ? "default" : "outline"}
+                onClick={() => {
+                  setFloorFilter(f.floor_id);
+                  setPage(1);
+                }}
+                size="sm"
+                className={floorFilter === f.floor_id ? "bg-golden-classic text-black hover:bg-golden-classic/80" : ""}
+              >
+                {formatFloorLabel(f)}
+              </Button>
+            ))}
+          </div>
         }
         right={
           <>
@@ -450,7 +458,7 @@ export default function OfficesPage() {
             </Button>
             <Button
               onClick={openCreate}
-              className="bg-golden-dark hover:bg-golden-darkHover text-white"
+              className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
               disabled={floors.length === 0}
             >
               <PlusIcon className="h-4 w-4" />
@@ -460,56 +468,40 @@ export default function OfficesPage() {
         }
       />
 
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => toggleSort("room_number")}
-              >
+              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("room_number")}>
                 Room #{sortIndicator("room_number")}
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => toggleSort("name")}
-              >
+              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("name")}>
                 Office{sortIndicator("name")}
               </TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Floor</TableHead>
-              <TableHead>Services</TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => toggleSort("display_order")}
-              >
+              <TableHead className="text-golden-classic/70">Department</TableHead>
+              <TableHead className="text-golden-classic/70">Contact</TableHead>
+              <TableHead className="text-golden-classic/70">Floor</TableHead>
+              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("display_order")}>
                 Order{sortIndicator("display_order")}
               </TableHead>
-              <TableHead className="w-32 text-right">Actions</TableHead>
+              <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
+              <TableRow className="border-white/5">
+                <TableCell colSpan={7} className="h-32 text-center">
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="h-32 text-center text-muted-foreground"
-                >
+              <TableRow className="border-white/5">
+                <TableCell colSpan={7} className="h-32 text-center text-white/40">
                   No offices match your filters.
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((o) => {
-                // Small chip on rows where the AM translation covers every
-                // filled EN field — makes it obvious which offices still need
-                // translating.
                 const amComplete =
                   Boolean(o.name_am) &&
                   (!o.department || Boolean(o.department_am)) &&
@@ -518,15 +510,15 @@ export default function OfficesPage() {
                   (o.services?.length ?? 0) ===
                     (o.services_am?.length ?? 0);
                 return (
-                <TableRow key={o.office_id}>
-                  <TableCell className="font-medium">{o.room_number}</TableCell>
+                <TableRow key={o.office_id} className="border-white/5 hover:bg-white/5">
+                  <TableCell className="font-bold text-white">{o.room_number}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span>{o.name}</span>
                       {amComplete ? (
                         <span
                           title="Amharic translations present"
-                          className="inline-flex items-center gap-0.5 rounded-full bg-golden-metallic border border-golden-dark/20 px-1.5 py-0.5 text-[10px] font-semibold text-golden-dark"
+                          className="inline-flex items-center gap-0.5 rounded-full bg-white/5 border border-white/20 px-1.5 py-0.5 text-[10px] font-semibold text-golden-classic"
                           lang="am-ET"
                         >
                           አማ ✓
@@ -542,35 +534,14 @@ export default function OfficesPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-white/60">
                     {o.department || "—"}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-white/60">
                     {o.contact_person || "—"}
                   </TableCell>
-                  <TableCell>{o.floor?.name ?? "—"}</TableCell>
-                  <TableCell>
-                    {o.services && o.services.length > 0 ? (
-                      <div className="flex flex-wrap gap-1 max-w-[240px]">
-                        {o.services.slice(0, 2).map((s) => (
-                          <span
-                            key={s}
-                            className="inline-flex items-center rounded-full bg-golden-metallic border border-golden-dark/15 px-2 py-0.5 text-[10px] font-medium text-golden-dark"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                        {o.services.length > 2 && (
-                          <span className="inline-flex items-center rounded-full bg-golden-dark/5 border border-golden-dark/10 px-2 py-0.5 text-[10px] font-medium text-golden-dark/70">
-                            +{o.services.length - 2}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-white/70">{o.floor?.name ?? "—"}</TableCell>
+                  <TableCell className="text-white/40">
                     {o.display_order}
                   </TableCell>
                   <TableCell className="text-right">
@@ -579,13 +550,14 @@ export default function OfficesPage() {
                       size="icon"
                       onClick={() => openEdit(o)}
                       aria-label="Edit office"
+                      className="text-white/70 hover:text-golden-classic hover:bg-golden-classic/10"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive/80 hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setDeleteTarget(o)}
                       aria-label="Delete office"
                     >
@@ -610,7 +582,7 @@ export default function OfficesPage() {
       </div>
 
       {isFetching && !isLoading && (
-        <p className="text-xs text-muted-foreground">Refreshing…</p>
+        <p className="text-xs text-white/40">Refreshing…</p>
       )}
 
       {/* Create / edit dialog */}
@@ -716,16 +688,6 @@ export default function OfficesPage() {
                 placeholderAm="ለምሳሌ. መዝገብ ቤት"
                 id="office_name"
               />
-              <PairedBilingualField
-                label="Department"
-                hint="Optional"
-                valueEn={form.department}
-                valueAm={form.department_am}
-                onChangeEn={(v) => setForm({ ...form, department: v })}
-                onChangeAm={(v) => setForm({ ...form, department_am: v })}
-                placeholderEn="e.g. Administration"
-                placeholderAm="ለምሳሌ. አስተዳደር"
-              />
             </section>
 
             {/* ── Section 3: People ── */}
@@ -749,24 +711,7 @@ export default function OfficesPage() {
               />
             </section>
 
-            {/* ── Section 4: Description ── */}
-            <section className="space-y-4">
-              <SectionHeader
-                icon={<FileTextIcon className="h-3.5 w-3.5" />}
-                label="Description"
-                subtitle="A short summary of what visitors can do here."
-              />
-              <PairedBilingualField
-                label="Description"
-                hint="Optional • Shown on the office card"
-                multiline
-                rows={3}
-                valueEn={form.description}
-                valueAm={form.description_am}
-                onChangeEn={(v) => setForm({ ...form, description: v })}
-                onChangeAm={(v) => setForm({ ...form, description_am: v })}
-              />
-            </section>
+
 
             {/* ── Section 5: Services ── */}
             <section className="space-y-3">
@@ -807,7 +752,7 @@ export default function OfficesPage() {
                 type="submit"
                 form="office-form"
                 disabled={submitting}
-                className="bg-golden-dark hover:bg-golden-darkHover text-white"
+                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
               >
                 {submitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -967,7 +912,7 @@ export default function OfficesPage() {
                 type="button"
                 disabled={savingOrder || reorderIds.length === 0}
                 onClick={saveReorder}
-                className="bg-golden-dark hover:bg-golden-darkHover text-white"
+                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
               >
                 {savingOrder && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

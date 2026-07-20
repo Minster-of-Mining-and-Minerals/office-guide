@@ -68,7 +68,11 @@ const matchesSearch = (o: FlatOffice, term: string) => {
  * one of the two panes in `both` mode. Socket refresh and locale changes
  * are handled by the parent so this component only owns the UI + filters.
  */
-export function OfficeGuideView() {
+export function OfficeGuideView({
+  initialFloor,
+}: {
+  initialFloor?: number | null;
+} = {}) {
   const { locale, t } = useLocale();
 
   const { data, isLoading, isError } = useGetOfficeGuideQuery(undefined, {
@@ -83,9 +87,31 @@ export function OfficeGuideView() {
     return () => clearTimeout(id);
   }, [search]);
 
-  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(
+    initialFloor ?? null
+  );
+
+  useEffect(() => {
+    const isDefault =
+      selectedFloor === (initialFloor ?? null) && search === "";
+    if (isDefault) return;
+
+    const id = setTimeout(() => {
+      setSelectedFloor(initialFloor ?? null);
+      setSearch("");
+    }, 60_000);
+
+    return () => clearTimeout(id);
+  }, [selectedFloor, search, initialFloor]);
 
   const now = useLiveClock(data?.server_time);
+
+  const displayTime = useMemo(() => {
+    if (locale === "am") {
+      return new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    }
+    return now;
+  }, [now, locale]);
 
   const allOffices: FlatOffice[] = useMemo(() => {
     if (!data) return [];
@@ -143,7 +169,7 @@ export function OfficeGuideView() {
     setSelectedFloor(null);
   };
 
-  const dateLocale = locale === "am" ? "am-ET" : undefined;
+  const dateLocale = locale === "am" ? "am-ET-u-ca-ethiopic" : undefined;
   const selectedFloorObj =
     selectedFloor === null
       ? null
@@ -205,14 +231,14 @@ export function OfficeGuideView() {
               <LanguageToggle variant="dark" />
               <div className="text-right hidden sm:block">
                 <p className="text-3xl md:text-4xl font-semibold tabular-nums leading-none">
-                  {now.toLocaleTimeString(dateLocale, {
+                  {displayTime.toLocaleTimeString(dateLocale, {
                     hour: "2-digit",
                     minute: "2-digit",
-                    hour12: false,
+                    hour12: true,
                   })}
                 </p>
                 <p className="mt-2 text-xs text-white/70">
-                  {now.toLocaleDateString(dateLocale, {
+                  {displayTime.toLocaleDateString(dateLocale, {
                     weekday: "long",
                     month: "short",
                     day: "2-digit",
@@ -329,10 +355,6 @@ export function OfficeGuideView() {
                 <span className="font-semibold text-golden-classic tabular-nums">
                   {filteredOffices.length}
                 </span>{" "}
-                {t("ofLabel")}{" "}
-                <span className="tabular-nums text-white/90">
-                  {allOffices.length}
-                </span>{" "}
                 {t("officesLabel")}
                 {debouncedSearch && (
                   <>
@@ -350,7 +372,7 @@ export function OfficeGuideView() {
                     {t("onFloorLabel")}{" "}
                     <span className="text-golden-classic">
                       {pickLang(selectedFloorObj, "name", locale) ??
-                        selectedFloorObj.name}
+                        selectedFloorObj.name} {selectedFloorObj.floor_number > 0 ? selectedFloorObj.floor_number : ""}
                     </span>
                   </>
                 )}

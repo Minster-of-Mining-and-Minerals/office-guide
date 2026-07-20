@@ -11,15 +11,9 @@ interface HeaderProps {
   title?: string;
 }
 
-/**
- * Sticky top bar for the admin. Pulls user identity from `useSession()`
- * so the profile dropdown shows the actually-signed-in admin — the
- * previous version hardcoded "John Doe" which made the logout button
- * confusing (users didn't trust it was tied to their real account).
- */
 export function Header({ title }: HeaderProps) {
   const { data: session } = useSession();
-  const notificationCount = 3; // TODO: hook this up when notifications land
+  const notificationCount = 3;
 
   const userData = {
     name: session?.user?.name ?? "Signed-in user",
@@ -28,14 +22,36 @@ export function Header({ title }: HeaderProps) {
   };
 
   return (
-    <header className="flex z-30 sticky shadow-md top-2 border h-16 shrink-0 items-center gap-2 px-4 rounded-xl bg-sidebar text-sidebar-foreground m-2 mb-0">
-      <SidebarTrigger className="-ml-1" />
-      {title && <h1 className="text-lg font-semibold">{title}</h1>}
-      <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
+    <header className="flex z-30 sticky top-2 h-16 shrink-0 items-center gap-3 px-4 mx-2 mb-0 rounded-xl bg-[#0D1F3C] border border-white/10 shadow-lg shadow-black/30">
+      {/* subtle shimmer */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-xl opacity-30"
+        style={{
+          backgroundImage:
+            "radial-gradient(ellipse at 10% 0%, hsl(45,100%,50%,0.15) 0, transparent 60%)",
+        }}
+      />
+
+      <SidebarTrigger className="-ml-1 relative text-white/70 hover:text-golden-classic hover:bg-white/10" />
+
+      {title && (
+        <div className="relative flex items-center gap-2">
+          <span className="h-4 w-px bg-white/20 hidden sm:block" />
+          <h1 className="text-sm font-semibold text-white/80 tracking-wide uppercase">
+            {title}
+          </h1>
+        </div>
+      )}
+
+      <div className="ml-auto flex items-center gap-2 relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative text-white/70 hover:text-golden-classic hover:bg-white/10"
+        >
           <Bell className="size-5" />
           {notificationCount > 0 && (
-            <span className="absolute text-white font-bold -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">
+            <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-golden-dark text-[10px] font-bold text-white border border-golden-classic/40">
               {notificationCount > 9 ? "9+" : notificationCount}
             </span>
           )}

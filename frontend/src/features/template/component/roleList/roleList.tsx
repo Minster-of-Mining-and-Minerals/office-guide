@@ -63,7 +63,7 @@ export default function RoleList() {
         accessorKey: "name",
         header: "Role Name",
         cell: ({ row }) => (
-          <span className="font-medium text-golden-dark">
+          <span className="font-medium text-golden-classic">
             {row.getValue("name")}
           </span>
         ),
@@ -72,7 +72,7 @@ export default function RoleList() {
         accessorKey: "description",
         header: "Description",
         cell: ({ row }) => (
-          <span className="text-muted-foreground text-sm">
+          <span className="text-white/60 text-sm">
             {(row.getValue("description") as string) || "—"}
           </span>
         ),
@@ -87,8 +87,8 @@ export default function RoleList() {
               variant={isActive ? "default" : "secondary"}
               className={
                 isActive
-                  ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200"
-                  : ""
+                  ? "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border-emerald-500/20"
+                  : "bg-white/10 text-white/50 border-white/10"
               }
             >
               {isActive ? "Active" : "Inactive"}
@@ -106,7 +106,7 @@ export default function RoleList() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-golden-metallic hover:text-golden-dark"
+                className="h-8 w-8 hover:bg-golden-classic/10 text-white/70 hover:text-golden-classic"
                 onClick={() =>
                   router.push(`/users/roles/${role.role_id}`)
                 }
@@ -117,7 +117,7 @@ export default function RoleList() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                className="h-8 w-8 hover:bg-destructive/10 text-destructive/80 hover:text-destructive"
                 onClick={() => setDeleteTarget(role)}
                 aria-label={`Delete ${role.name}`}
               >
@@ -174,8 +174,8 @@ export default function RoleList() {
 
   if (isError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-        <p className="text-sm font-medium text-red-800">
+      <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-center">
+        <p className="text-sm font-medium text-destructive">
           Could not load roles.
         </p>
         <Button
@@ -200,7 +200,7 @@ export default function RoleList() {
       >
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2Icon className="h-5 w-5 animate-spin text-golden-dark" />
+            <Loader2Icon className="h-5 w-5 animate-spin text-golden-classic" />
           </div>
         ) : (
           <DataTable

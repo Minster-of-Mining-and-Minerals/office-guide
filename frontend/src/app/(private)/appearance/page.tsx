@@ -334,7 +334,7 @@ export default function AppearancePage() {
   if (isLoading || !draft) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2Icon className="h-6 w-6 animate-spin text-golden-dark" />
+        <Loader2Icon className="h-6 w-6 animate-spin text-golden-classic" />
       </div>
     );
   }
@@ -344,24 +344,24 @@ export default function AppearancePage() {
       {/* ─── Page header ─────────────────────────────────────────
           Compact — mode & theme have their own per-tab save/reset
           buttons so we don't need any actions at the page level. */}
-      <div className="relative overflow-hidden rounded-2xl border border-golden-classic/30 bg-gradient-to-br from-golden-metallic/70 via-white to-golden-metallic/40 p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur p-6 shadow-xl">
         <div
-          className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full opacity-30 blur-2xl"
+          className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full opacity-20 blur-2xl"
           style={{ background: "radial-gradient(circle,#F5C518 0%,transparent 70%)" }}
         />
         <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-12 w-12 rounded-xl bg-white border border-golden-classic/40 flex items-center justify-center text-golden-dark shadow-sm">
+            <div className="h-12 w-12 rounded-xl bg-golden-classic/10 border border-golden-classic/30 flex items-center justify-center text-golden-classic shadow-sm">
               <MonitorPlayIcon className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-golden-dark">
+              <h1 className="text-2xl font-semibold text-golden-classic">
                 Display
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground max-w-xl">
+              <p className="mt-1 text-sm text-white/50 max-w-xl">
                 Control what the public office-guide screen shows
-                (<span className="font-medium">Mode</span>) and how it looks
-                (<span className="font-medium">Theme</span>). Changes go
+                (<span className="font-medium text-white/70">Mode</span>) and how it looks
+                (<span className="font-medium text-white/70">Theme</span>). Changes go
                 live on every open kiosk without a reload.
               </p>
             </div>
@@ -370,10 +370,10 @@ export default function AppearancePage() {
           <Button
             variant="outline"
             asChild
-            className="border-golden-classic/40 text-golden-dark"
+            className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
           >
             <a
-              href="/office-guide"
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -388,17 +388,17 @@ export default function AppearancePage() {
           Mode is first because it's the higher-level decision — pick
           what plays before you style it. */}
       <Tabs defaultValue="mode" className="gap-4">
-        <TabsList className="h-11 bg-golden-metallic/50 border border-golden-classic/25 p-1">
+        <TabsList className="h-11 bg-[#0D1F3C]/80 border border-white/10 p-1 backdrop-blur">
           <TabsTrigger
             value="mode"
-            className="data-[state=active]:bg-white data-[state=active]:text-golden-dark data-[state=active]:shadow-sm px-4 gap-2"
+            className="data-[state=active]:bg-golden-classic/15 data-[state=active]:text-golden-classic data-[state=active]:shadow-sm text-white/50 px-4 gap-2"
           >
             <Layers2Icon className="h-4 w-4" />
             Mode
           </TabsTrigger>
           <TabsTrigger
             value="theme"
-            className="data-[state=active]:bg-white data-[state=active]:text-golden-dark data-[state=active]:shadow-sm px-4 gap-2"
+            className="data-[state=active]:bg-golden-classic/15 data-[state=active]:text-golden-classic data-[state=active]:shadow-sm text-white/50 px-4 gap-2"
           >
             <PaletteIcon className="h-4 w-4" />
             Theme
@@ -414,16 +414,16 @@ export default function AppearancePage() {
         <TabsContent value="theme" className="space-y-6">
           {/* Theme-scoped action bar — sits above the presets so it's the
               first thing an admin sees after switching to this tab. */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-2xl border border-golden-classic/25 bg-white p-4 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-2xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur p-4 shadow-xl">
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl bg-golden-metallic/60 border border-golden-classic/30 flex items-center justify-center text-golden-dark">
+              <div className="h-10 w-10 rounded-xl bg-golden-classic/10 border border-golden-classic/30 flex items-center justify-center text-golden-classic">
                 <PaletteIcon className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-classic/70">
                   Theme
                 </h2>
-                <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+                <p className="text-xs text-white/40 mt-0.5 max-w-xl">
                   Pick a preset or fine-tune the colors used on the public
                   office guide.
                 </p>
@@ -435,7 +435,7 @@ export default function AppearancePage() {
                 variant="outline"
                 onClick={onRevert}
                 disabled={!dirty}
-                className="border-golden-classic/40 text-golden-dark"
+                className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
               >
                 Revert
               </Button>
@@ -443,7 +443,7 @@ export default function AppearancePage() {
                 variant="outline"
                 onClick={onReset}
                 disabled={resetState.isLoading}
-                className="border-golden-classic/40 text-golden-dark"
+                className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
               >
                 {resetState.isLoading ? (
                   <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -455,7 +455,7 @@ export default function AppearancePage() {
               <Button
                 onClick={onSave}
                 disabled={!canSave || updateState.isLoading}
-                className="bg-golden-dark hover:bg-golden-darkHover text-primary-foreground shadow-md"
+                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black shadow-md"
               >
                 {updateState.isLoading ? (
                   <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -468,7 +468,7 @@ export default function AppearancePage() {
           </div>
 
           {dirty && (
-            <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 text-[11px] font-medium">
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 px-3 py-1 text-[11px] font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
               Unsaved theme changes — click Save theme.
             </div>
@@ -477,10 +477,10 @@ export default function AppearancePage() {
           {/* Presets */}
           <section>
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-classic/50">
             Curated presets
           </h2>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[11px] text-white/40">
             {PRESETS.length} to choose from
           </span>
         </div>
@@ -549,14 +549,14 @@ export default function AppearancePage() {
       {/* ─── Pickers + Live Preview ────────────────────────────── */}
       <section className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-6 items-start">
         {/* Pickers */}
-        <div className="rounded-2xl border border-golden-classic/25 bg-white p-5 space-y-5 shadow-sm">
+        <div className="rounded-2xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur p-5 space-y-5 shadow-xl">
           <div className="flex items-baseline justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-classic/70">
                 Fine-tune colors
               </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Every field takes a hex code like <code>#F5C518</code>.
+              <p className="mt-1 text-xs text-white/40">
+                Every field takes a hex code like <code className="text-golden-classic/60">#F5C518</code>.
               </p>
             </div>
             <ContrastBadge
@@ -573,19 +573,19 @@ export default function AppearancePage() {
                 <div className="flex items-baseline justify-between">
                   <Label
                     htmlFor={`color-${key}`}
-                    className="text-xs font-semibold text-golden-dark uppercase tracking-wider"
+                    className="text-xs font-semibold text-golden-classic uppercase tracking-wider"
                   >
                     {FIELD_LABELS[key].label}
                   </Label>
                   {/* Small swatch chip so a glance shows what's set */}
                   {isValidHex(value) && (
                     <span
-                      className="inline-block h-3.5 w-3.5 rounded border border-golden-classic/40 shadow-inner"
+                      className="inline-block h-3.5 w-3.5 rounded border border-white/20 shadow-inner"
                       style={{ backgroundColor: value }}
                     />
                   )}
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 mb-2">
+                <p className="text-[11px] text-white/40 mt-0.5 mb-2">
                   {FIELD_LABELS[key].hint}
                 </p>
                 <div className="flex items-center gap-2">
@@ -594,7 +594,7 @@ export default function AppearancePage() {
                     aria-label={`${FIELD_LABELS[key].label} picker`}
                     value={isValidHex(value) ? value : "#000000"}
                     onChange={(e) => onFieldChange(key, e.target.value)}
-                    className="h-10 w-14 rounded-md border border-golden-classic/40 bg-transparent cursor-pointer p-0"
+                    className="h-10 w-14 rounded-md border border-white/20 bg-transparent cursor-pointer p-0"
                   />
                   <Input
                     id={`color-${key}`}
@@ -620,15 +620,15 @@ export default function AppearancePage() {
         {/* Live preview — sticky on wide viewports */}
         <div className="lg:sticky lg:top-6 space-y-3">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-dark/70">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-golden-classic/70">
               Live preview
             </h2>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[11px] text-white/40">
               Updates as you type
             </span>
           </div>
           <div
-            className="rounded-2xl p-6 border border-golden-classic/25 shadow-inner space-y-4"
+            className="rounded-2xl p-6 border border-white/10 shadow-inner space-y-4"
             style={{ backgroundColor: draft.page_bg }}
           >
             <PreviewCard theme={draft} variant="primary" />
@@ -927,7 +927,7 @@ function DisplayModeSection() {
           <Button
             onClick={onSave}
             disabled={!canSave || updateState.isLoading}
-            className="bg-golden-dark hover:bg-golden-darkHover text-primary-foreground shadow-md"
+            className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black shadow-md"
           >
             {updateState.isLoading ? (
               <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -966,7 +966,7 @@ function DisplayModeSection() {
                       className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center",
                         active
-                          ? "bg-golden-dark text-white"
+                          ? "bg-golden-classic text-black"
                           : "bg-golden-metallic/70 text-golden-dark"
                       )}
                     >

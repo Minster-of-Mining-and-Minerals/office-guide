@@ -157,7 +157,7 @@ export function RoleMultiSelect({
                       className={cn(
                         "h-4 w-4 shrink-0 rounded border flex items-center justify-center transition-colors",
                         isSelected
-                          ? "bg-golden-dark border-golden-dark text-white"
+                          ? "bg-golden-classic border-golden-classic text-black"
                           : "border-golden-classic/50"
                       )}
                     >

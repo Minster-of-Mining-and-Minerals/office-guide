@@ -34,33 +34,33 @@ export const ResourceGroup: React.FC<ResourceGroupProps> = ({
   };
 
   return (
-    <div className="border border-golden-classic/25 rounded-lg self-start bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div className="border border-white/10 rounded-xl self-start bg-white/5 shadow-sm hover:border-golden-classic/40 transition-colors">
       {/* Resource Header */}
       <div
         onClick={() => onToggleExpand(group.resource)}
-        className="flex transition-all hover:bg-golden-metallic/60 duration-200 cursor-pointer items-center justify-between p-4 bg-golden-metallic/30 rounded-t-lg"
+        className="flex transition-all hover:bg-white/10 duration-200 cursor-pointer items-center justify-between p-4 bg-white/5 rounded-t-xl"
       >
         <div className="flex items-center space-x-3 flex-1">
           <button
             type="button"
             onClick={() => onToggleExpand(group.resource)}
-            className="p-1 hover:bg-golden-metallic rounded"
+            className="p-1 hover:bg-white/10 rounded"
           >
             {group.isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-golden-dark cursor-pointer" />
+              <ChevronDown className="h-5 w-5 text-golden-classic cursor-pointer" />
             ) : (
-              <ChevronRight className="h-5 w-5 text-golden-dark cursor-pointer" />
+              <ChevronRight className="h-5 w-5 text-golden-classic cursor-pointer" />
             )}
           </button>
-          <div className="p-2 text-golden-dark bg-white rounded-lg shadow-sm border border-golden-classic/30">
+          <div className="p-2 text-golden-classic bg-white/5 rounded-lg border border-white/10">
             {group.icon}
           </div>
           <div>
-            <h3 className="font-semibold text-golden-dark">
+            <h3 className="font-semibold text-golden-classic">
               {group.label ??
                 group.resource.replace(/_/g, " ")}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white/60">
               {group.totalCount} permission
               {group.totalCount === 1 ? "" : "s"} • {group.activeCount} active
             </p>
@@ -85,7 +85,7 @@ export const ResourceGroup: React.FC<ResourceGroupProps> = ({
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-white rounded-b-lg border-t border-gray-200">
+            <div className="p-4 bg-transparent rounded-b-xl border-t border-white/10">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {group.permissions.map((permission) => (
                   <PermissionItem

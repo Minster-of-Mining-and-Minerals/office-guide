@@ -163,7 +163,7 @@ function LangTab({
         <span
           className={cn(
             "absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full",
-            active ? "bg-golden-dark" : "bg-golden-classic"
+            active ? "bg-golden-classic" : "bg-white/10 text-white/50"
           )}
           aria-hidden
         />

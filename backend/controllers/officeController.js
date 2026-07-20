@@ -105,6 +105,16 @@ const createOffice = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Selected floor does not exist." });
 
+    const existingRoom = await Office.findOne({
+      where: { room_number: req.body.room_number },
+    });
+    if (existingRoom) {
+      return res.status(409).json({
+        success: false,
+        message: "An office with this room number already exists in the building.",
+      });
+    }
+
     // Default display_order to end of floor if not provided.
     if (req.body.display_order === undefined) {
       const maxOrder = await Office.max("display_order", {
@@ -151,6 +161,18 @@ const updateOffice = async (req, res) => {
           success: false,
           message: "Selected floor does not exist.",
         });
+    }
+
+    if (req.body.room_number && req.body.room_number !== office.room_number) {
+      const existingRoom = await Office.findOne({
+        where: { room_number: req.body.room_number },
+      });
+      if (existingRoom) {
+        return res.status(409).json({
+          success: false,
+          message: "An office with this room number already exists in the building.",
+        });
+      }
     }
 
     await office.update({ ...req.body, updated_at: new Date() });

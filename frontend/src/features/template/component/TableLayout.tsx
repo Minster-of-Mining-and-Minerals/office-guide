@@ -31,17 +31,17 @@ export const TableLayout: React.FC<PageLayoutProps> = ({
   );
 
   return (
-    <div className=" p-6 border rounded-lg bg-white shadow">
+    <div className="p-6 border border-white/10 rounded-xl bg-[#0D1F3C]/80 backdrop-blur shadow-xl">
       <div className="space-y-6">
         {/* Page Header - Single Line Layout */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Left side - Title and Description */}
           <div>
             {title && (
-              <h1 className="text-2xl font-semibold text-[#073954]">{title}</h1>
+              <h1 className="text-2xl font-semibold text-golden-classic">{title}</h1>
             )}
             {description && (
-              <p className="text-gray-500 text-lg">{description}</p>
+              <p className="text-white/50 text-lg">{description}</p>
             )}
           </div>
 
@@ -49,12 +49,12 @@ export const TableLayout: React.FC<PageLayoutProps> = ({
           <div className="flex flex-wrap items-center gap-3">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40" />
               <Input
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10 w-64"
+                className="pl-10 w-64 bg-white/5 border-white/15 text-white placeholder:text-white/30 focus-visible:ring-golden-classic/40 focus-visible:border-golden-classic/50"
               />
             </div>
 
@@ -93,7 +93,7 @@ export const TableLayout: React.FC<PageLayoutProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="bg-white">{children}</div>
+        <div className="bg-transparent mt-4">{children}</div>
       </div>
     </div>
   );

@@ -348,7 +348,7 @@ export function UserFormDialog({
               type="submit"
               form="user-form"
               disabled={submitting || !canSubmit}
-              className="bg-golden-dark hover:bg-golden-darkHover text-white"
+              className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
             >
               {submitting && (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

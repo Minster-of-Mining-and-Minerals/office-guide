@@ -60,8 +60,8 @@ interface FormState {
 
 const emptyForm: FormState = {
   floor_number: "",
-  name: "",
-  name_am: "",
+  name: "Floor",
+  name_am: "ደረጃ",
   is_active: true,
 };
 
@@ -228,7 +228,7 @@ export default function FloorsPage() {
         right={
           <Button
             onClick={openCreate}
-            className="bg-golden-dark hover:bg-golden-darkHover text-white"
+            className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
           >
             <PlusIcon className="h-4 w-4" />
             New Floor
@@ -236,53 +236,44 @@ export default function FloorsPage() {
         }
       />
 
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => toggleSort("floor_number")}
-              >
+              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("floor_number")}>
                 # {sortIndicator("floor_number")}
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => toggleSort("name")}
-              >
+              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("name")}>
                 Name{sortIndicator("name")}
               </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-32 text-right">Actions</TableHead>
+              <TableHead className="text-golden-classic/70">Status</TableHead>
+              <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="border-white/5">
                 <TableCell colSpan={4} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="h-32 text-center text-muted-foreground"
-                >
+              <TableRow className="border-white/5">
+                <TableCell colSpan={4} className="h-32 text-center text-white/40">
                   No floors match your filters.
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((f) => (
-                <TableRow key={f.floor_id}>
-                  <TableCell className="font-medium">{f.floor_number}</TableCell>
+                <TableRow key={f.floor_id} className="border-white/5 hover:bg-white/5">
+                  <TableCell className="font-bold text-white tabular-nums">{f.floor_number}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-white">
                       <span>{f.name}</span>
                       {f.name_am ? (
                         <span
                           title="Amharic translation present"
-                          className="inline-flex items-center gap-0.5 rounded-full bg-golden-metallic border border-golden-dark/20 px-1.5 py-0.5 text-[10px] font-semibold text-golden-dark"
+                          className="inline-flex items-center gap-0.5 rounded-full bg-white/5 border border-white/20 px-1.5 py-0.5 text-[10px] font-semibold text-golden-classic"
                           lang="am-ET"
                         >
                           አማ ✓
@@ -302,8 +293,8 @@ export default function FloorsPage() {
                     <span
                       className={
                         f.is_active
-                          ? "inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200"
-                          : "inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-200"
+                          ? "inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/30"
+                          : "inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-xs font-medium text-white/40 border border-white/10"
                       }
                     >
                       {f.is_active ? "Active" : "Inactive"}
@@ -315,13 +306,14 @@ export default function FloorsPage() {
                       size="icon"
                       onClick={() => openEdit(f)}
                       aria-label="Edit floor"
+                      className="text-white/70 hover:text-golden-classic hover:bg-golden-classic/10"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive/80 hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setDeleteTarget(f)}
                       aria-label="Delete floor"
                     >
@@ -346,7 +338,7 @@ export default function FloorsPage() {
       </div>
 
       {isFetching && !isLoading && (
-        <p className="text-xs text-muted-foreground">Refreshing…</p>
+        <p className="text-xs text-white/40">Refreshing…</p>
       )}
 
       <Dialog
@@ -481,7 +473,7 @@ export default function FloorsPage() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-golden-dark hover:bg-golden-darkHover text-white"
+                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
               >
                 {submitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

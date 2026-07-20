@@ -52,7 +52,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Table,
   TableBody,
@@ -255,19 +255,19 @@ export default function DashboardPage() {
 
   return (
     <main className="flex flex-col gap-6">
-      {/* ── 1. Page header (CMS/PMS style) ─────────────────── */}
+      {/* ── 1. Page header ─────────────────── */}
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-golden-dark">Dashboard</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold text-golden-classic">Dashboard</h1>
+          <p className="mt-1 max-w-2xl text-sm text-white/50">
             Live snapshot of the ministry office guide — floors, offices,
             bilingual coverage, and current public appearance.
           </p>
         </div>
         <Link
-          href="/office-guide"
+          href="/"
           target="_blank"
-          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-golden-dark bg-white px-4 text-sm font-medium text-golden-dark shadow-sm hover:bg-golden-metallic/60"
+          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-golden-classic/40 bg-white/5 px-4 text-sm font-medium text-golden-classic shadow-sm hover:bg-golden-classic/15 backdrop-blur"
         >
           <ShieldCheckIcon className="h-4 w-4" />
           Open public office guide
@@ -277,7 +277,7 @@ export default function DashboardPage() {
 
       {/* ── 2. Quick actions ───────────────────────────────── */}
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-golden-dark/70">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-golden-classic/50">
           Quick actions
         </h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -288,24 +288,21 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── 3. Unified stat strip (CMS pattern) ────────────── */}
-      <Card className="border-golden-classic/25 transition-shadow hover:shadow-md">
-        <CardContent className="relative p-4 md:p-6">
+      {/* ── 3. Unified stat strip ────────────── */}
+      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 opacity-20" style={{backgroundImage:"radial-gradient(ellipse at 0% 0%, hsl(45,100%,50%,0.2) 0, transparent 60%)"}} />
+        <div className="relative p-4 md:p-6">
           {(summaryLoading || !guide) && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/60 backdrop-blur-[1px]">
-              <Loader2Icon className="h-5 w-5 animate-spin text-golden-dark" />
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/40 backdrop-blur-[1px]">
+              <Loader2Icon className="h-5 w-5 animate-spin text-golden-classic" />
             </div>
           )}
-          <div className="grid grid-cols-1 divide-y divide-golden-classic/25 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
-            {stats.map((s, i) => (
+          <div className="grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+            {stats.map((s) => (
               <div
                 key={s.id}
                 className={cn(
-                  // Divider on the right for every stat except the last
-                  // in the current breakpoint's row. Tailwind can't do
-                  // "not last of visible group", so we bake it in with
-                  // per-breakpoint modifiers matching the grid above.
-                  "sm:border-r sm:border-golden-classic/25",
+                  "sm:border-r sm:border-white/10",
                   "sm:[&:nth-child(2n)]:border-r-0",
                   "lg:[&:nth-child(2n)]:border-r",
                   "lg:[&:nth-child(4n)]:border-r-0"
@@ -324,25 +321,21 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* ── 4. Charts row ──────────────────────────────────── */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         {/* Offices per floor (bar) — spans 3/5 */}
-        <Card className="border-golden-classic/25 lg:col-span-3">
-          <CardHeader className="flex flex-row items-start justify-between space-y-0">
+        <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl lg:col-span-3">
+          <div className="flex flex-row items-start justify-between p-6 pb-2">
             <div>
-              <CardTitle className="text-base text-golden-dark">
-                Offices per floor
-              </CardTitle>
-              <p className="text-[11px] text-muted-foreground">
-                Room count on every level.
-              </p>
+              <p className="text-base font-semibold text-golden-classic">Offices per floor</p>
+              <p className="text-[11px] text-white/40">Room count on every level.</p>
             </div>
-            <Building2 className="h-4 w-4 text-golden-dark" />
-          </CardHeader>
-          <CardContent>
+            <Building2 className="h-4 w-4 text-golden-classic/60" />
+          </div>
+          <div className="px-6 pb-6">
             {!hasAnyOffice ? (
               <EmptyChart hint="No offices yet." />
             ) : (
@@ -354,27 +347,29 @@ export default function DashboardPage() {
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="hsl(45, 55%, 88%)"
+                      stroke="rgba(255,255,255,0.08)"
                       vertical={false}
                     />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 12, fill: "hsl(30, 8%, 40%)" }}
+                      tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
                       tickLine={false}
-                      axisLine={{ stroke: "hsl(45, 55%, 85%)" }}
+                      axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
                     />
                     <YAxis
                       allowDecimals={false}
-                      tick={{ fontSize: 12, fill: "hsl(30, 8%, 40%)" }}
+                      tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <Tooltip
-                      cursor={{ fill: "hsl(45, 100%, 96%)" }}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                       contentStyle={{
                         borderRadius: 8,
-                        border: "1px solid hsl(45, 55%, 80%)",
+                        border: "1px solid rgba(255,255,255,0.15)",
                         fontSize: 12,
+                        background: "#0D1F3C",
+                        color: "#fff",
                       }}
                       formatter={(v: number, _n, p: any) => [
                         `${v} offices`,
@@ -391,23 +386,19 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Translation distribution (donut) — spans 2/5 */}
-        <Card className="border-golden-classic/25 lg:col-span-2">
-          <CardHeader className="flex flex-row items-start justify-between space-y-0">
+        <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl lg:col-span-2">
+          <div className="flex flex-row items-start justify-between p-6 pb-2">
             <div>
-              <CardTitle className="text-base text-golden-dark">
-                Translation status
-              </CardTitle>
-              <p className="text-[11px] text-muted-foreground">
-                Fully translated vs. gaps.
-              </p>
+              <p className="text-base font-semibold text-golden-classic">Translation status</p>
+              <p className="text-[11px] text-white/40">Fully translated vs. gaps.</p>
             </div>
-            <LanguagesIcon className="h-4 w-4 text-golden-dark" />
-          </CardHeader>
-          <CardContent>
+            <LanguagesIcon className="h-4 w-4 text-golden-classic/60" />
+          </div>
+          <div className="px-6 pb-6">
             {!hasAnyOffice ? (
               <EmptyChart hint="No offices yet." />
             ) : (
@@ -417,8 +408,10 @@ export default function DashboardPage() {
                     <Tooltip
                       contentStyle={{
                         borderRadius: 8,
-                        border: "1px solid hsl(45, 55%, 80%)",
+                        border: "1px solid rgba(255,255,255,0.15)",
                         fontSize: 12,
+                        background: "#0D1F3C",
+                        color: "#fff",
                       }}
                     />
                     <Pie
@@ -428,7 +421,7 @@ export default function DashboardPage() {
                       innerRadius={55}
                       outerRadius={90}
                       paddingAngle={2}
-                      stroke="hsl(45, 100%, 98%)"
+                      stroke="rgba(255,255,255,0.1)"
                       strokeWidth={2}
                     >
                       {translationDistribution.map((entry, idx) => (
@@ -447,14 +440,15 @@ export default function DashboardPage() {
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy || 0) - 4}
-                                className="fill-golden-dark text-2xl font-bold"
+                                className="fill-golden-classic text-2xl font-bold"
                               >
                                 {translation.pct}%
                               </tspan>
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy || 0) + 16}
-                                className="fill-muted-foreground text-[10px]"
+                                fill="rgba(255,255,255,0.4)"
+                              className="text-[10px]"
                               >
                                 translated
                               </tspan>
@@ -467,42 +461,40 @@ export default function DashboardPage() {
                       verticalAlign="bottom"
                       height={32}
                       iconType="circle"
-                      wrapperStyle={{ fontSize: 11 }}
+                      wrapperStyle={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
 
       {/* ── 5. Bottom split: floors table + sidebar ────────── */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Card className="border-golden-classic/25">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl">
+          <div className="flex flex-row items-center justify-between p-6 pb-2">
             <div>
-              <CardTitle className="text-base text-golden-dark">Floors</CardTitle>
-              <p className="text-[11px] text-muted-foreground">
-                Offices per floor + translation status.
-              </p>
+              <p className="text-base font-semibold text-golden-classic">Floors</p>
+              <p className="text-[11px] text-white/40">Offices per floor + translation status.</p>
             </div>
             <Link
               href="/floors"
-              className="inline-flex items-center gap-1 text-xs text-golden-dark hover:underline"
+              className="inline-flex items-center gap-1 text-xs text-golden-classic hover:underline"
             >
               View all <ArrowRightIcon className="h-3.5 w-3.5" />
             </Link>
-          </CardHeader>
-          <CardContent className="p-0">
+          </div>
+          <div className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="w-24 text-right">Offices</TableHead>
-                  <TableHead className="w-32">Translation</TableHead>
-                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="w-12 text-golden-classic/70">#</TableHead>
+                  <TableHead className="text-golden-classic/70">Name</TableHead>
+                  <TableHead className="w-24 text-right text-golden-classic/70">Offices</TableHead>
+                  <TableHead className="w-32 text-golden-classic/70">Translation</TableHead>
+                  <TableHead className="w-24 text-golden-classic/70">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -513,11 +505,8 @@ export default function DashboardPage() {
                     </TableCell>
                   </TableRow>
                 ) : floors.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="h-20 text-center text-muted-foreground"
-                    >
+                  <TableRow className="border-white/5">
+                    <TableCell colSpan={5} className="h-20 text-center text-white/40">
                       No floors yet. Head to the Floors page to add the first
                       one.
                     </TableCell>
@@ -531,24 +520,24 @@ export default function DashboardPage() {
                         ? 100
                         : Math.round((translated / offices.length) * 100);
                     return (
-                      <TableRow key={f.floor_id}>
-                        <TableCell className="font-medium">
+                      <TableRow key={f.floor_id} className="border-white/5 hover:bg-white/5">
+                        <TableCell className="font-bold text-white">
                           {f.floor_number}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span>{f.name}</span>
+                            <span className="text-white">{f.name}</span>
                             {f.name_am && (
                               <span
                                 lang="am-ET"
-                                className="text-[11px] text-muted-foreground"
+                                className="text-[11px] text-white/40"
                               >
                                 {f.name_am}
                               </span>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell className="text-right tabular-nums text-white/70">
                           {offices.length}
                         </TableCell>
                         <TableCell>
@@ -558,8 +547,8 @@ export default function DashboardPage() {
                           <span
                             className={
                               f.is_active
-                                ? "inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
-                                : "inline-flex items-center rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600"
+                                ? "inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-400"
+                                : "inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/40"
                             }
                           >
                             {f.is_active ? "Active" : "Inactive"}
@@ -571,27 +560,23 @@ export default function DashboardPage() {
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <div className="space-y-4">
-          <Card className="overflow-hidden border-golden-classic/25">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl overflow-hidden">
+            <div className="flex flex-row items-center justify-between p-6 pb-2">
               <div>
-                <CardTitle className="text-base text-golden-dark">
-                  Current theme
-                </CardTitle>
-                <p className="text-[11px] text-muted-foreground">
-                  Live on the public guide.
-                </p>
+                <p className="text-base font-semibold text-golden-classic">Current theme</p>
+                <p className="text-[11px] text-white/40">Live on the public guide.</p>
               </div>
-              <PaletteIcon className="h-4 w-4 text-golden-dark" />
-            </CardHeader>
-            <CardContent className="space-y-3">
+              <PaletteIcon className="h-4 w-4 text-golden-classic/60" />
+            </div>
+            <div className="space-y-3 px-6 pb-6">
               {theme ? (
                 <>
                   <div
-                    className="rounded-xl border border-golden-classic/30 p-4"
+                    className="rounded-xl border border-white/10 p-4"
                     style={{ backgroundColor: theme.page_bg }}
                   >
                     <div
@@ -627,7 +612,7 @@ export default function DashboardPage() {
                         <span
                           key={k}
                           title={theme[k]}
-                          className="h-5 w-5 rounded-md border border-golden-classic/40 shadow-inner"
+                          className="h-5 w-5 rounded-md border border-white/20 shadow-inner"
                           style={{ backgroundColor: theme[k] }}
                         />
                       ))}
@@ -636,7 +621,7 @@ export default function DashboardPage() {
                       asChild
                       size="sm"
                       variant="outline"
-                      className="border-golden-classic/40 text-golden-dark"
+                      className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
                     >
                       <Link href="/appearance">
                         Edit
@@ -647,56 +632,52 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <div className="flex h-24 items-center justify-center">
-                  <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <Loader2Icon className="h-4 w-4 animate-spin text-white/40" />
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border-golden-classic/25">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl">
+            <div className="flex flex-row items-center justify-between p-6 pb-2">
               <div>
-                <CardTitle className="text-base text-golden-dark">
-                  Needs Amharic
-                </CardTitle>
-                <p className="text-[11px] text-muted-foreground">
-                  Offices missing translated fields.
-                </p>
+                <p className="text-base font-semibold text-golden-classic">Needs Amharic</p>
+                <p className="text-[11px] text-white/40">Offices missing translated fields.</p>
               </div>
-              <LanguagesIcon className="h-4 w-4 text-golden-dark" />
-            </CardHeader>
-            <CardContent className="p-0">
+              <LanguagesIcon className="h-4 w-4 text-golden-classic/60" />
+            </div>
+            <div className="p-0">
               {!guide ? (
                 <div className="flex h-20 items-center justify-center">
-                  <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <Loader2Icon className="h-4 w-4 animate-spin text-white/40" />
                 </div>
               ) : translation.gaps.length === 0 ? (
                 <div className="p-6 text-center">
-                  <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600">
+                  <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/15 text-emerald-400">
                     <TrendingUpIcon className="h-4 w-4" />
                   </div>
-                  <p className="text-sm font-medium text-emerald-700">
+                  <p className="text-sm font-medium text-emerald-400">
                     All caught up!
                   </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  <p className="mt-0.5 text-[11px] text-white/40">
                     Every office has full Amharic content.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-golden-classic/15">
+                <ul className="divide-y divide-white/5">
                   {translation.gaps.map((o) => (
                     <li
                       key={o.office_id}
                       className="flex items-center justify-between gap-3 px-4 py-2.5"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{o.name}</p>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="truncate text-sm font-medium text-white">{o.name}</p>
+                        <p className="text-[11px] text-white/40">
                           Room {o.room_number}
                         </p>
                       </div>
                       <span
-                        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-400"
                         title="Missing at least one Amharic field"
                       >
                         <CircleAlertIcon className="h-3 w-3" />
@@ -707,7 +688,7 @@ export default function DashboardPage() {
                   <li className="px-4 py-2">
                     <Link
                       href="/offices"
-                      className="inline-flex items-center gap-1 text-xs text-golden-dark hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-golden-classic hover:underline"
                     >
                       Fix in Offices
                       <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -715,8 +696,8 @@ export default function DashboardPage() {
                   </li>
                 </ul>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -749,7 +730,7 @@ function StatItem({
   ];
 
   const body = (
-    <div className="group flex items-center justify-between gap-3 rounded-xl p-3 transition-colors hover:bg-golden-metallic/30">
+    <div className="group flex items-center justify-between gap-3 rounded-xl p-3 transition-colors hover:bg-white/5">
       <div className="flex min-w-0 flex-col gap-2">
         <div className="flex items-center gap-2">
           <span
@@ -762,22 +743,22 @@ function StatItem({
           >
             <Icon className="h-3.5 w-3.5" />
           </span>
-          <p className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="truncate text-[11px] font-medium uppercase tracking-wider text-white/40">
             {title}
           </p>
         </div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold tabular-nums text-golden-dark">
+          <span className="text-3xl font-bold tabular-nums text-golden-classic">
             {typeof value === "number" ? value.toLocaleString() : value}
           </span>
           {suffix && (
-            <span className="text-lg font-semibold text-golden-dark/70">
+            <span className="text-lg font-semibold text-golden-classic/70">
               {suffix}
             </span>
           )}
         </div>
         {secondary && (
-          <p className="truncate text-[11px] text-muted-foreground">
+          <p className="truncate text-[11px] text-white/40">
             {secondary}
           </p>
         )}
@@ -801,7 +782,7 @@ function StatItem({
             />
             <RadialBar
               dataKey="value"
-              background={{ fill: "hsl(45, 55%, 92%)" }}
+              background={{ fill: "rgba(255,255,255,0.08)" }}
               cornerRadius={10}
             />
             <PolarRadiusAxis tick={false} axisLine={false}>
@@ -849,17 +830,17 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-xl border border-golden-classic/25 bg-white p-3 transition-all hover:border-golden-classic hover:shadow-md"
+      className="group flex items-center gap-3 rounded-xl border border-white/10 bg-[#0D1F3C]/80 p-3 backdrop-blur transition-all hover:border-golden-classic/40 hover:shadow-md"
     >
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-golden-classic/40 bg-golden-metallic text-golden-dark group-hover:bg-golden-classic/40">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-golden-classic/30 bg-golden-classic/10 text-golden-classic group-hover:bg-golden-classic/25">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1 text-sm font-medium text-golden-dark">
+        <p className="flex items-center gap-1 text-sm font-medium text-golden-classic">
           {label}
           <PlusIcon className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
         </p>
-        <p className="truncate text-[11px] text-muted-foreground">{hint}</p>
+        <p className="truncate text-[11px] text-white/40">{hint}</p>
       </div>
     </Link>
   );
@@ -870,13 +851,13 @@ function TranslationBar({ pct }: { pct: number }) {
     pct >= 90 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-500" : "bg-red-500";
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-golden-metallic">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
         <div
           className={cn("h-full transition-all", tone)}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 text-right text-[11px] tabular-nums text-muted-foreground">
+      <span className="w-8 text-right text-[11px] tabular-nums text-white/50">
         {pct}%
       </span>
     </div>
@@ -885,8 +866,8 @@ function TranslationBar({ pct }: { pct: number }) {
 
 function EmptyChart({ hint }: { hint: string }) {
   return (
-    <div className="flex h-[260px] items-center justify-center rounded-md border border-dashed border-golden-classic/40 bg-golden-metallic/30">
-      <p className="text-sm text-muted-foreground">{hint}</p>
+    <div className="flex h-[260px] items-center justify-center rounded-md border border-dashed border-white/15 bg-white/5">
+      <p className="text-sm text-white/40">{hint}</p>
     </div>
   );
 }

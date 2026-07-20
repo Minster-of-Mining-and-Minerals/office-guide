@@ -626,7 +626,7 @@ export default function AnnouncementsPage() {
             </Button>
             <Button
               onClick={openCreate}
-              className="bg-golden-dark hover:bg-golden-darkHover text-white"
+              className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
             >
               <PlusIcon className="h-4 w-4" />
               New Announcement
@@ -640,12 +640,12 @@ export default function AnnouncementsPage() {
           selected. Sticky so it stays visible while the admin scrolls a
           long list. */}
       {selectedIds.size > 0 && (
-        <div className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-golden-classic/50 bg-golden-metallic/60 px-4 py-2.5 shadow-md backdrop-blur">
+        <div className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-golden-classic/30 bg-[#0D1F3C]/90 px-4 py-2.5 shadow-md backdrop-blur">
           <div className="flex items-center gap-2 text-sm">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-golden-dark text-white text-xs font-semibold tabular-nums">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-golden-classic text-black text-xs font-semibold tabular-nums">
               {selectedIds.size}
             </span>
-            <span className="font-medium text-golden-dark">
+            <span className="font-medium text-golden-classic">
               selected for bulk action
             </span>
           </div>
@@ -655,7 +655,7 @@ export default function AnnouncementsPage() {
               variant="outline"
               onClick={() => runBulkVisibility(true)}
               disabled={bulkUpdating}
-              className="border-emerald-500/50 text-emerald-800 hover:bg-emerald-50"
+              className="border-emerald-500/30 text-emerald-400 bg-transparent hover:bg-emerald-500/15"
             >
               {bulkUpdating ? (
                 <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -669,7 +669,7 @@ export default function AnnouncementsPage() {
               variant="outline"
               onClick={() => runBulkVisibility(false)}
               disabled={bulkUpdating}
-              className="border-golden-classic/50 text-golden-dark hover:bg-white"
+              className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
             >
               {bulkUpdating ? (
                 <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -682,7 +682,7 @@ export default function AnnouncementsPage() {
               size="sm"
               variant="ghost"
               onClick={clearSelection}
-              className="text-muted-foreground"
+              className="text-white/40"
             >
               <XIcon className="h-4 w-4" />
               Clear
@@ -691,11 +691,11 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-10">
+              <TableHead className="w-10 text-golden-classic/70">
                 <RowCheckbox
                   checked={allOnPageSelected}
                   indeterminate={someOnPageSelected}
@@ -703,43 +703,43 @@ export default function AnnouncementsPage() {
                   ariaLabel="Select all rows on this page"
                 />
               </TableHead>
-              <TableHead className="w-24">Preview</TableHead>
+              <TableHead className="w-24 text-golden-classic/70">Preview</TableHead>
               <TableHead
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none text-golden-classic/70"
                 onClick={() => toggleSort("title")}
               >
                 Title{sortIndicator("title")}
               </TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Duration</TableHead>
-              <TableHead>Schedule</TableHead>
-              <TableHead>On display</TableHead>
+              <TableHead className="text-golden-classic/70">Type</TableHead>
+              <TableHead className="text-golden-classic/70">Duration</TableHead>
+              <TableHead className="text-golden-classic/70">Schedule</TableHead>
+              <TableHead className="text-golden-classic/70">On display</TableHead>
               <TableHead
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none text-golden-classic/70"
                 onClick={() => toggleSort("display_order")}
               >
                 Order{sortIndicator("display_order")}
               </TableHead>
-              <TableHead className="w-32 text-right">Actions</TableHead>
+              <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="border-white/5">
                 <TableCell colSpan={9} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow>
+              <TableRow className="border-white/5">
                 <TableCell
                   colSpan={9}
-                  className="h-32 text-center text-muted-foreground"
+                  className="h-32 text-center text-white/40"
                 >
                   <div className="flex flex-col items-center gap-2">
                     <MegaphoneIcon className="h-6 w-6 opacity-40" />
                     No announcements yet. Click{" "}
-                    <span className="font-medium">New Announcement</span> to
+                    <span className="font-medium text-golden-classic">New Announcement</span> to
                     upload the first one.
                   </div>
                 </TableCell>
@@ -752,7 +752,7 @@ export default function AnnouncementsPage() {
                 return (
                   <TableRow
                     key={a.announcement_id}
-                    className={isSelected ? "bg-golden-metallic/30" : undefined}
+                    className={cn("border-white/5 hover:bg-white/5", isSelected && "bg-golden-classic/10")}
                   >
                     <TableCell>
                       <RowCheckbox
@@ -780,9 +780,9 @@ export default function AnnouncementsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">{a.title}</p>
+                      <p className="font-medium text-white">{a.title}</p>
                       {a.message && (
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 max-w-md">
+                        <p className="text-[11px] text-white/40 line-clamp-1 max-w-md">
                           {a.message}
                         </p>
                       )}
@@ -1177,7 +1177,7 @@ export default function AnnouncementsPage() {
                 type="submit"
                 form="announcement-form"
                 disabled={submitting}
-                className="bg-golden-dark hover:bg-golden-darkHover text-white"
+                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
               >
                 {submitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -1285,7 +1285,7 @@ export default function AnnouncementsPage() {
                 type="button"
                 disabled={savingOrder || reorderIds.length === 0}
                 onClick={saveReorder}
-                className="bg-golden-dark hover:bg-golden-darkHover text-white"
+                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
               >
                 {savingOrder && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

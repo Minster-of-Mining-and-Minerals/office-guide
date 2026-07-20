@@ -80,10 +80,10 @@ export function PairedServicesEditor({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-golden-classic/40 bg-golden-metallic/20 p-6 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-6 text-center">
+          <p className="text-sm text-white/60">
             No services yet. Add the first one below — you can list up to{" "}
-            <span className="font-medium text-golden-dark">{max}</span> per
+            <span className="font-medium text-golden-classic">{max}</span> per
             office.
           </p>
         </div>
@@ -97,11 +97,11 @@ export function PairedServicesEditor({
             return (
               <div
                 key={idx}
-                className="group rounded-xl border border-golden-classic/25 bg-white p-3 hover:border-golden-classic/50 transition-colors"
+                className="group rounded-xl border border-white/10 bg-white/5 p-3 hover:border-golden-classic/40 transition-colors"
               >
                 <div className="flex items-start gap-2">
                   {/* Index badge — helps admin see the pair number */}
-                  <div className="shrink-0 mt-1.5 h-6 w-6 rounded-full bg-golden-metallic border border-golden-classic/40 text-golden-dark text-[11px] font-semibold flex items-center justify-center">
+                  <div className="shrink-0 mt-1.5 h-6 w-6 rounded-full bg-white/10 border border-white/20 text-white/70 text-[11px] font-semibold flex items-center justify-center">
                     {idx + 1}
                   </div>
 
@@ -109,7 +109,7 @@ export function PairedServicesEditor({
                     {/* EN */}
                     <div className="min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="inline-flex items-center rounded-full bg-golden-dark text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 text-white/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
                           EN
                         </span>
                         <span
@@ -119,7 +119,7 @@ export function PairedServicesEditor({
                               ? "text-red-600"
                               : enWarn
                                 ? "text-amber-600"
-                                : "text-muted-foreground/70"
+                                : "text-white/40"
                           )}
                         >
                           {row.en.length}/{SERVICE_TAG_CHAR_MAX}
@@ -141,7 +141,7 @@ export function PairedServicesEditor({
                     {/* AM */}
                     <div className="min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="inline-flex items-center rounded-full bg-golden-dark text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 text-white/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
                           አማ
                         </span>
                         <span
@@ -151,7 +151,7 @@ export function PairedServicesEditor({
                               ? "text-red-600"
                               : amWarn
                                 ? "text-amber-600"
-                                : "text-muted-foreground/70"
+                                : "text-white/40"
                           )}
                         >
                           {row.am.length}/{SERVICE_TAG_CHAR_MAX}
@@ -176,7 +176,7 @@ export function PairedServicesEditor({
                     type="button"
                     onClick={() => removeAt(idx)}
                     aria-label={`Remove service ${idx + 1}`}
-                    className="shrink-0 mt-1 h-8 w-8 rounded-lg border border-transparent hover:border-red-200 hover:bg-red-50 text-muted-foreground hover:text-red-600 flex items-center justify-center transition-colors"
+                    className="shrink-0 mt-1 h-8 w-8 rounded-lg border border-transparent hover:border-red-500/30 hover:bg-red-500/20 text-white/40 hover:text-red-400 flex items-center justify-center transition-colors"
                   >
                     <XIcon className="h-4 w-4" />
                   </button>
@@ -188,7 +188,7 @@ export function PairedServicesEditor({
       )}
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[11px] text-white/50">
           Both languages are required for every service. The order shown
           here is how they appear on the office guide card.
         </p>
@@ -198,7 +198,7 @@ export function PairedServicesEditor({
           size="sm"
           onClick={addRow}
           disabled={atMax}
-          className="border-golden-classic/50 text-golden-dark hover:bg-golden-metallic"
+          className="border-golden-classic/50 text-golden-classic bg-transparent hover:bg-golden-classic/10"
         >
           <PlusIcon className="h-3.5 w-3.5" />
           {atMax ? `Max ${max} reached` : "Add service"}
@@ -228,8 +228,8 @@ function CountBadge({
         atMax
           ? "text-red-600"
           : warn
-            ? "text-amber-600"
-            : "text-muted-foreground"
+            ? "text-amber-500"
+            : "text-white/50"
       )}
     >
       {atMax && <AlertTriangleIcon className="h-3 w-3" />}

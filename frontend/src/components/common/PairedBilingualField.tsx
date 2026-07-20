@@ -55,72 +55,7 @@ export function PairedBilingualField({
   // Renders one language column. Kept local because both columns share
   // most props/state and pulling this into a sibling file adds indirection
   // for no reuse elsewhere.
-  const LangColumn = ({
-    lang,
-    langLabel,
-    value,
-    onChange,
-    placeholder,
-    filled,
-  }: {
-    lang: "en" | "am";
-    langLabel: string;
-    value: string;
-    onChange: (v: string) => void;
-    placeholder?: string;
-    filled: boolean;
-  }) => {
-    const commonProps = {
-      value,
-      onChange: (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      ) => onChange(e.target.value),
-      placeholder,
-      disabled,
-      maxLength,
-      lang: lang === "am" ? "am-ET" : "en",
-      required: required && lang === "en",
-      id: lang === "en" ? id : undefined,
-    } as const;
 
-    return (
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border transition-colors",
-              filled
-                ? "bg-golden-dark text-white border-golden-dark"
-                : "bg-white text-golden-dark/70 border-golden-classic/40"
-            )}
-          >
-            {langLabel}
-          </span>
-          {filled && (
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          )}
-        </div>
-        {multiline ? (
-          <Textarea
-            {...commonProps}
-            rows={rows}
-            className={cn(
-              "w-full resize-y",
-              lang === "am" && "font-[var(--font-noto-ethiopic)]"
-            )}
-          />
-        ) : (
-          <Input
-            {...commonProps}
-            className={cn(
-              "w-full",
-              lang === "am" && "font-[var(--font-noto-ethiopic)]"
-            )}
-          />
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-2">
@@ -141,6 +76,12 @@ export function PairedBilingualField({
           onChange={onChangeEn}
           placeholder={placeholderEn}
           filled={enFilled}
+          multiline={multiline}
+          rows={rows}
+          disabled={disabled}
+          maxLength={maxLength}
+          required={required}
+          id={id}
         />
         <LangColumn
           lang="am"
@@ -149,8 +90,92 @@ export function PairedBilingualField({
           onChange={onChangeAm}
           placeholder={placeholderAm}
           filled={amFilled}
+          multiline={multiline}
+          rows={rows}
+          disabled={disabled}
+          maxLength={maxLength}
+          required={required}
         />
       </div>
+    </div>
+  );
+}
+
+function LangColumn({
+  lang,
+  langLabel,
+  value,
+  onChange,
+  placeholder,
+  filled,
+  multiline,
+  rows,
+  disabled,
+  maxLength,
+  required,
+  id,
+}: {
+  lang: "en" | "am";
+  langLabel: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  filled: boolean;
+  multiline?: boolean;
+  rows?: number;
+  disabled?: boolean;
+  maxLength?: number;
+  required?: boolean;
+  id?: string;
+}) {
+  const commonProps = {
+    value,
+    onChange: (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => onChange(e.target.value),
+    placeholder,
+    disabled,
+    maxLength,
+    lang: lang === "am" ? "am-ET" : "en",
+    required: required && lang === "en",
+    id: lang === "en" ? id : undefined,
+  } as const;
+
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1.5">
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border transition-colors",
+            filled
+              ? "bg-golden-classic text-black border-golden-classic"
+              : "bg-white text-golden-dark/70 border-golden-classic/40"
+          )}
+        >
+          {langLabel}
+        </span>
+        {filled && (
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        )}
+      </div>
+      {multiline ? (
+        <Textarea
+          {...commonProps}
+          rows={rows}
+          className={cn(
+            "w-full resize-y",
+            lang === "am" && "font-[var(--font-noto-ethiopic)]"
+          )}
+        />
+      ) : (
+        <Input
+          {...commonProps}
+          className={cn(
+            "w-full",
+            lang === "am" && "font-[var(--font-noto-ethiopic)]"
+          )}
+        />
+      )}
     </div>
   );
 }

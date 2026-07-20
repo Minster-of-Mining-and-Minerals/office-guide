@@ -57,7 +57,7 @@ export function LanguageToggle({
               active
                 ? variant === "dark"
                   ? "bg-golden-classic text-[#2c1f0e] shadow-sm"
-                  : "bg-golden-dark text-white shadow-sm"
+                  : "bg-golden-classic text-black shadow-sm"
                 : variant === "dark"
                 ? "text-white/70 hover:text-white"
                 : "text-golden-dark/70 hover:text-golden-dark"

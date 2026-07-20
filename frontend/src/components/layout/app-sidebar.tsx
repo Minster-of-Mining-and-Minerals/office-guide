@@ -94,7 +94,7 @@ const publicScreenItems: NavItem[] = [
   },
   {
     title: "Office Guide",
-    url: "/office-guide",
+    url: "/",
     icon: BookOpen,
     external: true,
   },
@@ -122,30 +122,24 @@ const userManagementItems = [
 // the same button styling as the legacy flat list, which prevents any
 // unintentional visual drift.
 const MENU_BUTTON_CLASSES =
-  "text-primary hover:bg-golden-metallic px-5 py-5 " +
+  "text-white/80 hover:bg-white/10 hover:text-golden-classic px-5 py-5 rounded-lg transition-colors " +
   "group-data-[collapsible=icon]:px-2 " +
   "group-data-[collapsible=icon]:justify-center " +
-  "data-[active=true]:bg-golden-dark " +
-  "data-[active=true]:text-primary-foreground";
+  "data-[active=true]:bg-golden-classic/15 " +
+  "data-[active=true]:text-golden-classic data-[active=true]:shadow-md";
 
 const SUB_BUTTON_CLASSES =
-  "text-primary hover:bg-golden-metallic " +
-  "hover:data-[active=false]:bg-golden-metallic " +
-  "hover:data-[active=true]:bg-golden-metallic " +
-  "hover:data-[active=true]:text-primary-foreground " +
+  "text-white/70 hover:bg-white/10 hover:text-golden-classic rounded-lg transition-colors " +
   "group-data-[collapsible=icon]:justify-center " +
-  "data-[active=true]:bg-golden-metallic " +
-  "data-[active=true]:text-primary";
+  "data-[active=true]:bg-golden-classic/15 " +
+  "data-[active=true]:text-golden-classic";
 
 const COLLAPSIBLE_TRIGGER_CLASSES =
-  "text-primary hover:bg-golden-metallic " +
-  "hover:data-[active=false]:bg-golden-metallic " +
-  "hover:data-[active=true]:bg-golden-dark " +
-  "hover:data-[active=true]:text-primary-foreground " +
-  "px-5 py-5 group-data-[collapsible=icon]:px-2 " +
+  "text-white/80 hover:bg-white/10 hover:text-golden-classic px-5 py-5 rounded-lg transition-colors " +
+  "group-data-[collapsible=icon]:px-2 " +
   "group-data-[collapsible=icon]:justify-center " +
-  "data-[active=true]:bg-golden-dark " +
-  "data-[active=true]:text-primary-foreground";
+  "data-[active=true]:bg-golden-classic/15 " +
+  "data-[active=true]:text-golden-classic";
 
 function NavGroup({
   label,
@@ -158,7 +152,7 @@ function NavGroup({
   return (
     <SidebarGroup className="px-5 group-data-[collapsible=icon]:px-0">
       {label && (
-        <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.14em] text-golden-dark/60 px-2">
+        <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.14em] text-golden-classic/60 px-2 mb-1">
           {label}
         </SidebarGroupLabel>
       )}
@@ -204,24 +198,26 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="floating">
       {/* ---------- HEADER ---------- */}
-      <SidebarHeader className="py-10">
+      <SidebarHeader className="py-8 border-b border-white/10">
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link href="/dashboard" className="flex flex-col items-center">
-              <Image
-                src="/logo-only.png"
-                alt="Ministry of Mining Logo"
-                width={100}
-                height={100}
-                priority
-                className="mx-auto mb-1 rounded-xl p-2 h-auto w-auto"
-              />
-              <div className="grid flex-1 text-center gap-1 text-sm leading-tight group-data-[collapsible=icon]:opacity-0">
-                <span className="truncate font-semibold text-golden-dark">
+            <Link href="/dashboard" className="flex flex-col items-center gap-2">
+              <div className="h-14 w-14 rounded-2xl bg-golden-classic/10 border border-golden-classic/30 flex items-center justify-center shadow-inner">
+                <Image
+                  src="/logo-only.png"
+                  alt="Ministry of Mining Logo"
+                  width={48}
+                  height={48}
+                  priority
+                  className="rounded-lg h-auto w-auto"
+                />
+              </div>
+              <div className="grid flex-1 text-center gap-0.5 text-sm leading-tight group-data-[collapsible=icon]:opacity-0">
+                <span className="truncate font-bold text-golden-classic">
                   Ministry of Mining
                 </span>
-                <span className="truncate text-golden-dark">
-                  Digital Signage System
+                <span className="truncate text-xs text-white/50">
+                  Digital Signage
                 </span>
               </div>
             </Link>
@@ -242,7 +238,7 @@ export function AppSidebar() {
         {/* Users has a nested menu so it stays as a collapsible group in
             its own dedicated section labelled Administration. */}
         <SidebarGroup className="px-5 group-data-[collapsible=icon]:px-0">
-          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.14em] text-golden-dark/60 px-2">
+          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.14em] text-golden-classic/60 px-2 mb-1">
             Administration
           </SidebarGroupLabel>
           <SidebarGroupContent>

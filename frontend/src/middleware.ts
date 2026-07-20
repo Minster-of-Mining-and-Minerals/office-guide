@@ -26,13 +26,11 @@ const PUBLIC_PATHS = new Set<string>([
   "/",
   "/login",
   "/forgot-password",
-  "/office-guide",
 ]);
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.has(pathname)) return true;
-  // Public office-guide subpaths (search links, deep-links)
-  if (pathname.startsWith("/office-guide/")) return true;
+  if (pathname.startsWith("/floor/")) return true;
   return false;
 }
 

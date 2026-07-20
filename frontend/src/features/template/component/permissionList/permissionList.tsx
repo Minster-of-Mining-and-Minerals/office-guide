@@ -183,7 +183,7 @@ export default function PermissionList() {
   }
 
   return (
-    <div className="w-full flex items-center justify-center bg-white rounded-lg">
+    <div className="w-full flex items-center justify-center bg-transparent rounded-xl">
       <div className="w-full">
         <PermissionHeader />
 
@@ -193,26 +193,26 @@ export default function PermissionList() {
         </div>
 
         {/* Permissions Accordion */}
-        <div className="w-full bg-white border border-golden-classic/25 rounded-lg shadow-sm">
-          <div className="p-6 border-b border-golden-classic/20">
+        <div className="w-full bg-[#0D1F3C]/80 backdrop-blur border border-white/10 rounded-xl shadow-xl">
+          <div className="p-6 border-b border-white/10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-golden-dark">
+                <h2 className="text-xl font-bold text-golden-classic">
                   Permissions List
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-white/60 mt-1">
                   {permissions.length} total permissions • {stats.active} active
                   • {stats.inactive} inactive
                 </p>
               </div>
               <div className="relative w-full md:w-auto">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-golden-dark" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-golden-classic/50" />
                 <Input
                   type="text"
                   placeholder="Search permissions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-64 pl-10 h-11 pr-4 py-2 border border-input rounded-lg focus:ring-2 focus:ring-golden-dark focus:border-golden-dark outline-none transition-colors text-sm"
+                  className="w-full md:w-64 pl-10 h-11 pr-4 py-2 border border-white/15 bg-white/5 text-white placeholder:text-white/30 rounded-lg focus:ring-2 focus:ring-golden-classic/40 focus:border-golden-classic/50 outline-none transition-colors text-sm"
                 />
               </div>
             </div>

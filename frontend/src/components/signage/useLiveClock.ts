@@ -14,10 +14,21 @@ export const useLiveClock = (serverTime: string | undefined) => {
   const offsetRef = useRef<number>(0);
 
   useEffect(() => {
-    if (serverTime) {
-      const parsed = new Date(serverTime).getTime();
-      if (Number.isFinite(parsed)) offsetRef.current = parsed - Date.now();
-    }
+    fetch("https://worldtimeapi.org/api/timezone/Africa/Addis_Ababa")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.datetime) {
+          const parsed = new Date(data.datetime).getTime();
+          if (Number.isFinite(parsed)) offsetRef.current = parsed - Date.now();
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch internet time:", err);
+        if (serverTime) {
+          const parsed = new Date(serverTime).getTime();
+          if (Number.isFinite(parsed)) offsetRef.current = parsed - Date.now();
+        }
+      });
   }, [serverTime]);
 
   useEffect(() => {
