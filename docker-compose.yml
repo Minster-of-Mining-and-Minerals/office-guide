@@ -6,20 +6,11 @@
 #   frontend — Next.js application
 #   nginx    — Reverse proxy (routes /api -> backend, / -> frontend)
 #
-# Local (via Nginx reverse proxy — mirrors production):
+# Production (runs on port 8081 to avoid conflict with other services on port 80):
 #   docker compose up -d --build
-#   App:        http://localhost
-#   API:        http://localhost/api
-#   Swagger:    http://localhost/api-docs
-#
-# Local (direct ports — no Nginx):
-#   docker compose -f docker-compose.yml -f docker-compose.direct.yml up -d --build --scale nginx=0
-#   Frontend:   http://localhost:3001
-#   API:        http://localhost:4001/api
-#
-# Production:
-#   Set APP_URL, AUTH_URL, APP_DOMAIN in .env
-#   docker compose up -d --build
+#   App:        http://10.0.71.213:8081
+#   API:        http://10.0.71.213:8081/api
+#   Swagger:    http://10.0.71.213:8081/api-docs
 
 name: office-guide
 
@@ -154,8 +145,7 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
-      - "${NGINX_HTTPS_PORT:-443}:443"
+      - "8081:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
