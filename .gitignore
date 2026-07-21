@@ -1,26 +1,51 @@
-# Node modules
-/backend/node_modules/
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
 
-# Environment variables
-/backend/.env
-# Ignore uploads
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+!example.env
+
+# Build outputs and generated caches
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.cache/
+.turbo/
+
+# Runtime files
 /backend/uploads/
 /backend/public/uploads/
 /backend/tmp/
-# Logs
 logs/
 *.log
+*.pid
 
-# OS files
-/backend/.DS_Store
-/backend/Thumbs.db
+# Local editor and AI-assistant configuration
+/.cursor/
+/.gemini/
+/.codex/
+/.agents/
+/.idea/
+/.vscode/
+/.claude/
+*.swp
+*.swo
+*~
 
-# Build outputs
-/backend/dist/
-/backend/build/
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # Impeccable — commit config.json, design.json, PRODUCT.md, DESIGN.md; ignore local session state
 /.impeccable/live/sessions/
 /.impeccable/live/cache/
 /.impeccable/assets/
-
