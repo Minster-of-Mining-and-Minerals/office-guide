@@ -105,13 +105,17 @@ const createOffice = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Selected floor does not exist." });
 
-    const existingRoom = await Office.findOne({
-      where: { room_number: req.body.room_number },
+    const existingOffice = await Office.findOne({
+      where: {
+        floor_id: req.body.floor_id,
+        room_number: req.body.room_number,
+        name: req.body.name,
+      },
     });
-    if (existingRoom) {
+    if (existingOffice) {
       return res.status(409).json({
         success: false,
-        message: "An office with this room number already exists in the building.",
+        message: "This office already exists in the selected room.",
       });
     }
 
@@ -163,14 +167,19 @@ const updateOffice = async (req, res) => {
         });
     }
 
-    if (req.body.room_number && req.body.room_number !== office.room_number) {
-      const existingRoom = await Office.findOne({
-        where: { room_number: req.body.room_number },
+    if (req.body.room_number || req.body.floor_id || req.body.name) {
+      const existingOffice = await Office.findOne({
+        where: {
+          office_id: { [Op.ne]: id },
+          floor_id: req.body.floor_id || office.floor_id,
+          room_number: req.body.room_number || office.room_number,
+          name: req.body.name || office.name,
+        },
       });
-      if (existingRoom) {
+      if (existingOffice) {
         return res.status(409).json({
           success: false,
-          message: "An office with this room number already exists in the building.",
+          message: "This office already exists in the selected room.",
         });
       }
     }
@@ -188,12 +197,6 @@ const updateOffice = async (req, res) => {
       data: office,
     });
   } catch (error) {
-    if (error.name === "SequelizeUniqueConstraintError") {
-      return res.status(409).json({
-        success: false,
-        message: "An office with this room number already exists on this floor.",
-      });
-    }
     console.error("updateOffice error:", error);
     res.status(500).json({ success: false, message: error.message });
   }

@@ -10,6 +10,8 @@
     "migrate": "sequelize-cli db:migrate",
     "migrate:undo": "sequelize-cli db:migrate:undo",
     "seed": "sequelize-cli db:seed:all",
+    "seed:directory": "sequelize-cli db:seed --seed 20260716170000-reset-and-seed-mmid-directorate.js",
+    "db:setup": "npm run migrate && npm run seed",
     "seed:undo": "sequelize-cli db:seed:undo:all"
   },
   "keywords": [],

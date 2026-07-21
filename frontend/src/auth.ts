@@ -69,10 +69,9 @@ declare module "next-auth" {
     roles?: Array<{
       role_id: string;
       name: string;
-      permissions: Array<{
-        permission_id: string;
-        name: string;
-        key: string;
+      permissions?: Array<{
+        resource: string;
+        action: string;
       }>;
     }>;
     permissions?: string[] | null;
@@ -94,10 +93,9 @@ declare module "next-auth" {
       roles?: Array<{
         role_id: string;
         name: string;
-        permissions: Array<{
-          permission_id: string;
-          name: string;
-          key: string;
+        permissions?: Array<{
+          resource: string;
+          action: string;
         }>;
       }>;
       permissions?: string[] | null;
@@ -116,10 +114,9 @@ declare module "next-auth/jwt" {
     roles?: Array<{
       role_id: string;
       name: string;
-      permissions: Array<{
-        permission_id: string;
-        name: string;
-        key: string;
+      permissions?: Array<{
+        resource: string;
+        action: string;
       }>;
     }>;
     permissions?: string[] | null;

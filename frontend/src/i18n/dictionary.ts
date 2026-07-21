@@ -77,9 +77,11 @@ const en = {
     "The admin has not published any announcements yet.",
 } as const;
 
+type Dict = { [K in keyof typeof en]: string };
+
 // A key-preserving translation for AM. Every key present in `en` must exist
 // here — TypeScript enforces this with `Dict`.
-const am: typeof en = {
+const am: Dict = {
   ministry: "የማዕድን ሚኒስቴር",
   officeGuide: "የቢሮ መመሪያ",
   officeGuideSubtitle:
@@ -133,7 +135,7 @@ const am: typeof en = {
 
 export type DictKey = keyof typeof en;
 
-export const dictionary: Record<Locale, typeof en> = { en, am };
+export const dictionary: Record<Locale, Dict> = { en, am };
 
 /**
  * Simple `{placeholder}` interpolation. Missing placeholders are left as-is

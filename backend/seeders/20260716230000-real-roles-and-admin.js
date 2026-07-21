@@ -78,14 +78,14 @@ const ROLE_DEFINITIONS = [
 
 /** Sensible default admin identity for internal QA / demo. */
 const ADMIN_USER = {
-  full_name: "System Administrator",
-  email: "admin@gmail.com",
-  phone_number: "+251911000001",
+  full_name: process.env.SEED_ADMIN_NAME || "System Administrator",
+  email: process.env.SEED_ADMIN_EMAIL || "admin@gmail.com",
+  phone_number: process.env.SEED_ADMIN_PHONE || "+251911000001",
   // Plaintext password — hashed with bcrypt (cost 10) at insert time.
   // Matches the dev default used by the createUser controller so any
   // user created through the admin UI also has `password` as their
   // temp password. Change this before any production deploy.
-  plaintextPassword: "password",
+  plaintextPassword: process.env.SEED_ADMIN_PASSWORD || "password",
   roleName: "Super Admin",
   userTypeName: "Admin",
 };

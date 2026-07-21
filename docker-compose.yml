@@ -1,0 +1,121 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-digital_signage_db}
+      TZ: ${TZ:-Africa/Addis_Ababa}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-digital_signage_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - signage
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      SOCKET_PORT: 5000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USER:-postgres}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-digital_signage_db}
+      DB_DIALECT: postgres
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret-before-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      FRONTEND_URL: ${PUBLIC_URL:-http://localhost}
+      BASE_URL: ${PUBLIC_URL:-http://localhost}
+      APP_NAME: MoM Digital Signage
+      TZ: ${TZ:-Africa/Addis_Ababa}
+      EMAIL_SERVICE: ${EMAIL_SERVICE:-}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-}
+      EMAIL_SECURE: ${EMAIL_SECURE:-false}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME:-System Administrator}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@gmail.com}
+      SEED_ADMIN_PHONE: ${SEED_ADMIN_PHONE:-+251911000001}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-password}
+    volumes:
+      - backend_uploads:/app/uploads
+    expose:
+      - "4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - signage
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: ${PUBLIC_URL:-http://localhost}/api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_BASE_URL: ${PUBLIC_URL:-http://localhost}/api
+      AUTH_BACKEND_URL: http://backend:4000/api
+      AUTH_SECRET: ${AUTH_SECRET:-change-this-auth-secret-before-production}
+      NEXTAUTH_SECRET: ${AUTH_SECRET:-change-this-auth-secret-before-production}
+      AUTH_URL: ${PUBLIC_URL:-http://localhost}
+      NEXTAUTH_URL: ${PUBLIC_URL:-http://localhost}
+    expose:
+      - "3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - signage
+
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-3000}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - signage
+
+volumes:
+  postgres_data:
+  backend_uploads:
+
+networks:
+  signage:
+    driver: bridge

@@ -13,7 +13,7 @@ import type { Locale } from "./dictionary";
  *   pickLang(office, "department", locale) ?? "—"   // handles nullable
  */
 export function pickLang<
-  E extends Record<string, unknown>,
+  E extends object,
   F extends Extract<keyof E, string>
 >(entity: E | null | undefined, field: F, locale: Locale): string | null {
   if (!entity) return null;
@@ -21,8 +21,8 @@ export function pickLang<
   if (locale !== "am") {
     return isNonEmptyString(enValue) ? enValue : null;
   }
-  const amKey = `${field}_am` as F;
-  const amValue = entity[amKey];
+  const amKey = `${field}_am`;
+  const amValue = (entity as E & Record<string, unknown>)[amKey];
   if (isNonEmptyString(amValue)) return amValue;
   return isNonEmptyString(enValue) ? enValue : null;
 }

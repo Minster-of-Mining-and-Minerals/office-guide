@@ -14,13 +14,16 @@ import {
   Layers,
   Building,
 } from "lucide-react";
-import { Permission, ResourceGroup } from "../../types/role";
+import type {
+  PermissionMatrix as PermissionMatrixState,
+  ResourceGroup,
+} from "../../types/role";
 
 interface PermissionMatrixProps {
   loadingPermissions: boolean;
   resourceGroups: ResourceGroup[];
   expandedResource: string | null;
-  permissionMatrix: PermissionMatrix;
+  permissionMatrix: PermissionMatrixState;
   toggleResource: (resource: string) => void;
   togglePermission: (resource: string, action: string) => void;
   selectAllInResource: (resource: string, select: boolean) => void;
@@ -45,7 +48,7 @@ export const PermissionMatrix: React.FC<PermissionMatrixProps> = ({
   getSelectedPermissionsCount,
   getTotalPermissionsCount,
 }) => {
-  const resourceIcons: { [key: string]: JSX.Element } = {
+  const resourceIcons: { [key: string]: React.ReactElement } = {
     dashboard: <Home className="h-4 w-4" />,
     users: <Users className="h-4 w-4" />,
     roles: <Shield className="h-4 w-4" />,

@@ -29,8 +29,16 @@ export default {
         const password = String(credentials.password ?? "").trim();
 
         try {
+          const apiBaseUrl =
+            process.env.AUTH_BACKEND_URL ?? process.env.NEXT_PUBLIC_BASE_URL;
+
+          if (!apiBaseUrl) {
+            console.error("[auth.authorize] backend URL is not configured");
+            return null;
+          }
+
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
+            `${apiBaseUrl}/auth/login`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

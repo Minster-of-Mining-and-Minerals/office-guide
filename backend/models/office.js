@@ -90,9 +90,8 @@ module.exports = (sequelize, DataTypes) => {
       underscored: true,
       indexes: [
         {
-          unique: true,
           fields: ["floor_id", "room_number"],
-          name: "offices_floor_room_unique",
+          name: "offices_floor_room_idx",
         },
         {
           fields: ["floor_id", "display_order"],
