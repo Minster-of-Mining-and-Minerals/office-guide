@@ -12,17 +12,18 @@ import type { Locale } from "./dictionary";
  *   pickLang(office, "name", locale)                // "አቀባበል" or "Reception"
  *   pickLang(office, "department", locale) ?? "—"   // handles nullable
  */
-export function pickLang<
-  E extends Record<string, unknown>,
-  F extends Extract<keyof E, string>
->(entity: E | null | undefined, field: F, locale: Locale): string | null {
+export function pickLang<E>(
+  entity: E | null | undefined,
+  field: keyof E,
+  locale: Locale
+): string | null {
   if (!entity) return null;
-  const enValue = entity[field];
+  const enValue = entity[field] as unknown;
   if (locale !== "am") {
     return isNonEmptyString(enValue) ? enValue : null;
   }
-  const amKey = `${field}_am` as F;
-  const amValue = entity[amKey];
+  const amKey = `${String(field)}_am` as keyof E;
+  const amValue = entity[amKey] as unknown;
   if (isNonEmptyString(amValue)) return amValue;
   return isNonEmptyString(enValue) ? enValue : null;
 }

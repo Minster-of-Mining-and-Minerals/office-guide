@@ -73,6 +73,7 @@ export interface FloorPayload {
   floor_id: string;
   floor_number: number;
   name: string;
+  name_am: string | null;
   map_image_url: string | null;
 }
 

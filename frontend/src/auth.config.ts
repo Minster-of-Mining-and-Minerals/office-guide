@@ -51,7 +51,7 @@ export default {
           }
 
           const user = data.data?.user;
-          const roles: Array<{
+          const rawRoles: Array<{
             role_id: string;
             name: string;
             permissions?: Array<{ resource: string; action: string }>;
@@ -67,13 +67,25 @@ export default {
           // `p.name` (wrong key — backend returns `resource`/`action`).
           const permissions = Array.from(
             new Set(
-              roles.flatMap((r) =>
+              rawRoles.flatMap((r) =>
                 (r.permissions ?? []).map(
                   (p) => `${p.resource}:${p.action}`
                 )
               )
             )
           );
+
+          // Transform roles to match the next-auth User type augmentation
+          // (expects permission objects with permission_id, name, key).
+          const roles = rawRoles.map((r) => ({
+            role_id: r.role_id,
+            name: r.name,
+            permissions: (r.permissions ?? []).map((p) => ({
+              permission_id: `${p.resource}:${p.action}`,
+              name: p.action,
+              key: p.resource,
+            })),
+          }));
 
           return {
             accessToken: token,

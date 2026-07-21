@@ -6,6 +6,10 @@
 # Root .env for docker-compose (contains secrets — do not commit)
 /.env
 
+# Windows reserved names (can't be checked in on Windows)
+/nul
+/frontend/nul
+
 # Ignore uploads
 /backend/uploads/
 /backend/public/uploads/

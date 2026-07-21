@@ -19,7 +19,6 @@ const en = {
   officeGuide: "Office Guide",
   officeGuideSubtitle:
     "Find any office, room, department or floor in the building.",
-
   // ── Search ──
   searchPlaceholder: "Search office, service, person, room or floor…",
   clearSearch: "Clear search",
@@ -75,7 +74,7 @@ const en = {
   noAnnouncementsTitle: "No announcements to show.",
   noAnnouncementsSubtitle:
     "The admin has not published any announcements yet.",
-} as const;
+};
 
 // A key-preserving translation for AM. Every key present in `en` must exist
 // here — TypeScript enforces this with `Dict`.

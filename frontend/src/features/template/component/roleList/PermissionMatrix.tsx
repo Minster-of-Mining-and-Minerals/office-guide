@@ -14,13 +14,14 @@ import {
   Layers,
   Building,
 } from "lucide-react";
-import { Permission, ResourceGroup } from "../../types/role";
+import type { Permission, ResourceGroup, PermissionMatrix as PermissionMatrixType } from "../../types/role";
+import type { JSX } from "react";
 
 interface PermissionMatrixProps {
   loadingPermissions: boolean;
   resourceGroups: ResourceGroup[];
   expandedResource: string | null;
-  permissionMatrix: PermissionMatrix;
+  permissionMatrix: PermissionMatrixType;
   toggleResource: (resource: string) => void;
   togglePermission: (resource: string, action: string) => void;
   selectAllInResource: (resource: string, select: boolean) => void;

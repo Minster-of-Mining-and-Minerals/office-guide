@@ -77,17 +77,7 @@ const createRoleSchema = Joi.object({
     }),
 });
 
-// Middleware wrappers
-exports.validateCreateRole = (req, res, next) => {
-  const { error } = createRoleSchema.validate(req.body, { abortEarly: false });
-  if (error)
-    return res.status(400).json({
-      success: false,
-      message: "Validation error",
-      errors: error.details.map((e) => e.message),
-    });
-  next();
-};
+// Exported once below
 
 // Schema for updating a Role
 const updateRoleSchema = Joi.object({
