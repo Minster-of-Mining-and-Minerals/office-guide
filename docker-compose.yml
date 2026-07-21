@@ -1,0 +1,185 @@
+# Minister Of Mines Office Guide — Docker Compose
+#
+# Services:
+#   db       — PostgreSQL database
+#   backend  — Express API (auth, floors, offices, signage, announcements)
+#   frontend — Next.js application
+#   nginx    — Reverse proxy (routes /api -> backend, / -> frontend)
+#
+# Local (via Nginx reverse proxy — mirrors production):
+#   docker compose up -d --build
+#   App:        http://localhost
+#   API:        http://localhost/api
+#   Swagger:    http://localhost/api-docs
+#
+# Local (direct ports — no Nginx):
+#   docker compose -f docker-compose.yml -f docker-compose.direct.yml up -d --build --scale nginx=0
+#   Frontend:   http://localhost:3001
+#   API:        http://localhost:4001/api
+#
+# Production:
+#   Set APP_URL, AUTH_URL, APP_DOMAIN in .env
+#   docker compose up -d --build
+
+name: office-guide
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-office_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-office_password}
+      POSTGRES_DB: ${DB_NAME:-office_guide}
+      TZ: UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      TZ: UTC
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DIALECT: postgres
+      DB_USERNAME: ${DB_USERNAME:-office_user}
+      DB_PASSWORD: ${DB_PASSWORD:-office_password}
+      DB_NAME: ${DB_NAME:-office_guide}
+      PORT: 4001
+      HOST: 0.0.0.0
+      SOCKET_PORT: 5001
+      SOCKET_HOST: 0.0.0.0
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      APP_URL: ${APP_URL:-http://localhost}
+      AUTH_URL: ${AUTH_URL:-http://localhost}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      BASE_URL: ${BASE_URL:-http://localhost}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost/api}
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost}
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Africa/Addis_Ababa}
+      RUN_DB_MIGRATIONS: ${RUN_DB_MIGRATIONS:-true}
+      RUN_DB_SEEDERS: ${RUN_DB_SEEDERS:-false}
+      JWT_SECRET: ${JWT_SECRET:-default-jwt-secret-change-in-production}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-12h}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      EMAIL_SERVICE: ${EMAIL_SERVICE:-gmail}
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-465}
+      EMAIL_SECURE: ${EMAIL_SECURE:-true}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM: ${EMAIL_FROM}
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_public_uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:4001/', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost/api}
+        NEXT_PUBLIC_FILE_URL: ${NEXT_PUBLIC_FILE_URL:-http://localhost}
+        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-http://localhost}
+        NEXT_PUBLIC_SOCKET_PORT: ${NEXT_PUBLIC_SOCKET_PORT:-5001}
+        NEXT_PUBLIC_FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+        NEXT_PUBLIC_DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-nginx}
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      TZ: UTC
+      HOSTNAME: 0.0.0.0
+      AUTH_SECRET: ${AUTH_SECRET}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      AUTH_URL: ${AUTH_URL:-http://localhost}
+      NEXTAUTH_URL: ${AUTH_URL:-http://localhost}
+      AUTH_TRUST_HOST: "true"
+      INTERNAL_API_URL: http://backend:4001/api
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:3001/', (res) => process.exit(res.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  backend_uploads:
+  backend_public_uploads:
+
+networks:
+  app-network:
+    driver: bridge

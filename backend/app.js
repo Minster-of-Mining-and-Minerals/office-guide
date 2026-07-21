@@ -78,9 +78,8 @@ app.use(
 
 // ================== CORS Configuration ==================
 const allowedOrigins = [
-  "http://localhost:3000",
   "http://localhost:3001",
-  "http://localhost:4000",
+  "http://localhost:4001",
   process.env.FRONTEND_URL,
 ];
 const corsOptions = {
@@ -122,7 +121,7 @@ app.use("/api", announcementRoutes);
 
 // ================== Root Endpoint ==================
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Issue Tracking System API 🚀" });
+  res.json({ message: "Welcome to Minister Of Mines Office Guide API 🚀" });
 });
 
 // ================== Error Handler ==================
@@ -135,7 +134,7 @@ app.use((err, req, res, next) => {
 });
 
 // ================== Start App Server ==================
-const appPort = process.env.PORT || 4000;
+const appPort = process.env.PORT || 4001;
 appServer.listen(appPort, () => {
   console.log(` App server running at http://localhost:${appPort}`);
 });
@@ -178,7 +177,7 @@ const legacySocketServer = http.createServer();
 const legacyIo = new Server(legacySocketServer, { cors: corsOptions });
 attachSocketHandlers(legacyIo);
 
-const socketPort = process.env.SOCKET_PORT || 5000;
+const socketPort = process.env.SOCKET_PORT || 5001;
 legacySocketServer.listen(socketPort, () => {
   console.log(`Socket.IO legacy server running at http://localhost:${socketPort}`);
 });
@@ -203,4 +202,4 @@ app.set("socketio", broadcastIo);
 module.exports = { appServer, io, onlineUsers };
 
 // Expose the server using
-// cloudflared tunnel --url http://localhost:4000
+// cloudflared tunnel --url http://localhost:4001

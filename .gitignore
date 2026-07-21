@@ -3,6 +3,9 @@
 
 # Environment variables
 /backend/.env
+# Root .env for docker-compose (contains secrets — do not commit)
+/.env
+
 # Ignore uploads
 /backend/uploads/
 /backend/public/uploads/
@@ -23,4 +26,3 @@ logs/
 /.impeccable/live/sessions/
 /.impeccable/live/cache/
 /.impeccable/assets/
-
