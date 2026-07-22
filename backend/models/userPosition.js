@@ -4,11 +4,7 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class UserPosition extends Model {
     static associate(models) {
-      // A UserPosition can have many Users
-      this.hasMany(models.User, {
-        foreignKey: "user_position_id",
-        as: "users",
-      });
+      // No foreignKey association to User since users table does not have user_position_id column
     }
   }
 
