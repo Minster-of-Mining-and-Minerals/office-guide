@@ -59,32 +59,36 @@ export default function ExternalLogin() {
     e.preventDefault();
     setIsLoading(true);
     setAuthError("");
-    const result = await login(
-      formData.email as string,
-      formData.password as string
-    );
-    if (result?.error) {
-      setAuthError(result.error);
-      setIsLoading(false);
-      return;
-    }
-
-    if (result?.success) {
-      // Force NextAuth to re-fetch the session so `useSession()` on
-      // the destination page has the fresh accessToken + user right
-      // away (otherwise the redirect can beat the session hydration
-      // and every RTK Query call goes out without a Bearer header).
-      const fresh = (await update()) as any;
-      if (fresh?.user?.is_first_logged_in) {
-        router.replace("/change-password");
-      } else {
-        router.replace(callbackUrl);
+    try {
+      const result = await login(
+        formData.email as string,
+        formData.password as string
+      );
+      if (result?.error) {
+        setAuthError(result.error);
+        setIsLoading(false);
+        return;
       }
-      // Deliberately leave `isLoading` true until navigation happens
-      // to keep the button in a disabled state.
-      return;
+
+      if (result?.success) {
+        // Force NextAuth to re-fetch the session so `useSession()` on
+        // the destination page has the fresh accessToken + user right
+        // away (otherwise the redirect can beat the session hydration
+        // and every RTK Query call goes out without a Bearer header).
+        const fresh = (await update()) as any;
+        if (fresh?.user?.is_first_logged_in) {
+          router.replace("/change-password");
+        } else {
+          router.replace(callbackUrl);
+        }
+        return;
+      }
+    } catch (err: any) {
+      console.error("Login submission failed:", err);
+      setAuthError("Failed to submit login. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
@@ -92,8 +96,9 @@ export default function ExternalLogin() {
       <div className="w-full relative max-w-6xl min-h-[80vh] shadow-2xl rounded-2xl border border-[#DCE7F1] bg-white overflow-hidden flex flex-col lg:flex-row">
         {/* Back Button */}
         <Button
+          variant="ghost"
           onClick={() => router.push("/")}
-          className="cursor-pointer shadow-none z-50 bg-transparent hover:bg-slate-100 p-2 top-4 left-4 absolute flex items-center gap-1"
+          className="cursor-pointer shadow-none z-50 bg-transparent hover:bg-slate-100 p-2 top-4 left-4 absolute flex items-center gap-1 text-golden-dark hover:text-golden-dark"
         >
           <ArrowLeftIcon className="w-5 h-5 text-golden-dark" />
           <span className="text-sm text-golden-dark font-medium">Back</span>
@@ -132,20 +137,20 @@ export default function ExternalLogin() {
             <form onSubmit={onSubmit} className="space-y-4">
               {/* Email */}
               <div>
-                <Label className="text-golden-dark">Email</Label>
+                <Label className="text-golden-dark font-medium">Email</Label>
                 <Input
                   placeholder="example.xx@gov.et"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full h-14 mt-1 px-3 py-2 rounded-md text-sm border-golden-dark focus:ring-0 focus:outline-none focus:border-golden-dark"
+                  className="w-full h-14 mt-1 px-3 py-2 rounded-md text-sm border-golden-dark text-slate-900 bg-white focus:ring-2 focus:ring-golden-dark focus:border-golden-dark placeholder:text-slate-400"
                 />
               </div>
 
               {/* Password */}
               <div>
-                <Label className="text-golden-dark">Password</Label>
+                <Label className="text-golden-dark font-medium">Password</Label>
                 <div className="relative mt-1">
                   <Input
                     type={showPassword ? "text" : "password"}
@@ -154,13 +159,13 @@ export default function ExternalLogin() {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    className="w-full h-14 px-3 py-2 pr-10 border rounded-md text-sm border-golden-dark focus:ring-0 focus:outline-none focus:border-golden-dark"
+                    className="w-full h-14 px-3 py-2 pr-10 border rounded-md text-sm border-golden-dark text-slate-900 bg-white focus:ring-2 focus:ring-golden-dark focus:border-golden-dark placeholder:text-slate-400"
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-golden-dark hover:text-golden-dark/80 p-1 focus:outline-none"
                   >
                     {showPassword ? (
                       <EyeIcon className="h-5 w-5 text-golden-dark" />
@@ -185,7 +190,7 @@ export default function ExternalLogin() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-golden-classic hover:bg-golden-classic/80 h-14 text-xl text-black py-2 rounded-md shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-golden-classic hover:bg-golden-dark hover:text-white text-slate-900 font-semibold h-14 text-lg py-2 rounded-md shadow-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
               >
                 {isLoading ? "Logging In..." : "Log In"}
               </button>

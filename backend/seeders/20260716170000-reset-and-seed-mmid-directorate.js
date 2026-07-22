@@ -27,7 +27,12 @@ const FIFTH_FLOOR_FALLBACK = require("./fifth-floor-offices.json");
  */
 
 const CSV_FILE = process.env.SIGNAGE_SEED_CSV || "deepseek_csv_20260720_dc80a7.txt";
-const CSV_PATH = path.resolve(__dirname, "../../", CSV_FILE);
+const candidatePaths = [
+  path.resolve(__dirname, CSV_FILE),
+  path.resolve(__dirname, "../", CSV_FILE),
+  path.resolve(__dirname, "../../", CSV_FILE),
+];
+const CSV_PATH = candidatePaths.find((p) => fs.existsSync(p)) || candidatePaths[0];
 
 const FLOOR_MAP = {
   ground_floor: {
@@ -292,7 +297,7 @@ module.exports = {
              $7, $8,
              $9, $10,
              $11, $12,
-             $13, $14,
+             $13::text[], $14::text[],
              NOW(), NOW()
            )`,
           {

@@ -9,23 +9,42 @@ export const login = async (email: string, password: string) => {
   }
 
   try {
-    await signIn("credentials", {
+    const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
     });
 
-    return { success: true };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: "Invalid email or password." };
-        default:
-          return { error: "Something went wrong." };
-      }
+    if ((res as any)?.error) {
+      return { error: "Invalid email or password." };
     }
-    throw error;
+
+    return { success: true };
+  } catch (error: any) {
+    if (error instanceof AuthError) {
+      if (error.type === "CredentialsSignin" || (error as any).code === "credentials") {
+        return { error: "Invalid email or password." };
+      }
+      if ((error as any).code === "inactive_user") {
+        return { error: "Your account is inactive. Please contact an administrator." };
+      }
+      return { error: error.message || "Invalid credentials or authentication error." };
+    }
+
+    if (error?.type === "CredentialsSignin" || error?.code === "credentials" || error?.cause?.err?.code === "credentials") {
+      return { error: "Invalid email or password." };
+    }
+
+    if (error?.code === "inactive_user" || error?.cause?.err?.code === "inactive_user") {
+      return { error: "Your account is inactive. Please contact an administrator." };
+    }
+
+    return {
+      error:
+        typeof error === "string"
+          ? error
+          : error?.message || "Something went wrong during login. Please try again.",
+    };
   }
 };
 

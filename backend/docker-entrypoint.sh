@@ -3,11 +3,20 @@
 set -e
 
 echo "⏳ Running database migrations..."
-npx sequelize-cli db:migrate 2>&1 || echo "⚠️ Migration warning (non-fatal)"
+if npx sequelize-cli db:migrate; then
+  echo "✅ Database migrations applied successfully."
+else
+  echo "⚠️ Migration warning: db:migrate exited with non-zero status"
+fi
 
 if [ "$RUN_DB_SEEDERS" = "true" ]; then
   echo "🌱 Running database seeders..."
-  npx sequelize-cli db:seed:all 2>&1 || echo "⚠️ Seeder warning (non-fatal)"
+  if npx sequelize-cli db:seed:all; then
+    echo "✅ Database seeders applied successfully."
+  else
+    echo "❌ Database seeders failed!"
+    exit 1
+  fi
 fi
 
 echo "✅ Starting backend server..."
