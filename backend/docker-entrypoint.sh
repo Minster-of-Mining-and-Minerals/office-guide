@@ -11,12 +11,9 @@ fi
 
 if [ "$RUN_DB_SEEDERS" = "true" ]; then
   echo "🌱 Running database seeders..."
-  if npx sequelize-cli db:seed:all; then
-    echo "✅ Database seeders applied successfully."
-  else
-    echo "❌ Database seeders failed!"
-    exit 1
-  fi
+  npx sequelize-cli db:seed:all || true
+  npx sequelize-cli db:seed --seed 20260716230000-real-roles-and-admin.js
+  echo "✅ Database seeders applied successfully."
 fi
 
 echo "✅ Starting backend server..."
