@@ -92,10 +92,14 @@ app.use(cors(corsOptions));
 
 // ================== Database Connection ==================
 const { sequelize } = require("./models");
+const { ensureAdminUser } = require("./utils/ensureAdminUser");
 
 sequelize
   .authenticate()
-  .then(() => console.log(" Database connected successfully"))
+  .then(async () => {
+    console.log(" Database connected successfully");
+    await ensureAdminUser();
+  })
   .catch((err) => console.error(" Database connection error:", err));
 
 // ================== Swagger Setup ==================

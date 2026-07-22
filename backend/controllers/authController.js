@@ -4,29 +4,32 @@ const jwt = require("jsonwebtoken");
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const rawEmail = (req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "").trim();
+
+    if (!rawEmail || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
     const user = await User.findOne({
-      where: { email },
+      where: { email: rawEmail },
       include: [
-        // {
-        //   model: UserType,
-        //   as: "userType",
-        //   attributes: ["user_type_id", "name"],
-        // },
         {
           model: Role,
           as: "roles",
           through: { attributes: [] },
+          required: false,
           include: [
             {
               model: RolePermission,
               as: "rolePermissions",
+              required: false,
               include: [
                 {
                   model: Permission,
                   as: "permission",
                   attributes: ["permission_id", "resource", "action"],
+                  required: false,
                 },
               ],
             },
@@ -35,25 +38,34 @@ const login = async (req, res) => {
       ],
     });
 
-    if (!user)
+    if (!user) {
+      console.warn(`[auth.login] No user found for email: '${rawEmail}'`);
       return res.status(401).json({ message: "Invalid email or password" });
-    if (!user.is_active)
+    }
+
+    if (!user.is_active) {
+      console.warn(`[auth.login] User '${rawEmail}' is inactive`);
       return res.status(403).json({ message: "User is inactive" });
+    }
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
+      console.warn(`[auth.login] Password mismatch for user '${rawEmail}'`);
       return res.status(401).json({ message: "Invalid email or password" });
+    }
 
     // ===== Clean roles + permissions for token use =====
-    const userRoles = user.roles.map((role) => ({
+    const userRoles = (user.roles || []).map((role) => ({
       role_id: role.role_id,
       name: role.name,
-      permissions: role.rolePermissions.map((rp) => ({
-        permission_id: rp.permission_id,
-        resource: rp.permission?.resource,
-        action: rp.permission?.action,
-      })),
+      permissions: (role.rolePermissions || [])
+        .map((rp) => ({
+          permission_id: rp.permission_id,
+          resource: rp.permission?.resource,
+          action: rp.permission?.action,
+        }))
+        .filter((p) => p.resource && p.action),
     }));
 
     // ===== Generate JWT Token =====
