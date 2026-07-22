@@ -11,32 +11,7 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({
-      where: { email: rawEmail },
-      include: [
-        {
-          model: Role,
-          as: "roles",
-          through: { attributes: [] },
-          required: false,
-          include: [
-            {
-              model: RolePermission,
-              as: "rolePermissions",
-              required: false,
-              include: [
-                {
-                  model: Permission,
-                  as: "permission",
-                  attributes: ["permission_id", "resource", "action"],
-                  required: false,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
+    const user = await User.findOne({ where: { email: rawEmail } });
 
     if (!user) {
       console.warn(`[auth.login] No user found for email: '${rawEmail}'`);
@@ -55,8 +30,33 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    // Fetch user roles separately to avoid complex nested include failures
+    let roles = [];
+    try {
+      if (typeof user.getRoles === "function") {
+        roles = await user.getRoles({
+          include: [
+            {
+              model: RolePermission,
+              as: "rolePermissions",
+              required: false,
+              include: [
+                {
+                  model: Permission,
+                  as: "permission",
+                  required: false,
+                },
+              ],
+            },
+          ],
+        });
+      }
+    } catch (e) {
+      console.warn("[auth.login] Failed to fetch roles:", e.message);
+    }
+
     // ===== Clean roles + permissions for token use =====
-    const userRoles = (user.roles || []).map((role) => ({
+    const userRoles = (roles || []).map((role) => ({
       role_id: role.role_id,
       name: role.name,
       permissions: (role.rolePermissions || [])
@@ -69,6 +69,7 @@ const login = async (req, res) => {
     }));
 
     // ===== Generate JWT Token =====
+    const jwtSecret = process.env.JWT_SECRET || "default-jwt-secret-change-in-production";
     const token = jwt.sign(
       {
         user_id: user.user_id,
@@ -76,7 +77,7 @@ const login = async (req, res) => {
         roles: userRoles.map((r) => r.name),
         permissions: userRoles.flatMap((r) => r.permissions),
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
@@ -84,7 +85,7 @@ const login = async (req, res) => {
     await User.update(
       { last_login_at: new Date() },
       { where: { user_id: user.user_id } }
-    );
+    ).catch(() => {});
 
     return res.status(200).json({
       success: true,
@@ -103,7 +104,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("[auth.login] Error:", error);
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
