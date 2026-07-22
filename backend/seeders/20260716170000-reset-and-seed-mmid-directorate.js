@@ -94,6 +94,33 @@ function parseArrayCell(raw) {
     .filter(Boolean);
 }
 
+function splitCsvLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
 function parseCsvRows() {
   if (!fs.existsSync(CSV_PATH)) {
     throw new Error(
@@ -114,7 +141,7 @@ function parseCsvRows() {
   const data = [];
   for (let i = 1; i < lines.length; i++) {
     const lineNumber = i + 1;
-    const cols = lines[i].split(",");
+    const cols = splitCsvLine(lines[i]);
 
     // Known source drift: some lines have an extra blank column inserted
     // before contact_person, turning 13 columns into 14.
@@ -261,66 +288,51 @@ module.exports = {
       });
 
       // 3. Insert all configured floors (including floors with no offices yet).
+      const now = new Date();
       const floorIdByToken = new Map();
       const allTokens = Object.keys(FLOOR_MAP).sort(
         (a, b) => FLOOR_MAP[a].floor_number - FLOOR_MAP[b].floor_number
       );
-      for (const token of allTokens) {
+
+      const floorRows = allTokens.map((token) => {
         const meta = FLOOR_MAP[token];
         const floorId = uuidv4();
         floorIdByToken.set(token, floorId);
-        await queryInterface.sequelize.query(
-          `INSERT INTO floors
-             (floor_id, floor_number, name, name_am, is_active, map_image_url, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, TRUE, NULL, NOW(), NOW())`,
-          {
-            bind: [floorId, meta.floor_number, meta.name, meta.name_am],
-            transaction: t,
-          }
-        );
-      }
+        return {
+          floor_id: floorId,
+          floor_number: meta.floor_number,
+          name: meta.name,
+          name_am: meta.name_am,
+          is_active: true,
+          map_image_url: null,
+          created_at: now,
+          updated_at: now,
+        };
+      });
+
+      await queryInterface.bulkInsert("floors", floorRows, { transaction: t });
 
       // 4. Insert offices from CSV.
-      for (const row of rows) {
-        await queryInterface.sequelize.query(
-          `INSERT INTO offices (
-             office_id, floor_id, room_number, display_order,
-             name, name_am,
-             department, department_am,
-             contact_person, contact_person_am,
-             description, description_am,
-             services, services_am,
-             created_at, updated_at
-           ) VALUES (
-             $1, $2, $3, $4,
-             $5, $6,
-             $7, $8,
-             $9, $10,
-             $11, $12,
-             $13::text[], $14::text[],
-             NOW(), NOW()
-           )`,
-          {
-            bind: [
-              uuidv4(),
-              floorIdByToken.get(row.floor_token),
-              row.room_number,
-              row.display_order,
-              row.name,
-              row.name_am,
-              row.department,
-              row.department_am,
-              row.contact_person,
-              row.contact_person_am,
-              row.description,
-              row.description_am,
-              row.services,
-              row.services_am,
-            ],
-            transaction: t,
-          }
-        );
-      }
+      const officeRows = rows.map((row) => ({
+        office_id: uuidv4(),
+        floor_id: floorIdByToken.get(row.floor_token),
+        room_number: row.room_number,
+        display_order: row.display_order,
+        name: row.name,
+        name_am: row.name_am,
+        department: row.department,
+        department_am: row.department_am,
+        contact_person: row.contact_person,
+        contact_person_am: row.contact_person_am,
+        description: row.description,
+        description_am: row.description_am,
+        services: row.services,
+        services_am: row.services_am,
+        created_at: now,
+        updated_at: now,
+      }));
+
+      await queryInterface.bulkInsert("offices", officeRows, { transaction: t });
 
       await t.commit();
       console.log(`CSV office seed complete: ${allTokens.length} floors + ${rows.length} offices.`);
