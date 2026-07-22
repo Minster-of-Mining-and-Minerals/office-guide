@@ -29,14 +29,16 @@ export default {
         const password = String(credentials.password ?? "").trim();
 
         try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
-            }
-          );
+          const apiBase =
+            process.env.INTERNAL_API_URL ||
+            (process.env.NEXT_PUBLIC_BASE_URL?.startsWith("http")
+              ? process.env.NEXT_PUBLIC_BASE_URL
+              : "http://backend:4001/api");
+          const res = await fetch(`${apiBase}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
 
           const data = await res.json().catch(() => ({}));
 

@@ -16,7 +16,7 @@ import { performLogout } from "@/utils/logout";
  * clean re-login instead of a broken UI.
  */
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+  baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "/api",
   prepareHeaders: async (headers) => {
     try {
       const session = await getSession();

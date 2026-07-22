@@ -102,11 +102,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost/api}
-        NEXT_PUBLIC_FILE_URL: ${NEXT_PUBLIC_FILE_URL:-http://localhost}
-        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-http://localhost}
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-/api}
+        NEXT_PUBLIC_FILE_URL: ${NEXT_PUBLIC_FILE_URL:-}
+        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-}
         NEXT_PUBLIC_SOCKET_PORT: ${NEXT_PUBLIC_SOCKET_PORT:-5001}
-        NEXT_PUBLIC_FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+        NEXT_PUBLIC_FRONTEND_URL: ${FRONTEND_URL:-}
         NEXT_PUBLIC_DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-nginx}
     restart: unless-stopped
     env_file:
