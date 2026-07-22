@@ -157,7 +157,7 @@ function parseCsvRows() {
 
     const row = {
       __line: lineNumber,
-      floor_token: clean(cols[0]),
+      floor_token: clean((cols[0] || "").replace(/^\d+:\s*/, "")),
       name: clean(cols[1]),
       name_am: clean(cols[2]),
       room_number: clean(cols[3]),
