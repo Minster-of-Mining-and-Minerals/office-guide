@@ -4,13 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { login } from "@/actions/user";
 
 /**
  * Only trust `callbackUrl` values that stay on-site AND don't loop
@@ -60,21 +59,23 @@ export default function ExternalLogin() {
     setIsLoading(true);
     setAuthError("");
     try {
-      const result = await login(
-        formData.email as string,
-        formData.password as string
-      );
-      if (result?.error) {
-        setAuthError(result.error);
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      if (res?.error) {
+        if (res.error === "inactive_user" || (res as any).code === "inactive_user") {
+          setAuthError("Your account is inactive. Please contact an administrator.");
+        } else {
+          setAuthError("Invalid email or password.");
+        }
         setIsLoading(false);
         return;
       }
 
-      if (result?.success) {
-        // Force NextAuth to re-fetch the session so `useSession()` on
-        // the destination page has the fresh accessToken + user right
-        // away (otherwise the redirect can beat the session hydration
-        // and every RTK Query call goes out without a Bearer header).
+      if (res?.ok) {
         const fresh = (await update()) as any;
         if (fresh?.user?.is_first_logged_in) {
           router.replace("/change-password");
@@ -83,9 +84,10 @@ export default function ExternalLogin() {
         }
         return;
       }
+      setAuthError("Invalid email or password.");
     } catch (err: any) {
-      console.error("Login submission failed:", err);
-      setAuthError("Failed to submit login. Please try again.");
+      console.error("Login submission error:", err);
+      setAuthError("Invalid email or password.");
     } finally {
       setIsLoading(false);
     }
