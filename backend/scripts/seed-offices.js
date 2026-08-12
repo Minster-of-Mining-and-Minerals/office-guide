@@ -11,7 +11,7 @@ const FLOOR_MAP = {
   second_floor: { floor_number: 2, name: "2nd Floor", name_am: "2ኛ ፎቅ" },
   third_floor: { floor_number: 3, name: "3rd Floor", name_am: "3ኛ ፎቅ" },
   fourth_floor: { floor_number: 4, name: "4th Floor", name_am: "4ኛ ፎቅ" },
-  fifth_floor: { floor_number: 5, name: "5th Floor", name_am: "5ኛ ፎቅ" },
+  "5th_floor": { floor_number: 5, name: "5th Floor", name_am: "5ኛ ፎቅ" },
 };
 
 async function seed() {

@@ -528,9 +528,9 @@
     "floor_token": "second_floor",
     "room_number": "201",
     "name": "Minister's Office",
-    "name_am": "ሚኒስትር ጽ/ቤት",
+    "name_am": "ሚኒስትር",
     "department": "Minister's Office",
-    "department_am": "ሚኒስትር ጽ/ቤት",
+    "department_am": "ሚኒስትር",
     "contact_person": "Eng. Habtamu Tegene",
     "contact_person_am": "ኢ/ር ሃብታሙ ተገኘ",
     "description": "",
@@ -1093,5 +1093,429 @@
     "display_order": 73,
     "services": [],
     "services_am": []
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "501",
+    "name": "Director General",
+    "name_am": "ዋና ዳይሬክተር",
+    "department": "Director General",
+    "department_am": "ዋና ዳይሬክተር ጽ/ቤት",
+    "contact_person": "Dr. Bisrat Kebede",
+    "contact_person_am": "ዶ/ር ብስራት ከበደ",
+    "description": "Head of the institute; sets strategic direction and represents MMID externally.",
+    "description_am": "የኢንስቲትዩቱ ዋና ኃላፊ፤ ስትራቴጂክ አቅጣጫ የሚያስቀምጥ እና ተቋሙን በውጭ የሚወክል።",
+    "display_order": 1,
+    "services": [
+      "Executive appointments",
+      "Strategic direction",
+      "Institutional leadership"
+    ],
+    "services_am": [
+      "የዋና ዳይሬክተር ቀጠሮ",
+      "ስትራቴጂክ አቅጣጫ",
+      "ተቋማዊ አመራር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "517",
+    "name": "Office of the Director General",
+    "name_am": "ዋና ዳይሬክተር ጽ/ቤት",
+    "department": "Director General",
+    "department_am": "ዋና ዳይሬክተር ጽ/ቤት",
+    "contact_person": "Mr. Tamiru Mersha",
+    "contact_person_am": "አቶ ታምሩ መርሻ",
+    "description": "Coordinates the Director General's schedule, correspondence and visitors.",
+    "description_am": "የዋና ዳይሬክተርን መርሃ ግብር፣ ደብዳቤ እና ጎብኚዎችን ያስተባብራል።",
+    "display_order": 2,
+    "services": [
+      "Appointment booking",
+      "Official correspondence",
+      "Visitor coordination"
+    ],
+    "services_am": [
+      "ቀጠሮ ማስያዝ",
+      "ኦፊሴላዊ ደብዳቤ",
+      "የጎብኚ ማስተባበር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "516",
+    "name": "Operations Chief Executive",
+    "name_am": "የሥራ አመራር ዋና ሥራ አስፈጻሚ",
+    "department": "Executive Management",
+    "department_am": "ሥራ አመራር",
+    "contact_person": "Mr. Sileshi W/Yohannes",
+    "contact_person_am": "አቶ ስለሺ ወ/ዮሐንስ",
+    "description": "Oversees institute-wide operations and cross-sector coordination.",
+    "description_am": "የተቋሙን አጠቃላይ ኦፕሬሽንና የዘርፎችን ማስተባበር የሚመራ።",
+    "display_order": 3,
+    "services": [
+      "Operations oversight",
+      "Cross-sector coordination",
+      "Executive briefings"
+    ],
+    "services_am": [
+      "የኦፕሬሽን ክትትል",
+      "ዘርፎችን ማስተባበር",
+      "የስራ አስፈጻሚ ማብራሪያ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "502",
+    "name": "Chemical & Energy Minerals Sector Lead Executive",
+    "name_am": "የኬሚካል እና የኃይል አመንጪ ማዕድናት ጥናት እና ምርምር ዘርፍ መሪ ሥራ አስፈጻሚ",
+    "department": "Chemical & Energy Minerals",
+    "department_am": "የኬሚካል እና የኃይል አመንጪ ማዕድናት",
+    "contact_person": "Mrs. Enatfanta Melaku",
+    "contact_person_am": "ወ/ሮ እናትፋንታ መላኩ",
+    "description": "Leads the study and research programme for chemical and energy minerals.",
+    "description_am": "የኬሚካልና የኃይል አመንጪ ማዕድናት ጥናትና ምርምር ፕሮግራምን የሚመራ።",
+    "display_order": 4,
+    "services": [
+      "Sector planning",
+      "Research programme oversight",
+      "Desk coordination"
+    ],
+    "services_am": [
+      "የዘርፍ ዕቅድ",
+      "የምርምር ፕሮግራም ክትትል",
+      "ዴስክ ማስተባበር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "505",
+    "name": "Cement & Ceramics Minerals Research Desk",
+    "name_am": "የሲሚንቶና ሴራሚክ ማዕድናት ምርምር ዴስክ",
+    "department": "Chemical & Energy Minerals",
+    "department_am": "የኬሚካል እና የኃይል አመንጪ ማዕድናት",
+    "contact_person": "Mr. Nigat Mulat",
+    "contact_person_am": "አቶ ንጋት ሙላት",
+    "description": "Field and laboratory research on cement and ceramic raw materials.",
+    "description_am": "የሲሚንቶና ሴራሚክ ጥሬ ዕቃዎች የመስክና የላቦራቶሪ ምርምር።",
+    "display_order": 5,
+    "services": [
+      "Sample analysis",
+      "Field surveys",
+      "Technical reports",
+      "Industry consultations"
+    ],
+    "services_am": [
+      "የናሙና ትንተና",
+      "የመስክ ጥናት",
+      "የቴክኒክ ሪፖርት",
+      "የኢንዱስትሪ ምክክር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "509",
+    "name": "Energy Minerals Development Research Desk",
+    "name_am": "የኃይል አመንጪ ማዕድናት ልማት ምርምር ዴስክ",
+    "department": "Chemical & Energy Minerals",
+    "department_am": "የኬሚካል እና የኃይል አመንጪ ማዕድናት",
+    "contact_person": "Mr. Henok Tamrat",
+    "contact_person_am": "አቶ ሄኖክ ታምራት",
+    "description": "Research on coal, geothermal and other energy-mineral development.",
+    "description_am": "የከሰል፣ ጂኦተርማልና ሌሎች የኃይል-ማዕድናት ልማት ምርምር።",
+    "display_order": 6,
+    "services": [
+      "Resource assessments",
+      "Feasibility studies",
+      "Development advisory"
+    ],
+    "services_am": [
+      "የሀብት ግምገማ",
+      "የአዋጭነት ጥናት",
+      "የልማት ምክር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "512",
+    "name": "Chemical & Fertilizer Development Research Desk",
+    "name_am": "የኬሚካልና ማዳበሪያ ልማት ምርምር ዴስክ",
+    "department": "Chemical & Energy Minerals",
+    "department_am": "የኬሚካል እና የኃይል አመንጪ ማዕድናት",
+    "contact_person": "Mr. Megersa Bedo",
+    "contact_person_am": "አቶ መገርሳ በዶ",
+    "description": "Research on industrial chemicals and fertilizer feed minerals.",
+    "description_am": "የኢንዱስትሪ ኬሚካሎችና የማዳበሪያ ግብዓት ማዕድናት ምርምር።",
+    "display_order": 7,
+    "services": [
+      "Chemical analysis",
+      "Fertilizer research",
+      "Industry advisory"
+    ],
+    "services_am": [
+      "የኬሚካል ትንተና",
+      "የማዳበሪያ ምርምር",
+      "የኢንዱስትሪ ምክር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "503",
+    "name": "Artisanal Development & Gemstones Sector Lead Executive",
+    "name_am": "የአርቲዝናል ልማትና ጌጣጌጥ ማዕድናት ልማት ምርምር መሪ ስራ አስፈጻሚ",
+    "department": "Artisanal & Gemstone Minerals",
+    "department_am": "አርቲዝናል እና ጌጣጌጥ ማዕድናት",
+    "contact_person": "Dr. Gera Techane",
+    "contact_person_am": "ዶ/ር ጌራ ተጫኔ",
+    "description": "Leads artisanal and gemstone development research and grassroots support.",
+    "description_am": "የአርቲዝናል እና የጌጣጌጥ ልማት ምርምርና ዝቅተኛ-ደረጃ ድጋፍ የሚመራ።",
+    "display_order": 8,
+    "services": [
+      "Sector planning",
+      "Programme oversight",
+      "Cooperative support"
+    ],
+    "services_am": [
+      "የዘርፍ ዕቅድ",
+      "የፕሮግራም ክትትል",
+      "የህብረት ስራ ድጋፍ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "507",
+    "name": "Head of Artisanal Mineral Development & Research Desk",
+    "name_am": "የአርቲዝናል ማዕድን ልማትና ምርምር ዴስክ ኃላፊ",
+    "department": "Artisanal & Gemstone Minerals",
+    "department_am": "አርቲዝናል እና ጌጣጌጥ ማዕድናት",
+    "contact_person": "Mr. Tatek Tadesse",
+    "contact_person_am": "አቶ ታጠቅ ታደሰ",
+    "description": "Supports artisanal and small-scale miners with research and technical guidance.",
+    "description_am": "የአርቲዝናልና ጥቃቅን ማዕድን አምራቾችን በምርምርና በቴክኒክ ማገዝ።",
+    "display_order": 9,
+    "services": [
+      "Miner registration guidance",
+      "Technical training",
+      "Formalization support",
+      "Cooperative support"
+    ],
+    "services_am": [
+      "የአምራች ምዝገባ ምክር",
+      "የቴክኒክ ስልጠና",
+      "የመደበኛነት ድጋፍ",
+      "የህብረት ስራ ድጋፍ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "508",
+    "name": "Gemstone Development Research Desk",
+    "name_am": "የጌጣጌጥ ልማት ምርምር ዴስክ",
+    "department": "Artisanal & Gemstone Minerals",
+    "department_am": "አርቲዝናል እና ጌጣጌጥ ማዕድናት",
+    "contact_person": "Mr. Solomon Zeleke",
+    "contact_person_am": "አቶ ሰለሞን ዘለቀ",
+    "description": "Gemstone quality assessment, valuation and value-addition research.",
+    "description_am": "የጌጣጌጥ ጥራት ግምት፣ ግምገማና እሴት መጨመር ምርምር።",
+    "display_order": 10,
+    "services": [
+      "Gemstone identification",
+      "Valuation advisory",
+      "Value-addition support"
+    ],
+    "services_am": [
+      "የጌጣጌጥ ማንነት ማወቅ",
+      "የግምት ምክር",
+      "የእሴት መጨመር ድጋፍ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "504",
+    "name": "Construction Input Minerals Sector Lead Executive",
+    "name_am": "የግንባታ ግብዓት ማዕድናት ልማት እና ምርምር መሪ ሥራ አስፈጻሚ",
+    "department": "Construction Input Minerals",
+    "department_am": "የግንባታ ግብዓት ማዕድናት",
+    "contact_person": "Mr. Simegn Degu Tesfaye",
+    "contact_person_am": "አቶ ስመኝ ደጉ ተስፋዬ",
+    "description": "Leads research on minerals used as construction inputs.",
+    "description_am": "እንደ ግንባታ ግብዓት የሚያገለግሉ ማዕድናት ላይ የሚደረግ ምርምር የሚመራ።",
+    "display_order": 11,
+    "services": [
+      "Sector planning",
+      "Programme oversight",
+      "Industry liaison"
+    ],
+    "services_am": [
+      "የዘርፍ ዕቅድ",
+      "የፕሮግራም ክትትል",
+      "የኢንዱስትሪ ግንኙነት"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "506",
+    "name": "Iron & Metal Minerals Research Desk",
+    "name_am": "የብረት ማዕድናት ምርምር ዴስክ",
+    "department": "Construction Input Minerals",
+    "department_am": "የግንባታ ግብዓት ማዕድናት",
+    "contact_person": "Mrs. Birtukan Yenealem",
+    "contact_person_am": "ወ/ሮ ብርቱካን የኔአለም",
+    "description": "Research on iron and industrial-metal minerals.",
+    "description_am": "የብረትና የኢንዱስትሪ ብረት ማዕድናት ምርምር።",
+    "display_order": 12,
+    "services": [
+      "Ore assessments",
+      "Sample testing",
+      "Beneficiation studies"
+    ],
+    "services_am": [
+      "የማዕድን ግምገማ",
+      "የናሙና ፈተና",
+      "የመልቀም ጥናት"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "515",
+    "name": "Marble, Granite & Glass Minerals Research Desk",
+    "name_am": "የማርብል፣ ግራናይት፣ መስታወት ማዕድናት ምርምር ዴስክ",
+    "department": "Construction Input Minerals",
+    "department_am": "የግንባታ ግብዓት ማዕድናት",
+    "contact_person": "Mrs. Frehiwot Gashaw",
+    "contact_person_am": "ወ/ሮ ፍሬህይወት ጋሻው",
+    "description": "Dimension stone, silica sand and industrial mineral research.",
+    "description_am": "የግንባታ ድንጋይ፣ ሲሊካ አሸዋና የኢንዱስትሪ ማዕድናት ምርምር።",
+    "display_order": 13,
+    "services": [
+      "Quarry assessments",
+      "Quality testing",
+      "Dimension-stone advisory"
+    ],
+    "services_am": [
+      "የቋሪ ግምገማ",
+      "የጥራት ፈተና",
+      "የግንባታ ድንጋይ ምክር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "510",
+    "name": "Strategic Affairs Executive",
+    "name_am": "ስትራቴጂክ ጉዳዮች ሥራ አስፈጻሚ",
+    "department": "Strategic Affairs",
+    "department_am": "ስትራቴጂክ ጉዳዮች",
+    "contact_person": "Mr. Getu Alemayehu",
+    "contact_person_am": "አቶ ጌቱ አለማየሁ",
+    "description": "Strategic planning, performance monitoring and institutional reform.",
+    "description_am": "የስትራቴጂክ ዕቅድ፣ የአፈጻጸም ክትትልና ተቋማዊ ማሻሻያ።",
+    "display_order": 14,
+    "services": [
+      "Strategic planning",
+      "Performance monitoring",
+      "Reform coordination"
+    ],
+    "services_am": [
+      "የስትራቴጂክ ዕቅድ",
+      "የአፈጻጸም ክትትል",
+      "የማሻሻያ ማስተባበር"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "511",
+    "name": "Procurement & Finance Executive",
+    "name_am": "የግዢና ፋይናንስ ሥራ አስፈጻሚ",
+    "department": "Procurement & Finance",
+    "department_am": "ግዢና ፋይናንስ",
+    "contact_person": "Ms. Bitsehit Kifle",
+    "contact_person_am": "ወ/ሪት ብፅሂት ክፍሌ",
+    "description": "Heads institutional procurement, finance and budget oversight.",
+    "description_am": "የተቋሙን ግዢ፣ ፋይናንስና በጀት ክትትል የሚመራ።",
+    "display_order": 15,
+    "services": [
+      "Budget oversight",
+      "Financial reporting",
+      "Procurement planning"
+    ],
+    "services_am": [
+      "የበጀት ክትትል",
+      "የፋይናንስ ሪፖርት",
+      "የግዢ ዕቅድ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "513",
+    "name": "Procurement & Finance Team Work Unit",
+    "name_am": "የግዢና ፋይናንስ ቡድን ስራ ክፍል",
+    "department": "Procurement & Finance",
+    "department_am": "ግዢና ፋይናንስ",
+    "contact_person": "Mr. Kiflom Haftom & Ms. Edla Teklay",
+    "contact_person_am": "አቶ ክፍሎም ሀፍቶም እና ወ/ት እድላ ተክላይ",
+    "description": "Day-to-day procurement processing, payments and vendor management.",
+    "description_am": "ዕለታዊ የግዢ ሂደት፣ ክፍያዎችና የአቅራቢ አስተዳደር።",
+    "display_order": 16,
+    "services": [
+      "Tender submissions",
+      "Payment processing",
+      "Supplier registration",
+      "Contract enquiries"
+    ],
+    "services_am": [
+      "የጨረታ ማስገባት",
+      "የክፍያ ሂደት",
+      "የአቅራቢ ምዝገባ",
+      "የውል ጥያቄ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "514",
+    "name": "Capability & Human Resource Management Executive",
+    "name_am": "የብቃትና የሰው ሀብት አስተዳደር ሥራ አስፈጻሚ",
+    "department": "Capability & Human Resources",
+    "department_am": "ብቃትና የሰው ሀብት አስተዳደር",
+    "contact_person": "Mrs. Yebergual Kebede",
+    "contact_person_am": "ወ/ሮ የብርጓል ከበደ",
+    "description": "Heads recruitment, staff records, training and organisational development.",
+    "description_am": "ቅጥር፣ የሰራተኛ መዝገብ፣ ስልጠናና ተቋማዊ ልማት የሚመራ።",
+    "display_order": 17,
+    "services": [
+      "Recruitment enquiries",
+      "Staff records",
+      "Training programmes",
+      "Leave applications"
+    ],
+    "services_am": [
+      "የቅጥር ጥያቄ",
+      "የሰራተኛ መዝገብ",
+      "የስልጠና ፕሮግራም",
+      "የፈቃድ ጥያቄ"
+    ]
+  },
+  {
+    "floor_token": "5th_floor",
+    "room_number": "518",
+    "name": "Legal Services & Communication Affairs Executive",
+    "name_am": "የህግ አገልግሎት እና የኮሙዩኒኬሽን ጉዳዮች ሥራ አስፈጻሚ",
+    "department": "Legal & Communication",
+    "department_am": "ህግ አገልግሎትና ኮሙዩኒኬሽን",
+    "contact_person": "Mrs. Selamawit Anteneh & Mr. Solomon Tesfa",
+    "contact_person_am": "ወ/ሮ ሰላማዊት አንተነህ እና አቶ ሰለሞን ተስፋ",
+    "description": "Legal advisory, contract review and public/media communications.",
+    "description_am": "የህግ ምክር፣ የውል ግምገማና የህዝብ/መገናኛ ብዙኃን ግንኙነት።",
+    "display_order": 18,
+    "services": [
+      "Legal advisory",
+      "Contract review",
+      "Media enquiries",
+      "Press releases"
+    ],
+    "services_am": [
+      "የህግ ምክር",
+      "የውል ግምገማ",
+      "የመገናኛ ብዙኃን ጥያቄ",
+      "የፕሬስ መግለጫ"
+    ]
   }
 ]
