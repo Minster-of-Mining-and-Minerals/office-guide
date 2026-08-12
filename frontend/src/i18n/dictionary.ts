@@ -80,7 +80,7 @@ const en = {
 // here — TypeScript enforces this with `Dict`.
 const am: typeof en = {
   ministry: "የማዕድን ሚኒስቴር",
-  officeGuide: "የቢሮ መመሪያ",
+  officeGuide: "የቢሮ አቅጣጫ ጠቋሚ",
   officeGuideSubtitle:
     "በህንፃው ውስጥ ያለ ማንኛውንም ቢሮ፣ ክፍል፣ ዲፓርትመንት ወይም ወለል ያፈላልጉ።",
 
