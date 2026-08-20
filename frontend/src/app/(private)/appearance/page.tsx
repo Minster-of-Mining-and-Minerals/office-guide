@@ -35,11 +35,12 @@ import {
   type PublicTheme,
 } from "@/redux/api/themeApi";
 import {
-  useGetPublicDisplayModeQuery,
+  useGetAllDisplayModesQuery,
   useResetDisplayModeMutation,
   useUpdateDisplayModeMutation,
 } from "@/redux/api/displayModeApi";
-import type { DisplayModeValue } from "@/redux/types/signage";
+import { useGetAllFloorsQuery } from "@/redux/api/floorApi";
+import type { DisplayModeValue, DisplayMode } from "@/redux/types/signage";
 
 // ─── Curated presets ────────────────────────────────────────────────
 // Each preset is a complete theme so light+dark can never end up on the
@@ -840,44 +841,63 @@ const MODE_CARDS: ModeCard[] = [
 ];
 
 function DisplayModeSection() {
-  const { data: serverMode, isLoading } = useGetPublicDisplayModeQuery();
+  const { data: serverModes, isLoading: isLoadingModes } = useGetAllDisplayModesQuery();
+  const { data: floorsData, isLoading: isLoadingFloors } = useGetAllFloorsQuery();
+  const floors = floorsData ?? [];
+
   const [updateMode, updateState] = useUpdateDisplayModeMutation();
   const [resetMode, resetState] = useResetDisplayModeMutation();
 
-  const [mode, setMode] = useState<DisplayModeValue>("guide_only");
-  const [rotation, setRotation] = useState<number>(60);
+  // draftModes maps floor_id to its DisplayMode
+  const [draftModes, setDraftModes] = useState<Record<string, DisplayMode>>({});
 
   useEffect(() => {
-    if (serverMode) {
-      setMode(serverMode.mode);
-      setRotation(serverMode.rotation_seconds);
+    if (serverModes) {
+      setDraftModes(serverModes);
     }
-  }, [serverMode]);
+  }, [serverModes]);
+
+  // If a floor has no config, it defaults to guide_only
+  const getFloorMode = (floorId: string): DisplayMode => {
+    return draftModes[floorId] || { mode: "guide_only", rotation_seconds: 60 };
+  };
+
+  const setFloorMode = (floorId: string, mode: DisplayModeValue) => {
+    setDraftModes((prev) => ({
+      ...prev,
+      [floorId]: { ...getFloorMode(floorId), mode },
+    }));
+  };
+
+  const setFloorRotation = (floorId: string, rotation_seconds: number) => {
+    setDraftModes((prev) => ({
+      ...prev,
+      [floorId]: { ...getFloorMode(floorId), rotation_seconds },
+    }));
+  };
 
   const dirty =
-    !!serverMode &&
-    (serverMode.mode !== mode ||
-      (mode === "both" && serverMode.rotation_seconds !== rotation));
+    !!serverModes &&
+    JSON.stringify(draftModes) !== JSON.stringify(serverModes);
 
-  const invalidRotation =
-    mode === "both" &&
-    (!Number.isFinite(rotation) || rotation < 5 || rotation > 3600);
+  const invalidRotation = Object.values(draftModes).some(
+    (m) =>
+      m.mode === "both" &&
+      (!Number.isFinite(m.rotation_seconds) ||
+        m.rotation_seconds < 5 ||
+        m.rotation_seconds > 3600)
+  );
 
   const canSave = dirty && !invalidRotation;
 
   const onSave = async () => {
     try {
-      const payload: {
-        mode: DisplayModeValue;
-        rotation_seconds?: number;
-      } = { mode };
-      if (mode === "both") payload.rotation_seconds = rotation;
-      await updateMode(payload).unwrap();
-      toast.success("Display mode updated. Open screens will swap live.");
+      await updateMode(draftModes).unwrap();
+      toast.success("Display modes updated. Open screens will swap live.");
     } catch (err) {
       const msg =
         (err as { data?: { message?: string } })?.data?.message ??
-        "Could not save the display mode.";
+        "Could not save the display modes.";
       toast.error(msg);
     }
   };
@@ -885,13 +905,14 @@ function DisplayModeSection() {
   const onReset = async () => {
     try {
       const restored = await resetMode().unwrap();
-      setMode(restored.mode);
-      setRotation(restored.rotation_seconds);
-      toast.success("Display mode reset to Office Guide only.");
+      setDraftModes(restored);
+      toast.success("Display modes reset to default (Office Guide only).");
     } catch {
-      toast.error("Could not reset the display mode.");
+      toast.error("Could not reset the display modes.");
     }
   };
+
+  const isLoading = isLoadingModes || isLoadingFloors;
 
   return (
     <section className="rounded-2xl border border-golden-classic/25 bg-white p-5 shadow-sm space-y-5">
@@ -905,8 +926,7 @@ function DisplayModeSection() {
               Display Mode
             </h2>
             <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-              Controls what the public Office Guide screen shows. Changes go
-              live on every open kiosk without a reload.
+              Control what each floor's kiosk shows. Changes go live on open kiosks automatically.
             </p>
           </div>
         </div>
@@ -934,7 +954,7 @@ function DisplayModeSection() {
             ) : (
               <SaveIcon className="h-4 w-4" />
             )}
-            Save mode
+            Save modes
           </Button>
         </div>
       </div>
@@ -944,101 +964,112 @@ function DisplayModeSection() {
           <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {MODE_CARDS.map((card) => {
-              const active = mode === card.id;
-              const Icon = card.icon;
-              return (
-                <button
-                  key={card.id}
-                  type="button"
-                  onClick={() => setMode(card.id)}
-                  className={cn(
-                    "text-left rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md flex flex-col gap-2",
-                    active
-                      ? "border-golden-classic ring-2 ring-golden-classic/40 bg-golden-metallic/40"
-                      : "border-golden-classic/25 bg-white hover:border-golden-classic/60"
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center",
-                        active
-                          ? "bg-golden-classic text-black"
-                          : "bg-golden-metallic/70 text-golden-dark"
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span className="text-sm font-semibold text-golden-dark">
-                      {card.title}
-                    </span>
-                    {active && (
-                      <CheckCircle2Icon className="ml-auto h-4 w-4 text-golden-dark" />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    {card.description}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+        <div className="space-y-6">
+          {floors.map((floor) => {
+            const currentConfig = getFloorMode(floor.floor_id);
+            return (
+              <div key={floor.floor_id} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 space-y-4">
+                <h3 className="font-semibold text-gray-800">
+                  Floor {floor.floor_number}
+                  {floor.name ? ` - ${floor.name}` : ""}
+                </h3>
+                
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {MODE_CARDS.map((card) => {
+                    const active = currentConfig.mode === card.id;
+                    const Icon = card.icon;
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => setFloorMode(floor.floor_id, card.id)}
+                        className={cn(
+                          "text-left rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md flex flex-col gap-2",
+                          active
+                            ? "border-golden-classic ring-2 ring-golden-classic/40 bg-golden-metallic/40"
+                            : "border-gray-200 bg-white hover:border-golden-classic/60"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "h-8 w-8 rounded-lg flex items-center justify-center",
+                              active
+                                ? "bg-golden-classic text-black"
+                                : "bg-gray-100 text-gray-500"
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className={cn("text-sm font-semibold", active ? "text-golden-dark" : "text-gray-700")}>
+                            {card.title}
+                          </span>
+                          {active && (
+                            <CheckCircle2Icon className="ml-auto h-4 w-4 text-golden-dark" />
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-snug">
+                          {card.description}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
 
-          {mode === "both" && (
-            <div className="rounded-xl border border-golden-classic/25 bg-golden-metallic/30 p-4 space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label
-                    htmlFor="rotation_seconds"
-                    className="text-xs font-semibold text-golden-dark uppercase tracking-wider"
-                  >
-                    Rotation timer
-                  </Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    How long the office guide is shown before flipping to
-                    the announcements carousel. The carousel then plays
-                    through once before flipping back.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Input
-                    id="rotation_seconds"
-                    type="number"
-                    min={5}
-                    max={3600}
-                    value={rotation}
-                    onChange={(e) =>
-                      setRotation(Number.parseInt(e.target.value, 10) || 0)
-                    }
-                    className={cn(
-                      "w-24 tabular-nums",
-                      invalidRotation &&
-                        "border-red-500 focus-visible:ring-red-500"
-                    )}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    seconds
-                  </span>
-                </div>
+                {currentConfig.mode === "both" && (
+                  <div className="rounded-xl border border-golden-classic/25 bg-golden-metallic/30 p-4 space-y-2 mt-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <Label
+                          htmlFor={`rotation-${floor.floor_id}`}
+                          className="text-xs font-semibold text-golden-dark uppercase tracking-wider"
+                        >
+                          Rotation timer
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          How long the office guide is shown before flipping to the announcements carousel.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Input
+                          id={`rotation-${floor.floor_id}`}
+                          type="number"
+                          min={5}
+                          max={3600}
+                          value={currentConfig.rotation_seconds}
+                          onChange={(e) =>
+                            setFloorRotation(floor.floor_id, Number.parseInt(e.target.value, 10) || 0)
+                          }
+                          className={cn(
+                            "w-24 tabular-nums",
+                            (!Number.isFinite(currentConfig.rotation_seconds) ||
+                            currentConfig.rotation_seconds < 5 ||
+                            currentConfig.rotation_seconds > 3600) &&
+                              "border-red-500 focus-visible:ring-red-500"
+                          )}
+                        />
+                        <span className="text-xs text-muted-foreground">seconds</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              {invalidRotation && (
-                <p className="text-[11px] text-red-600">
-                  Choose between 5 and 3600 seconds.
-                </p>
-              )}
-            </div>
+            );
+          })}
+
+          {floors.length === 0 && (
+             <div className="py-8 text-center text-sm text-gray-500">
+               No floors configured yet.
+             </div>
           )}
 
           {dirty && (
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 text-[11px] font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-              Unsaved mode changes — click Save mode.
+              Unsaved mode changes — click Save modes.
             </div>
           )}
-        </>
+        </div>
       )}
     </section>
   );

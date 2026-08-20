@@ -37,16 +37,13 @@ exports.validateThemeUpdate = (req, res, next) => {
 
 // ─── Display mode ───────────────────────────────────────────────────
 
-const displayModeUpdateSchema = Joi.object({
+const displayModeConfigSchema = Joi.object({
   mode: Joi.string()
     .valid("guide_only", "announcements_only", "both")
     .optional()
     .messages({
-      "any.only":
-        "Mode must be one of guide_only, announcements_only, both.",
+      "any.only": "Mode must be one of guide_only, announcements_only, both.",
     }),
-  // 5s minimum keeps the kiosk from thrashing between guide/carousel;
-  // 1 hour upper bound is a defensive cap.
   rotation_seconds: Joi.number()
     .integer()
     .min(5)
@@ -56,7 +53,12 @@ const displayModeUpdateSchema = Joi.object({
       "number.min": "Rotation must be at least 5 seconds.",
       "number.max": "Rotation must be at most 3600 seconds (1 hour).",
     }),
-}).min(1);
+});
+
+// Allow a map of floor IDs to their display configurations.
+const displayModeUpdateSchema = Joi.object()
+  .pattern(Joi.string(), displayModeConfigSchema)
+  .min(1);
 
 exports.validateDisplayModeUpdate = (req, res, next) => {
   const { error, value } = displayModeUpdateSchema.validate(req.body, {

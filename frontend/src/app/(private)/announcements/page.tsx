@@ -79,7 +79,8 @@ import {
   useReorderAnnouncementsMutation,
   useUpdateAnnouncementMutation,
 } from "@/redux/api/announcementApi";
-import type { Announcement } from "@/redux/types/signage";
+import { useGetAllFloorsQuery } from "@/redux/api/floorApi";
+import type { Announcement, Floor } from "@/redux/types/signage";
 
 const PAGE_LIMIT = 10;
 
@@ -117,6 +118,7 @@ function RowCheckbox({
 
 interface FormState {
   title: string;
+  floor_id: string;
   message: string;
   duration_seconds: number;
   audio_enabled: boolean;
@@ -128,6 +130,7 @@ interface FormState {
 
 const emptyForm: FormState = {
   title: "",
+  floor_id: "global",
   message: "",
   duration_seconds: 10,
   audio_enabled: false,
@@ -297,6 +300,8 @@ export default function AnnouncementsPage() {
   );
 
   const { data, isLoading, isFetching } = useGetAnnouncementsQuery(queryParams);
+  const { data: floorsData } = useGetAllFloorsQuery();
+  const floors = floorsData ?? [];
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Announcement | null>(null);
@@ -360,6 +365,7 @@ export default function AnnouncementsPage() {
     setEditing(a);
     setForm({
       title: a.title,
+      floor_id: a.floor_id || "global",
       message: a.message ?? "",
       duration_seconds: a.duration_seconds || 10,
       audio_enabled: a.audio_enabled,
@@ -435,6 +441,7 @@ export default function AnnouncementsPage() {
 
     const payload = {
       title,
+      floor_id: form.floor_id === "global" ? null : form.floor_id,
       message: form.message.trim() || null,
       duration_seconds: form.duration_seconds,
       audio_enabled: form.audio_enabled,
@@ -780,7 +787,18 @@ export default function AnnouncementsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium text-white">{a.title}</p>
+                      <p className="font-medium text-white flex items-center gap-2">
+                        {a.title}
+                        {a.floor_id ? (
+                          <span className="inline-flex items-center rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-white/70">
+                            Floor {floors.find((f) => f.floor_id === a.floor_id)?.floor_number ?? "?"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded bg-golden-classic/20 px-1.5 py-0.5 text-[10px] font-medium text-golden-classic">
+                            Global
+                          </span>
+                        )}
+                      </p>
                       {a.message && (
                         <p className="text-[11px] text-white/40 line-clamp-1 max-w-md">
                           {a.message}
@@ -1031,20 +1049,41 @@ export default function AnnouncementsPage() {
                 label="Details"
                 subtitle="Title is shown on the kiosk as a small chip. The caption is optional."
               />
-              <div className="space-y-1.5">
-                <Label htmlFor="title">
-                  Title<span className="text-red-500 ml-0.5">*</span>
-                </Label>
-                <Input
-                  id="title"
-                  value={form.title}
-                  onChange={(e) =>
-                    setForm({ ...form, title: e.target.value })
-                  }
-                  placeholder="e.g. Office Hours"
-                  maxLength={200}
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="title">
+                    Title<span className="text-red-500 ml-0.5">*</span>
+                  </Label>
+                  <Input
+                    id="title"
+                    value={form.title}
+                    onChange={(e) =>
+                      setForm({ ...form, title: e.target.value })
+                    }
+                    placeholder="e.g. Office Hours"
+                    maxLength={200}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="floor">Floor</Label>
+                  <Select
+                    value={form.floor_id}
+                    onValueChange={(v) => setForm({ ...form, floor_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select floor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="global">Global (All floors)</SelectItem>
+                      {floors.map((f) => (
+                        <SelectItem key={f.floor_id} value={f.floor_id}>
+                          Floor {f.floor_number}: {f.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="message">Caption</Label>

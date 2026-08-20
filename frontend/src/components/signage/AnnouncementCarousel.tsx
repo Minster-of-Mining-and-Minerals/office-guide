@@ -32,6 +32,11 @@ interface AnnouncementCarouselProps {
    * doesn't keep playing while the guide is visible.
    */
   paused?: boolean;
+  /**
+   * The current floor UUID, if the kiosk is constrained to one floor.
+   * Only announcements meant for this floor (or global ones) will load.
+   */
+  floorId?: string;
 }
 
 /**
@@ -47,9 +52,12 @@ interface AnnouncementCarouselProps {
 export function AnnouncementCarousel({
   onCycleComplete,
   paused = false,
+  floorId,
 }: AnnouncementCarouselProps) {
   const { t } = useLocale();
-  const { data, isLoading } = useGetPublicAnnouncementsQuery(undefined, {
+  const { data, isLoading } = useGetPublicAnnouncementsQuery(
+    floorId ? { floor_id: floorId } : undefined,
+    {
     // Poll every minute in case a socket event is missed. Cheap, and
     // gives the kiosk fresh scheduling windows without a reload.
     pollingInterval: 60_000,

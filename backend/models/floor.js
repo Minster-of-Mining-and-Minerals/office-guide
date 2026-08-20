@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "floor_id",
         as: "offices",
       });
+      Floor.hasMany(models.Announcement, {
+        foreignKey: "floor_id",
+        as: "announcements",
+      });
     }
   }
 

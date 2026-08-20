@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { io, type Socket } from "socket.io-client";
 import { Loader2Icon } from "lucide-react";
@@ -8,17 +8,30 @@ import { Loader2Icon } from "lucide-react";
 import { OfficeGuideView } from "@/components/signage/OfficeGuideView";
 import { AnnouncementCarousel } from "@/components/signage/AnnouncementCarousel";
 import { useGetPublicDisplayModeQuery } from "@/redux/api/displayModeApi";
+import { useGetAllFloorsQuery } from "@/redux/api/floorApi";
 import { baseApi } from "@/redux/baseApi";
+import type { Floor } from "@/redux/types/signage";
 
 export function PublicKiosk({ initialFloor }: { initialFloor?: number }) {
   const dispatch = useDispatch();
-  const { data: displayMode, isLoading } = useGetPublicDisplayModeQuery(
-    undefined,
+  const { data: floorsData, isLoading: isLoadingFloors } = useGetAllFloorsQuery();
+  const floorId = useMemo(() => {
+    if (initialFloor === undefined || !floorsData) return undefined;
+    const floors = floorsData;
+    const f = floors.find((f) => f.floor_number === initialFloor);
+    return f?.floor_id;
+  }, [initialFloor, floorsData]);
+
+  const { data: displayMode, isLoading: isDisplayModeLoading } = useGetPublicDisplayModeQuery(
+    floorId ? { floor_id: floorId } : undefined,
     {
+      skip: initialFloor !== undefined && floorId === undefined,
       pollingInterval: 60_000,
       refetchOnMountOrArgChange: true,
     }
   );
+  
+  const isLoading = isLoadingFloors || isDisplayModeLoading;
 
   const socketRef = useRef<Socket | null>(null);
   useEffect(() => {
@@ -56,7 +69,7 @@ export function PublicKiosk({ initialFloor }: { initialFloor?: number }) {
   }
 
   if (displayMode.mode === "announcements_only") {
-    return <AnnouncementCarousel />;
+    return <AnnouncementCarousel floorId={floorId} />;
   }
 
   if (displayMode.mode === "both") {
@@ -64,6 +77,7 @@ export function PublicKiosk({ initialFloor }: { initialFloor?: number }) {
       <BothModeSwitcher
         rotationSeconds={Math.max(5, displayMode.rotation_seconds ?? 60)}
         initialFloor={initialFloor}
+        floorId={floorId}
       />
     );
   }
@@ -71,7 +85,7 @@ export function PublicKiosk({ initialFloor }: { initialFloor?: number }) {
   return <OfficeGuideView initialFloor={initialFloor} />;
 }
 
-function BothModeSwitcher({ rotationSeconds, initialFloor }: { rotationSeconds: number; initialFloor?: number }) {
+function BothModeSwitcher({ rotationSeconds, initialFloor, floorId }: { rotationSeconds: number; initialFloor?: number; floorId?: string }) {
   const [showing, setShowing] = useState<"guide" | "announcements">("guide");
   const guideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -94,7 +108,7 @@ function BothModeSwitcher({ rotationSeconds, initialFloor }: { rotationSeconds: 
   }, []);
 
   if (showing === "announcements") {
-    return <AnnouncementCarousel onCycleComplete={handleCycleComplete} />;
+    return <AnnouncementCarousel onCycleComplete={handleCycleComplete} floorId={floorId} />;
   }
   return <OfficeGuideView initialFloor={initialFloor} />;
 }

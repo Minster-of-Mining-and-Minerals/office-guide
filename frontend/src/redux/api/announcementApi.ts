@@ -163,8 +163,11 @@ export const announcementApi = baseApi.injectEndpoints({
       ],
     }),
 
-    getPublicAnnouncements: builder.query<PublicAnnouncementsPayload, void>({
-      query: () => "/public/announcements",
+    getPublicAnnouncements: builder.query<PublicAnnouncementsPayload, { floor_id?: string } | void>({
+      query: (params) => ({
+        url: "/public/announcements",
+        params: params ?? undefined,
+      }),
       transformResponse: (response: any): PublicAnnouncementsPayload =>
         response.data,
       providesTags: [{ type: "Announcements" as const, id: "PUBLIC" }],

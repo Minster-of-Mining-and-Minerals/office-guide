@@ -16,29 +16,34 @@ type ApiEnvelope<T> = { success: true; data: T; message?: string };
  */
 export const displayModeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getPublicDisplayMode: builder.query<DisplayMode, void>({
-      query: () => "/public/display-mode",
+    getPublicDisplayMode: builder.query<DisplayMode, { floor_id?: string } | void>({
+      query: (params) => ({ url: "/public/display-mode", params: params ?? undefined }),
       transformResponse: (r: ApiEnvelope<DisplayMode>) => r.data,
       providesTags: ["DisplayMode"],
     }),
+    getAllDisplayModes: builder.query<Record<string, DisplayMode>, void>({
+      query: () => ({ url: "/public/display-mode", params: { all: true } }),
+      transformResponse: (r: ApiEnvelope<Record<string, DisplayMode>>) => r.data,
+      providesTags: ["DisplayMode"],
+    }),
     updateDisplayMode: builder.mutation<
-      DisplayMode,
-      DisplayModeUpdatePayload
+      Record<string, DisplayMode>,
+      Record<string, DisplayModeUpdatePayload>
     >({
       query: (body) => ({
         url: "/settings/display-mode",
         method: "PATCH",
         body,
       }),
-      transformResponse: (r: ApiEnvelope<DisplayMode>) => r.data,
+      transformResponse: (r: ApiEnvelope<Record<string, DisplayMode>>) => r.data,
       invalidatesTags: ["DisplayMode"],
     }),
-    resetDisplayMode: builder.mutation<DisplayMode, void>({
+    resetDisplayMode: builder.mutation<Record<string, DisplayMode>, void>({
       query: () => ({
         url: "/settings/display-mode",
         method: "DELETE",
       }),
-      transformResponse: (r: ApiEnvelope<DisplayMode>) => r.data,
+      transformResponse: (r: ApiEnvelope<Record<string, DisplayMode>>) => r.data,
       invalidatesTags: ["DisplayMode"],
     }),
   }),
@@ -46,6 +51,7 @@ export const displayModeApi = baseApi.injectEndpoints({
 
 export const {
   useGetPublicDisplayModeQuery,
+  useGetAllDisplayModesQuery,
   useUpdateDisplayModeMutation,
   useResetDisplayModeMutation,
 } = displayModeApi;

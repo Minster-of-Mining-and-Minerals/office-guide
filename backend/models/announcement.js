@@ -3,8 +3,11 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class Announcement extends Model {
-    static associate() {
-      // No FK relations today — announcements are global, not floor-bound.
+    static associate(models) {
+      Announcement.belongsTo(models.Floor, {
+        foreignKey: "floor_id",
+        as: "floor",
+      });
     }
   }
 
@@ -18,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING(200),
         allowNull: false,
+      },
+      floor_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
       },
       // Optional caption / text overlay. The full-screen carousel does not
       // render this today, but it's kept so admins can annotate uploads.

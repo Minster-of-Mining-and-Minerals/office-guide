@@ -53,6 +53,7 @@ const listAnnouncements = async (req, res) => {
     const {
       search,
       is_visible,
+      floor_id,
       page = 1,
       limit = 10,
       sort_by,
@@ -69,6 +70,9 @@ const listAnnouncements = async (req, res) => {
     }
     if (is_visible !== undefined) {
       where.is_visible = is_visible === "true" || is_visible === true;
+    }
+    if (floor_id !== undefined) {
+      where.floor_id = floor_id === "null" || floor_id === "" ? null : floor_id;
     }
 
     if (all === "true") {
@@ -163,6 +167,7 @@ const createAnnouncement = async (req, res) => {
 
     const row = await Announcement.create({
       title,
+      floor_id: body.floor_id && body.floor_id !== "null" && body.floor_id !== "" ? body.floor_id : null,
       message: body.message ? String(body.message).trim() || null : null,
       media_type: mediaType,
       media_url: `/uploads/announcements/${req.file.filename}`,
@@ -218,6 +223,10 @@ const updateAnnouncement = async (req, res) => {
 
     const body = req.body || {};
     const previousUrl = row.media_url;
+
+    if (body.floor_id !== undefined) {
+      row.floor_id = body.floor_id && body.floor_id !== "null" && body.floor_id !== "" ? body.floor_id : null;
+    }
 
     if (body.title !== undefined) {
       const title = String(body.title).trim();
@@ -456,11 +465,15 @@ const deleteAnnouncement = async (req, res) => {
  */
 const getPublicAnnouncements = async (_req, res) => {
   try {
+    const { floor_id } = _req.query;
     const now = new Date();
     const rows = await Announcement.findAll({
       where: {
         is_visible: true,
         media_url: { [Op.ne]: null },
+        ...(floor_id && {
+          [Op.or]: [{ floor_id }, { floor_id: null }],
+        }),
         [Op.and]: [
           {
             [Op.or]: [

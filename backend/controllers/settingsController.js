@@ -140,12 +140,24 @@ const ALLOWED_MODES = new Set(["guide_only", "announcements_only", "both"]);
  * Public read of the current display mode.
  * GET /api/public/display-mode
  */
-const getPublicDisplayMode = async (_req, res) => {
+const getPublicDisplayMode = async (req, res) => {
   try {
     const row = await AppSetting.findByPk(DISPLAY_MODE_KEY);
     const stored = (row && row.value) || {};
-    const merged = { ...DEFAULT_DISPLAY_MODE, ...stored };
-    // Guard against stale/invalid persisted values.
+
+    if (req.query.all === "true") {
+      return res.status(200).json({ success: true, data: stored });
+    }
+
+    const floor_id = req.query.floor_id;
+    let floorConfig = {};
+    if (floor_id && stored[floor_id]) {
+      floorConfig = stored[floor_id];
+    } else if (stored.mode) {
+      floorConfig = stored; // Legacy fallback
+    }
+
+    const merged = { ...DEFAULT_DISPLAY_MODE, ...floorConfig };
     if (!ALLOWED_MODES.has(merged.mode)) merged.mode = DEFAULT_DISPLAY_MODE.mode;
     if (
       typeof merged.rotation_seconds !== "number" ||
@@ -157,9 +169,7 @@ const getPublicDisplayMode = async (_req, res) => {
     return res.status(200).json({ success: true, data: merged });
   } catch (err) {
     console.error("getPublicDisplayMode error:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -170,34 +180,40 @@ const getPublicDisplayMode = async (_req, res) => {
 const updateDisplayMode = async (req, res) => {
   try {
     const row = await AppSetting.findByPk(DISPLAY_MODE_KEY);
-    const stored = (row && row.value) || {};
     const incoming = req.body || {};
 
-    const merged = { ...DEFAULT_DISPLAY_MODE, ...stored };
-    if (incoming.mode !== undefined) merged.mode = incoming.mode;
-    if (incoming.rotation_seconds !== undefined) {
-      merged.rotation_seconds = incoming.rotation_seconds;
+    const clean = {};
+    for (const [floorId, config] of Object.entries(incoming)) {
+      if (typeof config !== "object" || config === null) continue;
+      const merged = { ...DEFAULT_DISPLAY_MODE, ...config };
+      if (!ALLOWED_MODES.has(merged.mode)) merged.mode = DEFAULT_DISPLAY_MODE.mode;
+      if (
+        typeof merged.rotation_seconds !== "number" ||
+        !Number.isFinite(merged.rotation_seconds) ||
+        merged.rotation_seconds < 5
+      ) {
+        merged.rotation_seconds = DEFAULT_DISPLAY_MODE.rotation_seconds;
+      }
+      clean[floorId] = merged;
     }
 
     if (row) {
-      row.value = merged;
+      row.value = clean;
       await row.save();
     } else {
-      await AppSetting.create({ key: DISPLAY_MODE_KEY, value: merged });
+      await AppSetting.create({ key: DISPLAY_MODE_KEY, value: clean });
     }
 
     emitSignageUpdate(req, { scope: "display_mode" });
 
     return res.status(200).json({
       success: true,
-      message: "Display mode updated.",
-      data: merged,
+      message: "Display modes updated.",
+      data: clean,
     });
   } catch (err) {
     console.error("updateDisplayMode error:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 

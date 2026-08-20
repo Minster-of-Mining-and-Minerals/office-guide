@@ -120,6 +120,7 @@ export type AnnouncementMediaType = "image" | "video";
 
 export interface Announcement {
   announcement_id: string;
+  floor_id: string | null;
   title: string;
   message: string | null;
   media_type: AnnouncementMediaType | null;
@@ -136,6 +137,7 @@ export interface Announcement {
 
 export interface AnnouncementListParams extends ListParams {
   is_visible?: boolean;
+  floor_id?: string;
 }
 
 export interface PublicAnnouncementsPayload {
