@@ -1,275 +1,24 @@
 "use strict";
 
-const fs = require("fs");
-const path = require("path");
 const { v4: uuidv4 } = require("uuid");
-const FIFTH_FLOOR_FALLBACK = require("./fifth-floor-offices.json");
-
-/**
- * Wipe-and-replace seeder for floor/office data sourced from a CSV.
- *
- * Behaviour:
- *   1. Unpin every display (set `floor_id = NULL`) so the FK to `floors`
- *      is safe to delete against.
- *   2. `DELETE FROM offices`.
- *   3. `DELETE FROM floors`.
- *   4. Parse CSV rows, normalize known formatting drift, validate uniqueness.
- *   5. Insert floors then offices with bilingual fields.
- *
- * CSV format expected (header):
- * floor_id,name,name_am,room_number,department,department_am,
- * contact_person,contact_person_am,description,description_am,
- * display_order,services,services_am
- *
- * Note: some rows in the current source file contain an extra empty column
- * before `contact_person` (14 columns total). This importer auto-normalizes
- * that shape to the expected 13-column layout.
- */
-
-const CSV_FILE = process.env.SIGNAGE_SEED_CSV || "deepseek_csv_20260720_dc80a7.txt";
-const candidatePaths = [
-  path.resolve(__dirname, CSV_FILE),
-  path.resolve(__dirname, "../", CSV_FILE),
-  path.resolve(__dirname, "../../", CSV_FILE),
-];
-const CSV_PATH = candidatePaths.find((p) => fs.existsSync(p)) || candidatePaths[0];
+const { Floor, Office } = require("../models");
+const REAL_OFFICES = require("./office_directory_bilingual.json");
 
 const FLOOR_MAP = {
-  ground_floor: {
-    floor_number: 0,
-    name: "Ground Floor",
-    name_am: "የመሬት ወለል",
-  },
-  "1st_floor": {
-    floor_number: 1,
-    name: "1st Floor",
-    name_am: "1ኛ ፎቅ",
-  },
-  "2nd_floor": {
-    floor_number: 2,
-    name: "2nd Floor",
-    name_am: "2ኛ ፎቅ",
-  },
-  "3rd_floor": {
-    floor_number: 3,
-    name: "3rd Floor",
-    name_am: "3ኛ ፎቅ",
-  },
-  "4th_floor": {
-    floor_number: 4,
-    name: "4th Floor",
-    name_am: "4ኛ ፎቅ",
-  },
-  "5th_floor": {
-    floor_number: 5,
-    name: "5th Floor",
-    name_am: "5ኛ ፎቅ",
-  },
+  ground_floor: { floor_number: 0, name: "Ground Floor", name_am: "የመሬት ወለል" },
+  first_floor: { floor_number: 1, name: "1st Floor", name_am: "1ኛ ፎቅ" },
+  "1st_floor": { floor_number: 1, name: "1st Floor", name_am: "1ኛ ፎቅ" },
+  second_floor: { floor_number: 2, name: "2nd Floor", name_am: "2ኛ ፎቅ" },
+  "2nd_floor": { floor_number: 2, name: "2nd Floor", name_am: "2ኛ ፎቅ" },
+  third_floor: { floor_number: 3, name: "3rd Floor", name_am: "3ኛ ፎቅ" },
+  "3rd_floor": { floor_number: 3, name: "3rd Floor", name_am: "3ኛ ፎቅ" },
+  fourth_floor: { floor_number: 4, name: "4th Floor", name_am: "4ኛ ፎቅ" },
+  "4th_floor": { floor_number: 4, name: "4th Floor", name_am: "4ኛ ፎቅ" },
+  "5th_floor": { floor_number: 5, name: "5th Floor", name_am: "5ኛ ፎቅ" },
 };
 
-function clean(value) {
-  const v = (value || "").trim();
-  return v.length ? v : null;
-}
-
-function parseArrayCell(raw) {
-  const cell = (raw || "").trim();
-  if (!cell) return [];
-
-  if (cell.startsWith("[") && cell.endsWith("]")) {
-    try {
-      const parsed = JSON.parse(cell);
-      if (Array.isArray(parsed)) {
-        return parsed.map((x) => String(x).trim()).filter(Boolean);
-      }
-    } catch (err) {
-      // Fallback to delimited parsing.
-    }
-  }
-
-  const separator = cell.includes("|") ? "|" : ";";
-  return cell
-    .split(separator)
-    .map((x) => x.trim())
-    .filter(Boolean);
-}
-
-function splitCsvLine(line) {
-  const result = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const nextChar = line[i + 1];
-
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  result.push(current);
-  return result;
-}
-
-function parseCsvRows() {
-  if (!fs.existsSync(CSV_PATH)) {
-    throw new Error(
-      `Seed CSV not found at ${CSV_PATH}. Set SIGNAGE_SEED_CSV to override.`
-    );
-  }
-
-  const raw = fs.readFileSync(CSV_PATH, "utf8");
-  const lines = raw
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-
-  if (lines.length < 2) {
-    throw new Error(`Seed CSV ${CSV_PATH} has no data rows.`);
-  }
-
-  const data = [];
-  for (let i = 1; i < lines.length; i++) {
-    const lineNumber = i + 1;
-    const cols = splitCsvLine(lines[i]);
-
-    // Known source drift: some lines have an extra blank column inserted
-    // before contact_person, turning 13 columns into 14.
-    if (cols.length === 14 && !cols[6]) {
-      cols.splice(6, 1);
-    }
-
-    if (cols.length !== 13) {
-      throw new Error(
-        `Invalid column count at line ${lineNumber}: expected 13, got ${cols.length}`
-      );
-    }
-
-    const row = {
-      __line: lineNumber,
-      floor_token: clean((cols[0] || "").replace(/^\d+:\s*/, "")),
-      name: clean(cols[1]),
-      name_am: clean(cols[2]),
-      room_number: clean(cols[3]),
-      department: clean(cols[4]),
-      department_am: clean(cols[5]),
-      contact_person: clean(cols[6]),
-      contact_person_am: clean(cols[7]),
-      description: clean(cols[8]),
-      description_am: clean(cols[9]),
-      display_order: Number.parseInt((cols[10] || "").trim(), 10),
-      services: parseArrayCell(cols[11]),
-      services_am: parseArrayCell(cols[12]),
-    };
-
-    if (!row.floor_token || !row.name || !row.name_am || !row.room_number) {
-      throw new Error(
-        `Missing required field(s) at line ${lineNumber} (floor_id, name, name_am, room_number are required).`
-      );
-    }
-
-    if (!Number.isInteger(row.display_order)) {
-      throw new Error(`Invalid display_order at line ${lineNumber}: '${cols[10]}'`);
-    }
-
-    if (row.services_am.length && row.services.length !== row.services_am.length) {
-      throw new Error(
-        `services/services_am length mismatch at line ${lineNumber}: ${row.services.length} vs ${row.services_am.length}`
-      );
-    }
-
-    data.push(row);
-  }
-
-  return data;
-}
-
-function validateRows(rows) {
-  const unknownFloors = [...new Set(rows.map((r) => r.floor_token))].filter(
-    (token) => !FLOOR_MAP[token]
-  );
-  if (unknownFloors.length) {
-    throw new Error(
-      `Unknown floor_id token(s) in CSV: ${unknownFloors.join(", ")}. Update FLOOR_MAP in this seeder.`
-    );
-  }
-
-  const grouped = new Map();
-  for (const row of rows) {
-    const key = `${row.floor_token}|${row.room_number}`;
-    const arr = grouped.get(key) || [];
-    arr.push(row);
-    grouped.set(key, arr);
-  }
-
-  const duplicateGroups = [];
-  for (const [key, list] of grouped.entries()) {
-    if (list.length > 1) {
-      duplicateGroups.push({
-        key,
-        rows: list,
-      });
-    }
-  }
-
-  if (!duplicateGroups.length) {
-    return {
-      keptRows: rows,
-      skippedDetails: [],
-    };
-  }
-
-  const duplicatedKeys = new Set(duplicateGroups.map((g) => g.key));
-  const keptRows = rows.filter(
-    (r) => !duplicatedKeys.has(`${r.floor_token}|${r.room_number}`)
-  );
-
-  const skippedDetails = duplicateGroups.map((g) =>
-    `${g.key} (lines: ${g.rows.map((r) => r.__line).join(", ")})`
-  );
-
-  return {
-    keptRows,
-    skippedDetails,
-  };
-}
-
 module.exports = {
-  async up(queryInterface) {
-    const parsedRows = parseCsvRows();
-    const { keptRows, skippedDetails } = validateRows(parsedRows);
-
-    let rows = keptRows;
-    const hasFifthFloorRows = rows.some((r) => r.floor_token === "5th_floor");
-    if (!hasFifthFloorRows) {
-      rows = [...rows, ...FIFTH_FLOOR_FALLBACK];
-      console.warn(
-        `No 5th-floor offices in CSV; appended ${FIFTH_FLOOR_FALLBACK.length} fallback rows from Core department data.`
-      );
-    }
-
-    if (rows.length === 0) {
-      throw new Error(
-        "All CSV rows were dropped due to duplicate (floor_id, room_number) conflicts."
-      );
-    }
-
-    if (skippedDetails.length) {
-      console.warn(
-        `Skipping duplicate office rows: ${skippedDetails.join("; ")}`
-      );
-    }
-
+  async up(queryInterface, Sequelize) {
     const t = await queryInterface.sequelize.transaction();
     try {
       // 1. Break the FK from displays → floors so we can wipe floors.
@@ -287,17 +36,32 @@ module.exports = {
         transaction: t,
       });
 
-      // 3. Insert all configured floors (including floors with no offices yet).
+      // 3. Insert all configured floors.
       const now = new Date();
       const floorIdByToken = new Map();
-      const allTokens = Object.keys(FLOOR_MAP).sort(
-        (a, b) => FLOOR_MAP[a].floor_number - FLOOR_MAP[b].floor_number
-      );
-
-      const floorRows = allTokens.map((token) => {
+      
+      const floorsToInsert = [];
+      const seenFloorNumbers = new Set();
+      
+      const uniqueFloorMeta = [];
+      for (const token of Object.keys(FLOOR_MAP)) {
         const meta = FLOOR_MAP[token];
+        if (!seenFloorNumbers.has(meta.floor_number)) {
+          seenFloorNumbers.add(meta.floor_number);
+          uniqueFloorMeta.push({ token, meta });
+        }
+      }
+      
+      uniqueFloorMeta.sort((a, b) => a.meta.floor_number - b.meta.floor_number);
+
+      const floorRows = uniqueFloorMeta.map(({ token, meta }) => {
         const floorId = uuidv4();
-        floorIdByToken.set(token, floorId);
+        for (const tkn of Object.keys(FLOOR_MAP)) {
+           if (FLOOR_MAP[tkn].floor_number === meta.floor_number) {
+               floorIdByToken.set(tkn, floorId);
+           }
+        }
+        
         return {
           floor_id: floorId,
           floor_number: meta.floor_number,
@@ -310,32 +74,46 @@ module.exports = {
         };
       });
 
-      await queryInterface.bulkInsert("floors", floorRows, { transaction: t });
+      await Floor.bulkCreate(floorRows, { transaction: t });
 
-      // 4. Insert offices from CSV.
-      const officeRows = rows.map((row) => ({
-        office_id: uuidv4(),
-        floor_id: floorIdByToken.get(row.floor_token),
-        room_number: row.room_number,
-        display_order: row.display_order,
-        name: row.name,
-        name_am: row.name_am,
-        department: row.department,
-        department_am: row.department_am,
-        contact_person: row.contact_person,
-        contact_person_am: row.contact_person_am,
-        description: row.description,
-        description_am: row.description_am,
-        services: row.services,
-        services_am: row.services_am,
-        created_at: now,
-        updated_at: now,
-      }));
+      // 4. Deduplicate offices
+      const seenRooms = new Set();
+      const uniqueOffices = [];
 
-      await queryInterface.bulkInsert("offices", officeRows, { transaction: t });
+      for (const row of REAL_OFFICES) {
+        const key = `${row.floor_token}|${row.room_number}`;
+        if (!seenRooms.has(key)) {
+          seenRooms.add(key);
+          uniqueOffices.push(row);
+        }
+      }
+
+      // 5. Insert offices from the JSON file.
+      const officeRows = uniqueOffices.map((row) => {
+        return {
+          office_id: uuidv4(),
+          floor_id: floorIdByToken.get(row.floor_token),
+          room_number: row.room_number,
+          display_order: row.display_order,
+          name: row.name,
+          name_am: row.name_am,
+          department: row.department,
+          department_am: row.department_am,
+          contact_person: row.contact_person || null,
+          contact_person_am: row.contact_person_am || null,
+          description: row.description || null,
+          description_am: row.description_am || null,
+          services: row.services || [],
+          services_am: row.services_am || [],
+          created_at: now,
+          updated_at: now,
+        };
+      });
+
+      await Office.bulkCreate(officeRows, { transaction: t });
 
       await t.commit();
-      console.log(`CSV office seed complete: ${allTokens.length} floors + ${rows.length} offices.`);
+      console.log(`Office seed complete: ${floorRows.length} floors + ${uniqueOffices.length} offices.`);
     } catch (err) {
       await t.rollback();
       throw err;
