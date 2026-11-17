@@ -27,51 +27,18 @@ const CURATED = [
 ];
 
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    const [existingUsers] = await queryInterface.sequelize.query(
-      `SELECT COUNT(*)::int AS n FROM users WHERE user_type_id IS NOT NULL`
-    );
-    const hasReferencedType = (existingUsers?.[0]?.n ?? 0) > 0;
-
-    if (hasReferencedType) {
-      // Someone assigned a user_type_id already — don't drop referenced
-      // rows. Just insert the new ones with `ON CONFLICT DO NOTHING`
-      // semantics (bulkInsert doesn't expose that, so we manually skip
-      // duplicates by name).
-      const now = new Date();
-      for (const t of CURATED) {
-        const [rows] = await queryInterface.sequelize.query(
-          `SELECT 1 FROM user_types WHERE name = :name LIMIT 1`,
-          { replacements: { name: t.name } }
-        );
-        if (rows.length === 0) {
-          await queryInterface.bulkInsert("user_types", [
-            {
-              user_type_id: uuidv4(),
-              name: t.name,
-              description: t.description,
-              created_at: now,
-              updated_at: now,
-            },
-          ]);
-        }
-      }
-      return;
-    }
-
-    // Safe to wipe — nobody references the placeholder types.
-    await queryInterface.bulkDelete("user_types", null, {});
+  // NON-DESTRUCTIVE: runs on every container start, so it only inserts
+  // user types that are missing and never deletes existing rows.
+  async up(queryInterface) {
     const now = new Date();
-    await queryInterface.bulkInsert(
-      "user_types",
-      CURATED.map((t) => ({
-        user_type_id: uuidv4(),
-        name: t.name,
-        description: t.description,
-        created_at: now,
-        updated_at: now,
-      }))
-    );
+    for (const t of CURATED) {
+      await queryInterface.sequelize.query(
+        `INSERT INTO user_types (user_type_id, name, description, created_at, updated_at)
+         VALUES (:id, :name, :description, :now, :now)
+         ON CONFLICT (name) DO NOTHING`,
+        { replacements: { id: uuidv4(), name: t.name, description: t.description, now } }
+      );
+    }
   },
 
   async down(queryInterface) {

@@ -1,12 +1,12 @@
 import { baseApi } from "../baseApi";
 import type {
   Announcement,
+  AnnouncementList,
   AnnouncementListParams,
-  Paginated,
   PublicAnnouncementsPayload,
 } from "../types/signage";
 
-type ListResponse = Paginated<Announcement>;
+type ListResponse = AnnouncementList;
 
 /**
  * Create/update payload used by the admin UI. The `media` field carries the
@@ -21,6 +21,9 @@ export interface AnnouncementFormValues {
   duration_seconds?: number;
   audio_enabled?: boolean;
   is_visible?: boolean;
+  /** true = every floor; false = only `floor_ids`. */
+  all_floors?: boolean;
+  floor_ids?: string[];
   start_date?: string | null;
   end_date?: string | null;
   /** Required on create, optional on update. */
@@ -38,6 +41,10 @@ function toFormData(values: AnnouncementFormValues): FormData {
     if (val === undefined || val === null) continue;
     if (key === "media" && val instanceof File) {
       fd.append("media", val);
+      continue;
+    }
+    if (Array.isArray(val)) {
+      fd.append(key, JSON.stringify(val));
       continue;
     }
     if (typeof val === "boolean") {

@@ -4,12 +4,14 @@
  * Reseeds users and roles with real, meaningful data for the
  * Ministry of Mining digital signage / office guide admin panel.
  *
- * Wipes:
- *   - Every existing row in `roles` (cascades to role_permissions +
- *     user_roles thanks to ON DELETE CASCADE — see migrations).
- *   - Every existing row in `users` (cascades to user_roles).
+ * NON-DESTRUCTIVE: this seeder runs on EVERY container start (see
+ * docker-entrypoint.sh), so it never deletes or overwrites anything:
+ *   - Roles are inserted only if no role with that name exists; the
+ *     permissions of an existing role are left as the admin set them.
+ *   - The default admin user is created only when the `users` table is
+ *     completely empty (fresh database, or every user was deleted).
  *
- * Inserts four production-ready roles wired to the 7 curated
+ * Ensures four production-ready roles wired to the 7 curated
  * permissions in `permissions` (dashboard:view, floors:manage,
  * offices:manage, appearance:manage, users:manage, roles:manage,
  * permissions:manage):
@@ -27,9 +29,7 @@
  *   - is_first_logged_in: false (log straight in — the seeded
  *     password is known and safe for internal use)
  *
- * Idempotent-ish: safe to re-run after `db:seed:undo`. Not safe to
- * run twice in a row without undoing first (the `up` block wipes
- * both tables before inserting).
+ * Idempotent: safe to run any number of times.
  */
 
 const { v4: uuidv4 } = require("uuid");
@@ -128,42 +128,50 @@ module.exports = {
       );
     }
 
-    // ── 3. Wipe the identity tables (CASCADEs handle joins) ──
-    // Use TRUNCATE ... CASCADE so soft-deleted junk (`deleted_at IS NOT NULL`)
-    // is also cleared — bulkDelete respects paranoid deletes and would skip
-    // those rows, leaving orphans.
-    await queryInterface.sequelize.query(
-      `TRUNCATE TABLE user_roles, users, role_permissions, roles RESTART IDENTITY CASCADE`
+    // ── 3. Ensure each role exists (never overwrite existing ones) ──
+    const roleIdByName = new Map();
+    for (const def of ROLE_DEFINITIONS) {
+      const [inserted] = await queryInterface.sequelize.query(
+        `INSERT INTO roles (role_id, name, description, is_active, created_at, updated_at, deleted_at)
+         VALUES (:id, :name, :description, true, :now, :now, NULL)
+         ON CONFLICT (name) DO NOTHING
+         RETURNING role_id`,
+        { replacements: { id: uuidv4(), name: def.name, description: def.description, now } }
+      );
+
+      if (inserted.length) {
+        // Brand-new role → attach its default permissions.
+        const roleId = inserted[0].role_id;
+        await queryInterface.bulkInsert(
+          "role_permissions",
+          def.permissionKeys.map((key) => ({
+            role_permission_id: uuidv4(),
+            role_id: roleId,
+            permission_id: permissionIdByKey.get(key),
+            is_active: true,
+            created_at: now,
+            updated_at: now,
+          }))
+        );
+        roleIdByName.set(def.name, roleId);
+      } else {
+        const [rows] = await queryInterface.sequelize.query(
+          `SELECT role_id FROM roles WHERE name = :name LIMIT 1`,
+          { replacements: { name: def.name } }
+        );
+        roleIdByName.set(def.name, rows[0].role_id);
+      }
+    }
+
+    // ── 4. Create the default admin ONLY on an empty users table ──
+    const [[{ n: userCount }]] = await queryInterface.sequelize.query(
+      `SELECT COUNT(*)::int AS n FROM users`
     );
+    if (userCount > 0) {
+      console.log("Admin seed: users already exist, leaving them untouched.");
+      return;
+    }
 
-    // ── 4. Insert real roles ──
-    const roleRows = ROLE_DEFINITIONS.map((def) => ({
-      role_id: uuidv4(),
-      name: def.name,
-      description: def.description,
-      is_active: true,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
-    }));
-    await queryInterface.bulkInsert("roles", roleRows);
-
-    const roleIdByName = new Map(roleRows.map((r) => [r.name, r.role_id]));
-
-    // ── 5. Insert role_permissions join rows ──
-    const rolePermRows = ROLE_DEFINITIONS.flatMap((def) =>
-      def.permissionKeys.map((key) => ({
-        role_permission_id: uuidv4(),
-        role_id: roleIdByName.get(def.name),
-        permission_id: permissionIdByKey.get(key),
-        is_active: true,
-        created_at: now,
-        updated_at: now,
-      }))
-    );
-    await queryInterface.bulkInsert("role_permissions", rolePermRows);
-
-    // ── 6. Insert the admin user ──
     const passwordHash = await bcrypt.hash(ADMIN_USER.plaintextPassword, 10);
     const adminUserId = uuidv4();
     await queryInterface.bulkInsert("users", [
@@ -174,10 +182,6 @@ module.exports = {
         password: passwordHash,
         phone_number: ADMIN_USER.phone_number,
         profile_image: null,
-        // `false` → they can log straight in. If the frontend later
-        // implements a "force change temp password" gate, this flag is
-        // how it decides. Real users created via the UI still start
-        // with `true` since the API generates a random password for them.
         is_first_logged_in: false,
         last_login_at: null,
         password_changed_at: now,
@@ -188,7 +192,6 @@ module.exports = {
       },
     ]);
 
-    // ── 7. Assign Super Admin role to the admin user ──
     await queryInterface.bulkInsert("user_roles", [
       {
         user_role_id: uuidv4(),
@@ -201,6 +204,7 @@ module.exports = {
         updated_at: now,
       },
     ]);
+    console.log(`Admin seed: created default admin ${ADMIN_USER.email}.`);
   },
 
   async down(queryInterface) {

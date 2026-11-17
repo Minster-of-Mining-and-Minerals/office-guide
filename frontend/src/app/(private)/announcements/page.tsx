@@ -30,9 +30,10 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
+  ArrowDownIcon,
   ArrowUpDownIcon,
+  ArrowUpIcon,
   CalendarIcon,
-  CheckIcon,
   EyeIcon,
   EyeOffIcon,
   FilmIcon,
@@ -80,7 +81,11 @@ import {
   useUpdateAnnouncementMutation,
 } from "@/redux/api/announcementApi";
 import { useGetAllFloorsQuery } from "@/redux/api/floorApi";
-import type { Announcement, Floor } from "@/redux/types/signage";
+import type {
+  Announcement,
+  AnnouncementStatus,
+  Floor,
+} from "@/redux/types/signage";
 
 const PAGE_LIMIT = 10;
 
@@ -118,7 +123,10 @@ function RowCheckbox({
 
 interface FormState {
   title: string;
-  floor_id: string;
+  /** true = every floor (including floors added later). */
+  all_floors: boolean;
+  /** Chosen floors when `all_floors` is false. */
+  floor_ids: string[];
   message: string;
   duration_seconds: number;
   audio_enabled: boolean;
@@ -130,7 +138,8 @@ interface FormState {
 
 const emptyForm: FormState = {
   title: "",
-  floor_id: "global",
+  all_floors: true,
+  floor_ids: [],
   message: "",
   duration_seconds: 10,
   audio_enabled: false,
@@ -185,6 +194,247 @@ function toLocalInput(iso: string | null): string {
   )}:${pad(d.getMinutes())}`;
 }
 
+// ─── Status, sorting and floors ─────────────────────────────────────
+
+const STATUS_META: Record<
+  AnnouncementStatus,
+  { label: string; className: string }
+> = {
+  live: {
+    label: "Live",
+    className: "bg-emerald-400/15 text-emerald-300",
+  },
+  scheduled: {
+    label: "Scheduled",
+    className: "bg-sky-400/15 text-sky-300",
+  },
+  ended: {
+    label: "Ended",
+    className: "bg-rose-400/15 text-rose-300",
+  },
+  hidden: {
+    label: "Hidden",
+    className: "bg-white/10 text-white/60",
+  },
+};
+
+const STATUS_TABS: { value: "all" | AnnouncementStatus; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "live", label: "Live" },
+  { value: "scheduled", label: "Scheduled" },
+  { value: "ended", label: "Ended" },
+  { value: "hidden", label: "Hidden" },
+];
+
+/** Sort options, with the word pair shown for ascending / descending. */
+const SORT_OPTIONS: {
+  value: string;
+  label: string;
+  asc: string;
+  desc: string;
+  defaultOrder: "ASC" | "DESC";
+}[] = [
+  { value: "display_order", label: "Play order", asc: "first to last", desc: "last to first", defaultOrder: "ASC" },
+  { value: "created_at", label: "Date added", asc: "oldest first", desc: "newest first", defaultOrder: "DESC" },
+  { value: "title", label: "Title", asc: "A to Z", desc: "Z to A", defaultOrder: "ASC" },
+  { value: "end_date", label: "End date", asc: "ending soonest", desc: "ending latest", defaultOrder: "ASC" },
+  { value: "status", label: "Status", asc: "live first", desc: "hidden first", defaultOrder: "ASC" },
+  { value: "floor", label: "Floor", asc: "lowest floor first", desc: "highest floor first", defaultOrder: "ASC" },
+];
+
+function StatusPill({ status }: { status: AnnouncementStatus }) {
+  const meta = STATUS_META[status] ?? STATUS_META.live;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap",
+        meta.className
+      )}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {meta.label}
+    </span>
+  );
+}
+
+/** Short floor label: "G" for ground, otherwise the number. */
+const floorShort = (n: number) => (n === 0 ? "G" : String(n));
+
+function FloorBadges({ announcement }: { announcement: Announcement }) {
+  if (announcement.all_floors) {
+    return (
+      <span className="inline-flex items-center rounded-md bg-golden-classic/15 px-2 py-0.5 text-[11px] font-semibold text-golden-classic whitespace-nowrap">
+        All floors
+      </span>
+    );
+  }
+  if (!announcement.floors?.length) {
+    return (
+      <span
+        className="inline-flex items-center rounded-md bg-rose-400/15 px-2 py-0.5 text-[11px] font-semibold text-rose-300 whitespace-nowrap"
+        title="Its floors were deleted, so it plays nowhere. Edit it to choose floors."
+      >
+        No floors
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex flex-wrap gap-1">
+      {announcement.floors.map((f) => (
+        <span
+          key={f.floor_id}
+          title={f.name}
+          className="inline-grid h-[22px] min-w-[22px] place-items-center rounded-md bg-white/10 px-1.5 text-[11px] font-semibold text-white"
+        >
+          {floorShort(f.floor_number)}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * Multi-floor picker: an "All floors" master checkbox plus one tile per
+ * floor. Ticking every tile is the same as "All floors".
+ */
+function FloorTilesPicker({
+  floors,
+  allFloors,
+  selectedIds,
+  onChange,
+}: {
+  floors: Floor[];
+  allFloors: boolean;
+  selectedIds: string[];
+  onChange: (next: { all_floors: boolean; floor_ids: string[] }) => void;
+}) {
+  const sorted = useMemo(
+    () => [...floors].sort((a, b) => a.floor_number - b.floor_number),
+    [floors]
+  );
+  const allIds = sorted.map((f) => f.floor_id);
+  const checked = new Set(allFloors ? allIds : selectedIds);
+  const count = sorted.filter((f) => checked.has(f.floor_id)).length;
+  const masterRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (masterRef.current) {
+      masterRef.current.indeterminate =
+        !allFloors && count > 0 && count < sorted.length;
+    }
+  }, [allFloors, count, sorted.length]);
+
+  const toggleFloor = (id: string, on: boolean) => {
+    const next = new Set(checked);
+    if (on) next.add(id);
+    else next.delete(id);
+    const ids = allIds.filter((x) => next.has(x));
+    onChange(
+      ids.length === allIds.length && allIds.length > 0
+        ? { all_floors: true, floor_ids: [] }
+        : { all_floors: false, floor_ids: ids }
+    );
+  };
+
+  const names = sorted.filter((f) => checked.has(f.floor_id)).map((f) => f.name);
+
+  return (
+    <div className="space-y-2.5">
+      <label
+        className={cn(
+          "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors",
+          allFloors
+            ? "border-golden-classic bg-golden-classic/10"
+            : "border-white/15 bg-white/5 hover:border-golden-classic/60"
+        )}
+      >
+        <input
+          ref={masterRef}
+          type="checkbox"
+          checked={allFloors}
+          onChange={(e) =>
+            onChange(
+              e.target.checked
+                ? { all_floors: true, floor_ids: [] }
+                : { all_floors: false, floor_ids: [] }
+            )
+          }
+          className="h-4 w-4 cursor-pointer accent-golden-dark"
+        />
+        <span>
+          <span className="block text-sm font-semibold text-white">All floors</span>
+          <span className="block text-[11px] text-white/50">
+            Every kiosk in the building, including floors added later.
+          </span>
+        </span>
+      </label>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {sorted.map((f) => {
+          const on = checked.has(f.floor_id);
+          return (
+            <label
+              key={f.floor_id}
+              className={cn(
+                "relative grid cursor-pointer gap-0.5 rounded-lg border p-2.5 transition-colors",
+                on
+                  ? "border-golden-classic bg-golden-classic/10"
+                  : "border-white/15 bg-white/5 hover:border-golden-classic/60"
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={(e) => toggleFloor(f.floor_id, e.target.checked)}
+                className="absolute right-2.5 top-2.5 h-4 w-4 cursor-pointer accent-golden-dark"
+                aria-label={f.name}
+              />
+              <span
+                className={cn(
+                  "text-xl font-bold leading-none",
+                  on ? "text-golden-classic" : "text-white"
+                )}
+              >
+                {floorShort(f.floor_number)}
+              </span>
+              <span className="truncate text-[11px] text-white/60">
+                {f.name}
+              </span>
+              {f.name_am && (
+                <span className="truncate text-[11px] text-white/40">
+                  {f.name_am}
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
+
+      {count === 0 ? (
+        <p className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+          Choose at least one floor, or the announcement won&apos;t play
+          anywhere.
+        </p>
+      ) : (
+        <p className="rounded-md bg-white/5 px-3 py-2 text-xs text-white/60">
+          {allFloors ? (
+            <>
+              Plays on <b className="text-white">all floors</b>.
+            </>
+          ) : (
+            <>
+              Plays on{" "}
+              <b className="text-white">
+                {count} of {sorted.length}
+              </b>{" "}
+              floors: {names.join(", ")}.
+            </>
+          )}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ─── Sortable row for reorder dialog ────────────────────────────────
 
 function SortableRow({
@@ -215,7 +465,7 @@ function SortableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-xl border bg-white p-3 transition-all ${
+      className={`group flex items-center gap-3 rounded-xl border bg-white/5 p-3 text-white transition-all ${
         isDragging
           ? "border-golden-classic shadow-lg ring-2 ring-golden-classic/40 opacity-95"
           : "border-golden-classic/25 hover:border-golden-classic/60 hover:shadow-sm"
@@ -274,7 +524,9 @@ function SortableRow({
 export default function AnnouncementsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [visibilityFilter, setVisibilityFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | AnnouncementStatus>("all");
+  // "any" = no floor filter, "all" = only all-floor announcements, else a floor id.
+  const [floorFilter, setFloorFilter] = useState<string>("any");
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("display_order");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
@@ -287,21 +539,22 @@ export default function AnnouncementsPage() {
   const queryParams = useMemo(
     () => ({
       search: debouncedSearch || undefined,
-      is_visible:
-        visibilityFilter === "all"
-          ? undefined
-          : visibilityFilter === "visible",
+      status: statusFilter === "all" ? undefined : statusFilter,
+      floor_id: floorFilter === "any" ? undefined : floorFilter,
       page,
       limit: PAGE_LIMIT,
       sort_by: sortBy,
       sort_order: sortOrder,
     }),
-    [debouncedSearch, visibilityFilter, page, sortBy, sortOrder]
+    [debouncedSearch, statusFilter, floorFilter, page, sortBy, sortOrder]
   );
 
   const { data, isLoading, isFetching } = useGetAnnouncementsQuery(queryParams);
   const { data: floorsData } = useGetAllFloorsQuery();
-  const floors = floorsData ?? [];
+  const floors = useMemo(
+    () => [...(floorsData ?? [])].sort((a, b) => a.floor_number - b.floor_number),
+    [floorsData]
+  );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Announcement | null>(null);
@@ -325,7 +578,7 @@ export default function AnnouncementsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [page, debouncedSearch, visibilityFilter, sortBy, sortOrder]);
+  }, [page, debouncedSearch, statusFilter, floorFilter, sortBy, sortOrder]);
   const [bulkSetVisibility, { isLoading: bulkUpdating }] =
     useBulkSetAnnouncementVisibilityMutation();
 
@@ -365,7 +618,8 @@ export default function AnnouncementsPage() {
     setEditing(a);
     setForm({
       title: a.title,
-      floor_id: a.floor_id || "global",
+      all_floors: a.all_floors,
+      floor_ids: (a.floors ?? []).map((f) => f.floor_id),
       message: a.message ?? "",
       duration_seconds: a.duration_seconds || 10,
       audio_enabled: a.audio_enabled,
@@ -430,6 +684,9 @@ export default function AnnouncementsPage() {
     if (!editing && !form.media) {
       return setFormError("Please upload an image or video.");
     }
+    if (!form.all_floors && form.floor_ids.length === 0) {
+      return setFormError("Choose at least one floor, or select All floors.");
+    }
     if (form.duration_seconds < 1) {
       return setFormError("Duration must be at least 1 second.");
     }
@@ -441,7 +698,8 @@ export default function AnnouncementsPage() {
 
     const payload = {
       title,
-      floor_id: form.floor_id === "global" ? null : form.floor_id,
+      all_floors: form.all_floors,
+      floor_ids: form.all_floors ? [] : form.floor_ids,
       message: form.message.trim() || null,
       duration_seconds: form.duration_seconds,
       audio_enabled: form.audio_enabled,
@@ -580,13 +838,20 @@ export default function AnnouncementsPage() {
     }
   };
 
+  const sortOption =
+    SORT_OPTIONS.find((o) => o.value === sortBy) ?? SORT_OPTIONS[0];
+  const changeSort = (col: string) => {
+    const opt = SORT_OPTIONS.find((o) => o.value === col);
+    setSortBy(col);
+    setSortOrder(opt?.defaultOrder ?? "ASC");
+    setPage(1);
+  };
   const toggleSort = (col: string) => {
     if (sortBy === col) setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
-    else {
-      setSortBy(col);
-      setSortOrder("ASC");
-    }
+    else changeSort(col);
   };
+  const sortDirWord = sortOrder === "ASC" ? sortOption.asc : sortOption.desc;
+  const counts = data?.counts;
   const sortIndicator = (col: string) =>
     sortBy === col ? (sortOrder === "ASC" ? " ↑" : " ↓") : "";
 
@@ -605,22 +870,38 @@ export default function AnnouncementsPage() {
         }}
         searchPlaceholder="Search title or caption…"
         filters={
-          <Select
-            value={visibilityFilter}
-            onValueChange={(v) => {
-              setVisibilityFilter(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-56">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="visible">Visible only</SelectItem>
-              <SelectItem value="hidden">Hidden only</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-white/50 whitespace-nowrap">Sort by</span>
+            <Select value={sortBy} onValueChange={changeSort}>
+              <SelectTrigger className="w-40" aria-label="Sort by">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
+                setPage(1);
+              }}
+              aria-label={`Sorted ${sortDirWord}. Click to reverse.`}
+              title={`Sorted ${sortDirWord}`}
+            >
+              {sortOrder === "ASC" ? (
+                <ArrowUpIcon className="h-4 w-4" />
+              ) : (
+                <ArrowDownIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         }
         right={
           <>
@@ -641,6 +922,74 @@ export default function AnnouncementsPage() {
           </>
         }
       />
+
+      {/* ─── Floor filter + status tabs ───────────────────────── */}
+      <div className="space-y-3">
+        <div
+          className="flex flex-wrap items-center gap-1.5"
+          role="group"
+          aria-label="Filter by floor"
+        >
+          <span className="mr-1 text-xs text-white/50">Floor</span>
+          {[
+            { value: "any", label: "All" },
+            { value: "all", label: "Set to all floors" },
+            ...floors.map((f) => ({ value: f.floor_id, label: f.name })),
+          ].map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={floorFilter === o.value}
+              onClick={() => {
+                setFloorFilter(o.value);
+                setPage(1);
+              }}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                floorFilter === o.value
+                  ? "border-golden-classic bg-golden-classic/15 text-golden-classic"
+                  : "border-white/10 text-white/60 hover:border-white/30 hover:text-white"
+              )}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+
+        <div
+          className="flex gap-1 overflow-x-auto border-b border-white/10"
+          role="group"
+          aria-label="Filter by status"
+        >
+          {STATUS_TABS.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              aria-pressed={statusFilter === t.value}
+              onClick={() => {
+                setStatusFilter(t.value);
+                setPage(1);
+              }}
+              className={cn(
+                "-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+                statusFilter === t.value
+                  ? "border-golden-classic text-white"
+                  : "border-transparent text-white/50 hover:text-white"
+              )}
+            >
+              {t.label}
+              <span className="ml-1.5 text-[11px] tabular-nums text-white/40">
+                {counts?.[t.value] ?? 0}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <p className="text-xs text-white/40">
+          {total} announcement{total === 1 ? "" : "s"} · sorted by{" "}
+          {sortOption.label.toLowerCase()}, {sortDirWord}
+        </p>
+      </div>
 
       {/* ─── Bulk action bar ────────────────────────────────────
           Only appears when at least one row across the current page is
@@ -717,15 +1066,31 @@ export default function AnnouncementsPage() {
               >
                 Title{sortIndicator("title")}
               </TableHead>
+              <TableHead
+                className="cursor-pointer select-none text-golden-classic/70"
+                onClick={() => toggleSort("floor")}
+              >
+                Floors{sortIndicator("floor")}
+              </TableHead>
               <TableHead className="text-golden-classic/70">Type</TableHead>
-              <TableHead className="text-golden-classic/70">Duration</TableHead>
-              <TableHead className="text-golden-classic/70">Schedule</TableHead>
-              <TableHead className="text-golden-classic/70">On display</TableHead>
+              <TableHead
+                className="cursor-pointer select-none text-golden-classic/70"
+                onClick={() => toggleSort("end_date")}
+              >
+                Schedule{sortIndicator("end_date")}
+              </TableHead>
+              <TableHead
+                className="cursor-pointer select-none text-golden-classic/70"
+                onClick={() => toggleSort("status")}
+              >
+                Status{sortIndicator("status")}
+              </TableHead>
+              <TableHead className="text-golden-classic/70">On kiosks</TableHead>
               <TableHead
                 className="cursor-pointer select-none text-golden-classic/70"
                 onClick={() => toggleSort("display_order")}
               >
-                Order{sortIndicator("display_order")}
+                #{sortIndicator("display_order")}
               </TableHead>
               <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
             </TableRow>
@@ -733,21 +1098,27 @@ export default function AnnouncementsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow className="border-white/5">
-                <TableCell colSpan={9} className="h-32 text-center">
+                <TableCell colSpan={10} className="h-32 text-center">
                   <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow className="border-white/5">
                 <TableCell
-                  colSpan={9}
+                  colSpan={10}
                   className="h-32 text-center text-white/40"
                 >
                   <div className="flex flex-col items-center gap-2">
                     <MegaphoneIcon className="h-6 w-6 opacity-40" />
-                    No announcements yet. Click{" "}
-                    <span className="font-medium text-golden-classic">New Announcement</span> to
-                    upload the first one.
+                    {counts?.all === 0 && !debouncedSearch && floorFilter === "any" ? (
+                      <span>
+                        No announcements yet. Click{" "}
+                        <span className="font-medium text-golden-classic">New Announcement</span>{" "}
+                        to upload the first one.
+                      </span>
+                    ) : (
+                      <span>No announcements match these filters.</span>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -787,23 +1158,15 @@ export default function AnnouncementsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium text-white flex items-center gap-2">
-                        {a.title}
-                        {a.floor_id ? (
-                          <span className="inline-flex items-center rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-white/70">
-                            Floor {floors.find((f) => f.floor_id === a.floor_id)?.floor_number ?? "?"}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded bg-golden-classic/20 px-1.5 py-0.5 text-[10px] font-medium text-golden-classic">
-                            Global
-                          </span>
-                        )}
-                      </p>
+                      <p className="font-medium text-white">{a.title}</p>
                       {a.message && (
                         <p className="text-[11px] text-white/40 line-clamp-1 max-w-md">
                           {a.message}
                         </p>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <FloorBadges announcement={a} />
                     </TableCell>
                     <TableCell>
                       <span
@@ -830,48 +1193,32 @@ export default function AnnouncementsPage() {
                           Sound
                         </span>
                       )}
+                      <p className="mt-1 text-[11px] text-white/40">
+                        {isVideo ? "Full clip" : `${a.duration_seconds}s on screen`}
+                      </p>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {isVideo ? "Full clip" : `${a.duration_seconds}s`}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <CalendarIcon className="h-3 w-3" />
                         {formatScheduleWindow(a)}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={a.is_visible}
-                          onCheckedChange={(v) => toggleSingleRow(a, v)}
-                          aria-label={
-                            a.is_visible
-                              ? "Hide from display"
-                              : "Show on display"
-                          }
-                        />
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                            a.is_visible
-                              ? "bg-emerald-100 border border-emerald-200 text-emerald-800"
-                              : "bg-muted border border-muted-foreground/20 text-muted-foreground"
-                          )}
-                        >
-                          {a.is_visible ? (
-                            <>
-                              <CheckIcon className="h-3 w-3" />
-                              On
-                            </>
-                          ) : (
-                            "Off"
-                          )}
-                        </span>
-                      </div>
+                      <StatusPill status={a.status} />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={a.is_visible}
+                        onCheckedChange={(v) => toggleSingleRow(a, v)}
+                        aria-label={
+                          a.is_visible
+                            ? `Hide ${a.title} from kiosks`
+                            : `Show ${a.title} on kiosks`
+                        }
+                      />
                     </TableCell>
                     <TableCell className="text-muted-foreground tabular-nums">
-                      {a.display_order}
+                      {a.display_order + 1}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -937,8 +1284,9 @@ export default function AnnouncementsPage() {
                     {editing ? "Edit Announcement" : "New Announcement"}
                   </DialogTitle>
                   <p className="text-xs text-white/70 mt-0.5">
-                    Upload an image or video. It will play full-screen on
-                    every kiosk when the display mode includes announcements.
+                    Upload an image or video. It plays full-screen on the
+                    floors you choose when their display mode includes
+                    announcements.
                   </p>
                 </div>
               </div>
@@ -968,7 +1316,7 @@ export default function AnnouncementsPage() {
                   "block rounded-xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden",
                   form.media
                     ? "border-golden-classic bg-golden-metallic/30"
-                    : "border-golden-classic/30 hover:border-golden-classic/60 bg-white"
+                    : "border-golden-classic/30 hover:border-golden-classic/60 bg-white/5"
                 )}
               >
                 {mediaPreview ? (
@@ -1049,7 +1397,7 @@ export default function AnnouncementsPage() {
                 label="Details"
                 subtitle="Title is shown on the kiosk as a small chip. The caption is optional."
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="title">
                     Title<span className="text-red-500 ml-0.5">*</span>
@@ -1065,25 +1413,17 @@ export default function AnnouncementsPage() {
                     required
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="floor">Floor</Label>
-                  <Select
-                    value={form.floor_id}
-                    onValueChange={(v) => setForm({ ...form, floor_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select floor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="global">Global (All floors)</SelectItem>
-                      {floors.map((f) => (
-                        <SelectItem key={f.floor_id} value={f.floor_id}>
-                          Floor {f.floor_number}: {f.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>
+                  Show on floors<span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <FloorTilesPicker
+                  floors={floors}
+                  allFloors={form.all_floors}
+                  selectedIds={form.floor_ids}
+                  onChange={(next) => setForm((f) => ({ ...f, ...next }))}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="message">Caption</Label>
@@ -1131,9 +1471,9 @@ export default function AnnouncementsPage() {
                   </p>
                 </div>
                 <div className="flex flex-col justify-end gap-3">
-                  <div className="flex items-center justify-between rounded-md border bg-white px-3 py-2">
+                  <div className="flex items-center justify-between rounded-md border border-white/15 bg-white/5 px-3 py-2">
                     <div>
-                      <Label className="text-xs font-medium">Visible</Label>
+                      <Label className="text-xs font-medium text-white">Visible</Label>
                       <p className="text-[11px] text-muted-foreground">
                         Off = hidden from every kiosk, kept as a template.
                       </p>
@@ -1145,9 +1485,9 @@ export default function AnnouncementsPage() {
                       }
                     />
                   </div>
-                  <div className="flex items-center justify-between rounded-md border bg-white px-3 py-2">
+                  <div className="flex items-center justify-between rounded-md border border-white/15 bg-white/5 px-3 py-2">
                     <div>
-                      <Label className="text-xs font-medium">
+                      <Label className="text-xs font-medium text-white">
                         Video sound
                       </Label>
                       <p className="text-[11px] text-muted-foreground">
@@ -1202,7 +1542,7 @@ export default function AnnouncementsPage() {
             )}
           </form>
 
-          <div className="shrink-0 border-t border-golden-classic/15 bg-white px-6 py-3">
+          <div className="shrink-0 border-t border-white/10 bg-[#0D1F3C] px-6 py-3">
             <DialogFooter className="!m-0">
               <Button
                 type="button"
@@ -1262,7 +1602,7 @@ export default function AnnouncementsPage() {
 
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             {fetchingAll ? (
-              <div className="rounded-xl border border-golden-classic/25 bg-white p-8 text-center">
+              <div className="rounded-xl border border-golden-classic/25 bg-white/5 p-8 text-center">
                 <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
                 <p className="mt-2 text-xs text-muted-foreground">
                   Loading announcements…
@@ -1310,7 +1650,7 @@ export default function AnnouncementsPage() {
             )}
           </div>
 
-          <div className="shrink-0 border-t border-golden-classic/15 bg-white px-6 py-3">
+          <div className="shrink-0 border-t border-white/10 bg-[#0D1F3C] px-6 py-3">
             <DialogFooter className="!m-0">
               <Button
                 type="button"

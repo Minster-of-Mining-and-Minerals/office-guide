@@ -5,13 +5,21 @@ const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
 
 /**
- * Startup bootstrapper: guarantees that the default admin user (admin@gmail.com / password)
- * exists with full Super Admin privileges, even if database seeders were skipped or partially executed.
+ * Startup bootstrapper: makes sure the system is never left without a way
+ * to log in. It creates the default admin (admin@gmail.com / password) with
+ * Super Admin privileges ONLY when the users table is completely empty.
+ *
+ * It must NEVER modify existing users: this runs on every server start, and
+ * resetting the admin's password/email here would undo changes made in the
+ * admin panel (and re-open a known default password in production).
  */
 async function ensureAdminUser() {
   try {
     const adminEmail = "admin@gmail.com";
-    let adminUser = await User.findOne({ where: { email: adminEmail } });
+    const userCount = await User.count();
+    if (userCount > 0) {
+      return; // Users exist — never touch them.
+    }
 
     // 1. Ensure user type 'Admin' exists
     let adminType = await UserType.findOne({ where: { name: "Admin" } });
@@ -52,41 +60,22 @@ async function ensureAdminUser() {
       }
     }
 
-    const passwordHash = await bcrypt.hash("password", 10);
-
-    // 3. Create or update admin user
-    if (!adminUser) {
-      adminUser = await User.create({
-        user_id: uuidv4(),
-        full_name: "System Administrator",
-        email: adminEmail,
-        password: passwordHash,
-        phone_number: "+251911000001",
-        profile_image: null,
-        is_first_logged_in: false,
-        is_active: true,
-        user_type_id: adminType.user_type_id,
-        password_changed_at: new Date(),
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
-      console.log(`✅ Default admin user '${adminEmail}' created successfully.`);
-    } else {
-      // Ensure password and active status are up to date
-      const matches = await bcrypt.compare("password", adminUser.password);
-      if (!matches || !adminUser.is_active) {
-        await User.update(
-          {
-            password: passwordHash,
-            is_active: true,
-            user_type_id: adminUser.user_type_id || adminType.user_type_id,
-            updated_at: new Date(),
-          },
-          { where: { user_id: adminUser.user_id } }
-        );
-        console.log(`✅ Default admin user '${adminEmail}' credentials verified & updated.`);
-      }
-    }
+    // 3. Create the default admin (users table is empty here)
+    const adminUser = await User.create({
+      user_id: uuidv4(),
+      full_name: "System Administrator",
+      email: adminEmail,
+      password: await bcrypt.hash("password", 10),
+      phone_number: "+251911000001",
+      profile_image: null,
+      is_first_logged_in: false,
+      is_active: true,
+      user_type_id: adminType.user_type_id,
+      password_changed_at: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    console.log(`✅ Default admin user '${adminEmail}' created (database had no users).`);
 
     // 4. Ensure Super Admin role assignment
     const userRoleExists = await UserRoles.findOne({

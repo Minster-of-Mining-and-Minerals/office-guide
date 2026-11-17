@@ -10,10 +10,15 @@ else
 fi
 
 if [ "$RUN_DB_SEEDERS" = "true" ]; then
+  # Seeders run on every start. They are all NON-DESTRUCTIVE (insert only
+  # what is missing, never delete), so existing admin edits are preserved
+  # while a fresh database still gets floors, offices, roles and an admin.
   echo "🌱 Running database seeders..."
-  npx sequelize-cli db:seed:all || true
-  npx sequelize-cli db:seed --seed 20260716230000-real-roles-and-admin.js
-  echo "✅ Database seeders applied successfully."
+  if npx sequelize-cli db:seed:all; then
+    echo "✅ Database seeders applied successfully."
+  else
+    echo "⚠️ Seeder warning: db:seed:all exited with non-zero status"
+  fi
 fi
 
 echo "✅ Starting backend server..."

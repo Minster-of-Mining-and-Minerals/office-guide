@@ -118,9 +118,26 @@ export type OfficeUpdatePayload = Partial<OfficeCreatePayload>;
  */
 export type AnnouncementMediaType = "image" | "video";
 
+/** Floor an announcement is assigned to (subset of `Floor`). */
+export interface AnnouncementFloorRef {
+  floor_id: string;
+  floor_number: number;
+  name: string;
+  name_am?: string | null;
+}
+
+/** What the kiosk does with an announcement right now (computed by the API). */
+export type AnnouncementStatus = "live" | "scheduled" | "ended" | "hidden";
+
+export type AnnouncementStatusCounts = Record<AnnouncementStatus | "all", number>;
+
 export interface Announcement {
   announcement_id: string;
-  floor_id: string | null;
+  /** true = plays on every floor, including floors added later. */
+  all_floors: boolean;
+  /** Chosen floors when `all_floors` is false, sorted by floor number. */
+  floors: AnnouncementFloorRef[];
+  status: AnnouncementStatus;
   title: string;
   message: string | null;
   media_type: AnnouncementMediaType | null;
@@ -137,7 +154,13 @@ export interface Announcement {
 
 export interface AnnouncementListParams extends ListParams {
   is_visible?: boolean;
+  status?: AnnouncementStatus;
+  /** A floor's id (announcements that play there), or "all" for all-floor ones. */
   floor_id?: string;
+}
+
+export interface AnnouncementList extends Paginated<Announcement> {
+  counts: AnnouncementStatusCounts;
 }
 
 export interface PublicAnnouncementsPayload {

@@ -23,37 +23,17 @@ const CURATED_PERMISSIONS = [
 ];
 
 module.exports = {
+  // NON-DESTRUCTIVE: runs on every container start, so it only inserts
+  // permissions that are missing and never deletes existing rows.
   async up(queryInterface) {
-    const t = await queryInterface.sequelize.transaction();
-    try {
-      // Drop join rows first so the parent delete can proceed without
-      // FK errors, then wipe every permission row. `role_permissions`
-      // is re-populated by the role-management UI after this seed.
-      await queryInterface.bulkDelete(
-        "role_permissions",
-        null,
-        { transaction: t }
+    const now = new Date();
+    for (const p of CURATED_PERMISSIONS) {
+      await queryInterface.sequelize.query(
+        `INSERT INTO permissions (permission_id, resource, action, is_active, created_at, updated_at)
+         VALUES (:id, :resource, :action, true, :now, :now)
+         ON CONFLICT (resource) DO NOTHING`,
+        { replacements: { id: uuidv4(), resource: p.resource, action: p.action, now } }
       );
-      await queryInterface.bulkDelete("permissions", null, { transaction: t });
-
-      const now = new Date();
-      await queryInterface.bulkInsert(
-        "permissions",
-        CURATED_PERMISSIONS.map((p) => ({
-          permission_id: uuidv4(),
-          resource: p.resource,
-          action: p.action,
-          is_active: true,
-          created_at: now,
-          updated_at: now,
-        })),
-        { transaction: t }
-      );
-
-      await t.commit();
-    } catch (err) {
-      await t.rollback();
-      throw err;
     }
   },
 

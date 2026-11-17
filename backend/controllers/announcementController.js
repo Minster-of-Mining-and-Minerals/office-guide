@@ -1,25 +1,184 @@
 const { Op } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
-const { Announcement, sequelize } = require("../models");
+const {
+  Announcement,
+  AnnouncementFloor,
+  Floor,
+  sequelize,
+} = require("../models");
 const { getPagination, getPagingData } = require("../utils/pagination");
 const { emitSignageUpdate } = require("../utils/signageEvents");
 
-const ALLOWED_SORT = new Set([
-  "display_order",
-  "title",
-  "created_at",
-  "updated_at",
-]);
+// ─── Derived columns (SQL) ─────────────────────────────────────────────
+// Status as the kiosk sees it right now. Kept in SQL so the list can
+// filter, count and sort by it without loading every row.
+const STATUS_SQL = `CASE
+  WHEN "Announcement"."is_visible" = false THEN 'hidden'
+  WHEN "Announcement"."start_date" > NOW() THEN 'scheduled'
+  WHEN "Announcement"."end_date" < NOW() THEN 'ended'
+  ELSE 'live' END`;
+const STATUS_RANK_SQL = `CASE
+  WHEN "Announcement"."is_visible" = false THEN 3
+  WHEN "Announcement"."start_date" > NOW() THEN 1
+  WHEN "Announcement"."end_date" < NOW() THEN 2
+  ELSE 0 END`;
+// Lowest floor number an announcement plays on; "all floors" sorts first.
+const FLOOR_RANK_SQL = `CASE WHEN "Announcement"."all_floors" THEN -1 ELSE COALESCE((
+  SELECT MIN(f.floor_number) FROM announcement_floors af
+  JOIN floors f ON f.floor_id = af.floor_id
+  WHERE af.announcement_id = "Announcement"."announcement_id"), 9999) END`;
+const STATUSES = ["live", "scheduled", "ended", "hidden"];
 
 const buildSort = (sort_by, sort_order) => {
-  const col = ALLOWED_SORT.has(sort_by) ? sort_by : "display_order";
   const dir = String(sort_order).toUpperCase() === "DESC" ? "DESC" : "ASC";
-  // Secondary sort by created_at so ties are stable across page loads.
-  return [
-    [col, dir],
-    ["created_at", "DESC"],
+  let primary;
+  switch (sort_by) {
+    case "title":
+    case "created_at":
+    case "updated_at":
+    case "display_order":
+      primary = [sort_by, dir];
+      break;
+    case "end_date":
+      // "No end date" means it never ends, so it goes last when ascending.
+      primary = [
+        sequelize.literal(
+          `"Announcement"."end_date" ${dir} NULLS ${dir === "ASC" ? "LAST" : "FIRST"}`
+        ),
+      ];
+      break;
+    case "status":
+      primary = [sequelize.literal(`${STATUS_RANK_SQL} ${dir}`)];
+      break;
+    case "floor":
+      primary = [sequelize.literal(`${FLOOR_RANK_SQL} ${dir}`)];
+      break;
+    default:
+      primary = ["display_order", dir];
+  }
+  // Ties fall back to play order so the list is stable across page loads.
+  return [primary, ["display_order", "ASC"], ["created_at", "DESC"]];
+};
+
+/** `WHERE` fragment: announcements that play on the given floor. */
+const playsOnFloor = (floorId) =>
+  sequelize.literal(
+    `("Announcement"."all_floors" = true OR EXISTS (
+       SELECT 1 FROM announcement_floors af
+       WHERE af.announcement_id = "Announcement"."announcement_id"
+         AND af.floor_id = ${sequelize.escape(floorId)}))`
+  );
+
+/**
+ * Reads the floor choice from a create/update body.
+ * Accepts `all_floors` ("true"/"false") + `floor_ids` (JSON array string,
+ * array, or comma list). Also accepts the legacy single `floor_id`.
+ * Returns null when the body does not mention floors at all.
+ */
+const parseFloorInput = (body) => {
+  const hasNew = body.all_floors !== undefined || body.floor_ids !== undefined;
+  if (!hasNew && body.floor_id === undefined) return null;
+
+  if (!hasNew) {
+    const id = body.floor_id;
+    return id && id !== "null" && id !== "global"
+      ? { all_floors: false, floor_ids: [String(id)] }
+      : { all_floors: true, floor_ids: [] };
+  }
+
+  const all = body.all_floors === true || body.all_floors === "true";
+  let ids = body.floor_ids ?? [];
+  if (typeof ids === "string") {
+    try {
+      ids = ids.trim().startsWith("[") ? JSON.parse(ids) : ids.split(",");
+    } catch {
+      ids = [];
+    }
+  }
+  ids = [
+    ...new Set(
+      (Array.isArray(ids) ? ids : [])
+        .map((x) => String(x).trim())
+        .filter(Boolean)
+    ),
   ];
+  return { all_floors: all, floor_ids: all ? [] : ids };
+};
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Returns an error message, or null when the floor choice is valid. */
+const validateFloorInput = async (input) => {
+  if (input.all_floors) return null;
+  if (input.floor_ids.length === 0) {
+    return "Choose at least one floor, or select All floors.";
+  }
+  if (!input.floor_ids.every((id) => UUID_RE.test(id))) {
+    return "Invalid floor selection.";
+  }
+  const found = await Floor.count({ where: { floor_id: input.floor_ids } });
+  if (found !== input.floor_ids.length) {
+    return "One or more selected floors no longer exist. Refresh and try again.";
+  }
+  return null;
+};
+
+const saveFloors = async (announcementId, input, transaction) => {
+  await AnnouncementFloor.destroy({
+    where: { announcement_id: announcementId },
+    transaction,
+  });
+  if (!input.all_floors && input.floor_ids.length) {
+    await AnnouncementFloor.bulkCreate(
+      input.floor_ids.map((floor_id) => ({
+        announcement_id: announcementId,
+        floor_id,
+        created_at: new Date(),
+      })),
+      { transaction }
+    );
+  }
+};
+
+/**
+ * Adds `floors: [{ floor_id, floor_number, name, name_am }]` (sorted by
+ * floor number) and the derived `status` to each announcement.
+ */
+const withFloors = async (rows) => {
+  const list = rows.map((r) => (r.toJSON ? r.toJSON() : r));
+  const ids = list.map((r) => r.announcement_id);
+  const links = ids.length
+    ? await AnnouncementFloor.findAll({
+        where: { announcement_id: ids },
+        raw: true,
+      })
+    : [];
+  const floorIds = [...new Set(links.map((l) => l.floor_id))];
+  const floors = floorIds.length
+    ? await Floor.findAll({
+        where: { floor_id: floorIds },
+        attributes: ["floor_id", "floor_number", "name", "name_am"],
+        raw: true,
+      })
+    : [];
+  const byId = new Map(floors.map((f) => [f.floor_id, f]));
+  const now = new Date();
+  return list.map((r) => ({
+    ...r,
+    floors: links
+      .filter((l) => l.announcement_id === r.announcement_id)
+      .map((l) => byId.get(l.floor_id))
+      .filter(Boolean)
+      .sort((a, b) => a.floor_number - b.floor_number),
+    status: !r.is_visible
+      ? "hidden"
+      : r.start_date && new Date(r.start_date) > now
+      ? "scheduled"
+      : r.end_date && new Date(r.end_date) < now
+      ? "ended"
+      : "live",
+  }));
 };
 
 // Removes an uploaded file from disk. Best-effort — failures are logged but
@@ -45,8 +204,15 @@ const inferMediaType = (mime) => {
 };
 
 /**
- * Admin list — paginated, supports search + visibility filter.
+ * Admin list — paginated, supports search, status, floor and visibility
+ * filters, and returns per-status counts for the status tabs.
  * GET /api/announcements
+ *
+ * Query:
+ *   status    live | scheduled | ended | hidden
+ *   floor_id  <uuid> = plays on that floor (incl. all-floor ones);
+ *             "all"  = only announcements set to all floors
+ *   sort_by   display_order | title | created_at | end_date | status | floor
  */
 const listAnnouncements = async (req, res) => {
   try {
@@ -54,6 +220,7 @@ const listAnnouncements = async (req, res) => {
       search,
       is_visible,
       floor_id,
+      status,
       page = 1,
       limit = 10,
       sort_by,
@@ -61,19 +228,49 @@ const listAnnouncements = async (req, res) => {
       all,
     } = req.query;
 
-    const where = {};
+    const and = [];
     if (search) {
-      where[Op.or] = [
-        { title: { [Op.iLike]: `%${search}%` } },
-        { message: { [Op.iLike]: `%${search}%` } },
-      ];
+      and.push({
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { message: { [Op.iLike]: `%${search}%` } },
+        ],
+      });
     }
     if (is_visible !== undefined) {
-      where.is_visible = is_visible === "true" || is_visible === true;
+      and.push({ is_visible: is_visible === "true" || is_visible === true });
     }
-    if (floor_id !== undefined) {
-      where.floor_id = floor_id === "null" || floor_id === "" ? null : floor_id;
+    if (floor_id === "all") {
+      and.push({ all_floors: true });
+    } else if (floor_id) {
+      if (!UUID_RE.test(String(floor_id))) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid floor_id." });
+      }
+      and.push(playsOnFloor(String(floor_id)));
     }
+
+    // Counts per status for the tabs: every filter except status itself.
+    const countRows = await Announcement.findAll({
+      attributes: [
+        [sequelize.literal(STATUS_SQL), "status"],
+        [sequelize.fn("COUNT", sequelize.literal("*")), "n"],
+      ],
+      where: { [Op.and]: [...and] },
+      group: [sequelize.literal(STATUS_SQL)],
+      raw: true,
+    });
+    const counts = { all: 0, live: 0, scheduled: 0, ended: 0, hidden: 0 };
+    for (const r of countRows) {
+      counts[r.status] = Number(r.n);
+      counts.all += Number(r.n);
+    }
+
+    if (STATUSES.includes(status)) {
+      and.push(sequelize.where(sequelize.literal(STATUS_SQL), status));
+    }
+    const where = { [Op.and]: and };
 
     if (all === "true") {
       const rows = await Announcement.findAll({
@@ -83,7 +280,7 @@ const listAnnouncements = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: "Announcements fetched successfully.",
-        data: rows,
+        data: await withFloors(rows),
       });
     }
 
@@ -93,10 +290,11 @@ const listAnnouncements = async (req, res) => {
       order: buildSort(sort_by, sort_order),
       ...pagination,
     });
+    data.rows = await withFloors(data.rows);
     return res.status(200).json({
       success: true,
       message: "Announcements fetched successfully.",
-      data: getPagingData(data, page, limit),
+      data: { ...getPagingData(data, page, limit), counts },
     });
   } catch (error) {
     console.error("listAnnouncements error:", error);
@@ -118,7 +316,8 @@ const getAnnouncement = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Announcement not found." });
     }
-    return res.status(200).json({ success: true, data: row });
+    const [data] = await withFloors([row]);
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("getAnnouncement error:", error);
     return res
@@ -160,30 +359,47 @@ const createAnnouncement = async (req, res) => {
         .json({ success: false, message: "Title is required." });
     }
 
+    // No floor choice sent = all floors (matches the old "Global" default).
+    const floorInput = parseFloorInput(body) || { all_floors: true, floor_ids: [] };
+    const floorError = await validateFloorInput(floorInput);
+    if (floorError) {
+      safeUnlink(`/uploads/announcements/${req.file.filename}`);
+      return res.status(400).json({ success: false, message: floorError });
+    }
+
     // Default display_order to the end of the list — makes the freshest
     // upload the last one on rotation unless the admin reorders.
     const maxOrder = await Announcement.max("display_order");
     const displayOrder = (Number.isFinite(maxOrder) ? maxOrder : -1) + 1;
 
-    const row = await Announcement.create({
-      title,
-      floor_id: body.floor_id && body.floor_id !== "null" && body.floor_id !== "" ? body.floor_id : null,
-      message: body.message ? String(body.message).trim() || null : null,
-      media_type: mediaType,
-      media_url: `/uploads/announcements/${req.file.filename}`,
-      duration_seconds:
-        Number.parseInt(body.duration_seconds, 10) > 0
-          ? Number.parseInt(body.duration_seconds, 10)
-          : 10,
-      display_order: displayOrder,
-      audio_enabled: body.audio_enabled === "true" || body.audio_enabled === true,
-      is_visible:
-        body.is_visible === undefined
-          ? true
-          : body.is_visible === "true" || body.is_visible === true,
-      start_date: body.start_date ? new Date(body.start_date) : null,
-      end_date: body.end_date ? new Date(body.end_date) : null,
-    });
+    const t = await sequelize.transaction();
+    let row;
+    try {
+      row = await Announcement.create({
+        title,
+        all_floors: floorInput.all_floors,
+        message: body.message ? String(body.message).trim() || null : null,
+        media_type: mediaType,
+        media_url: `/uploads/announcements/${req.file.filename}`,
+        duration_seconds:
+          Number.parseInt(body.duration_seconds, 10) > 0
+            ? Number.parseInt(body.duration_seconds, 10)
+            : 10,
+        display_order: displayOrder,
+        audio_enabled: body.audio_enabled === "true" || body.audio_enabled === true,
+        is_visible:
+          body.is_visible === undefined
+            ? true
+            : body.is_visible === "true" || body.is_visible === true,
+        start_date: body.start_date ? new Date(body.start_date) : null,
+        end_date: body.end_date ? new Date(body.end_date) : null,
+      }, { transaction: t });
+      await saveFloors(row.announcement_id, floorInput, t);
+      await t.commit();
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
 
     emitSignageUpdate(req, {
       scope: "announcements",
@@ -191,10 +407,11 @@ const createAnnouncement = async (req, res) => {
       id: row.announcement_id,
     });
 
+    const [data] = await withFloors([row]);
     return res.status(201).json({
       success: true,
       message: "Announcement created successfully.",
-      data: row,
+      data,
     });
   } catch (error) {
     if (req.file) safeUnlink(`/uploads/announcements/${req.file.filename}`);
@@ -224,8 +441,14 @@ const updateAnnouncement = async (req, res) => {
     const body = req.body || {};
     const previousUrl = row.media_url;
 
-    if (body.floor_id !== undefined) {
-      row.floor_id = body.floor_id && body.floor_id !== "null" && body.floor_id !== "" ? body.floor_id : null;
+    const floorInput = parseFloorInput(body);
+    if (floorInput) {
+      const floorError = await validateFloorInput(floorInput);
+      if (floorError) {
+        if (req.file) safeUnlink(`/uploads/announcements/${req.file.filename}`);
+        return res.status(400).json({ success: false, message: floorError });
+      }
+      row.all_floors = floorInput.all_floors;
     }
 
     if (body.title !== undefined) {
@@ -285,7 +508,15 @@ const updateAnnouncement = async (req, res) => {
     }
 
     row.updated_at = new Date();
-    await row.save();
+    const t = await sequelize.transaction();
+    try {
+      await row.save({ transaction: t });
+      if (floorInput) await saveFloors(row.announcement_id, floorInput, t);
+      await t.commit();
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
 
     // Only delete the old file if a new one has actually replaced it and
     // the DB save above committed cleanly.
@@ -299,10 +530,11 @@ const updateAnnouncement = async (req, res) => {
       id: row.announcement_id,
     });
 
+    const [data] = await withFloors([row]);
     return res.status(200).json({
       success: true,
       message: "Announcement updated successfully.",
-      data: row,
+      data,
     });
   } catch (error) {
     if (req.file) safeUnlink(`/uploads/announcements/${req.file.filename}`);
@@ -466,15 +698,19 @@ const deleteAnnouncement = async (req, res) => {
 const getPublicAnnouncements = async (_req, res) => {
   try {
     const { floor_id } = _req.query;
+    if (floor_id && !UUID_RE.test(String(floor_id))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid floor_id." });
+    }
     const now = new Date();
     const rows = await Announcement.findAll({
       where: {
         is_visible: true,
         media_url: { [Op.ne]: null },
-        ...(floor_id && {
-          [Op.or]: [{ floor_id }, { floor_id: null }],
-        }),
         [Op.and]: [
+          // Kiosk for a floor: all-floor announcements + ones for that floor.
+          ...(floor_id ? [playsOnFloor(String(floor_id))] : []),
           {
             [Op.or]: [
               { start_date: null },

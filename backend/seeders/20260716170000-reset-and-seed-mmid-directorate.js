@@ -21,20 +21,18 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const t = await queryInterface.sequelize.transaction();
     try {
-      // 1. Break the FK from displays → floors so we can wipe floors.
-      await queryInterface.sequelize.query(
-        "UPDATE displays SET floor_id = NULL, updated_at = NOW()",
+      // NON-DESTRUCTIVE: this seeder runs on every container start. Only
+      // populate floors/offices on a fresh database — if any floor already
+      // exists, the admin owns the data and we must not touch it.
+      const [[{ n: existingFloors }]] = await queryInterface.sequelize.query(
+        "SELECT COUNT(*)::int AS n FROM floors",
         { transaction: t }
       );
-
-      // 2. Wipe existing offices + floors. Sequenced so the floors delete
-      //    isn't blocked by any office FKs even without cascade.
-      await queryInterface.sequelize.query("DELETE FROM offices", {
-        transaction: t,
-      });
-      await queryInterface.sequelize.query("DELETE FROM floors", {
-        transaction: t,
-      });
+      if (existingFloors > 0) {
+        await t.commit();
+        console.log("Office seed skipped: floors already exist.");
+        return;
+      }
 
       // 3. Insert all configured floors.
       const now = new Date();

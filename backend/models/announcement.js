@@ -4,9 +4,12 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Announcement extends Model {
     static associate(models) {
-      Announcement.belongsTo(models.Floor, {
-        foreignKey: "floor_id",
-        as: "floor",
+      // Floors this announcement plays on (ignored when all_floors = true).
+      Announcement.belongsToMany(models.Floor, {
+        through: models.AnnouncementFloor,
+        foreignKey: "announcement_id",
+        otherKey: "floor_id",
+        as: "floors",
       });
     }
   }
@@ -22,9 +25,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(200),
         allowNull: false,
       },
-      floor_id: {
-        type: DataTypes.UUID,
-        allowNull: true,
+      // true = plays on every floor (including floors added later);
+      // false = only on the floors in `announcement_floors`.
+      all_floors: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
       },
       // Optional caption / text overlay. The full-screen carousel does not
       // render this today, but it's kept so admins can annotate uploads.
