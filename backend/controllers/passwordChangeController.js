@@ -25,6 +25,14 @@ exports.changePassword = async (req, res) => {
       });
     }
 
+    // Minimum strength: at least 8 characters, not just spaces.
+    if (typeof new_password !== "string" || new_password.trim().length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 8 characters.",
+      });
+    }
+
     // Check if new and confirm password match
     if (new_password !== confirm_password) {
       return res.status(400).json({

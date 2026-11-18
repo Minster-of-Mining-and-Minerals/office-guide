@@ -17,7 +17,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // After the user changes their password on /profile, the client calls
+      // useSession().update({ is_first_logged_in: false }) so the first-login
+      // redirect stops without signing in again.
+      if (trigger === "update" && session?.is_first_logged_in === false) {
+        return { ...token, is_first_logged_in: false };
+      }
       if (user) {
         return {
           ...token,

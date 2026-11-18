@@ -32,6 +32,18 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
+    /** Change the signed-in user's own password (PUT /change-password). */
+    changePassword: builder.mutation<
+      { success: boolean; message: string },
+      { current_password: string; new_password: string; confirm_password: string }
+    >({
+      query: (body) => ({
+        url: "/change-password",
+        method: "PUT",
+        body: { ...body, confirm_change: true },
+      }),
+    }),
+
     logout: builder.mutation<{ message: string }, void>({
       query: () => ({
         url: "/auth/logout",
@@ -51,4 +63,4 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useLogoutMutation } = authApi;
+export const { useLoginMutation, useLogoutMutation, useChangePasswordMutation } = authApi;

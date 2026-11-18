@@ -14,7 +14,7 @@ const {
 } = require("../controllers/userController");
 
 // Middleware for authentication if needed (example)
-// const { authenticate } = require("../middlewares/authMiddleware");
+const { authenticateToken } = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ router.get("/:id", getUserById);
  *       200:
  *         description: User profile
  */
-router.get("/profile/me", getProfile);
+router.get("/profile/me", authenticateToken, getProfile);
 
 /**
  * @swagger

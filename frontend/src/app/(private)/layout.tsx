@@ -41,7 +41,7 @@ function useBfcacheGuard() {
  *      have redirected earlier, but this catches token expiry that
  *      happens after the page loaded), force a clean logout.
  *   3. If the user still has `is_first_logged_in: true`, forward them
- *      to `/change-password` (skeleton — the page itself is Phase 3).
+ *      to `/profile` to set a new password.
  */
 export default function PrivateLayout({
   children,
@@ -55,7 +55,7 @@ export default function PrivateLayout({
   useBfcacheGuard();
 
   const isFirstLogin = session?.user?.is_first_logged_in === true;
-  const isChangePasswordPage = pathname === "/change-password";
+  const isChangePasswordPage = pathname === "/profile";
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -71,7 +71,7 @@ export default function PrivateLayout({
       isFirstLogin &&
       !isChangePasswordPage
     ) {
-      router.replace("/change-password");
+      router.replace("/profile");
     }
   }, [status, isFirstLogin, isChangePasswordPage, router]);
 
