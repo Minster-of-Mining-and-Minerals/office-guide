@@ -90,7 +90,7 @@ export function RoleMultiSelect({
               "flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors",
               open
                 ? "border-golden-dark ring-2 ring-golden-dark/20"
-                : "border-input hover:border-golden-classic/60",
+                : "border-input hover:border-admin-active/60",
               disabled && "opacity-60 cursor-not-allowed"
             )}
           >
@@ -118,7 +118,7 @@ export function RoleMultiSelect({
           align="start"
           className="p-0 w-[--radix-popover-trigger-width] max-h-[300px] overflow-hidden"
         >
-          <div className="p-2 border-b border-golden-classic/20">
+          <div className="p-2 border-b border-admin-active/20">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -149,16 +149,16 @@ export function RoleMultiSelect({
                     className={cn(
                       "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors",
                       isSelected
-                        ? "bg-golden-metallic/60 text-golden-dark"
-                        : "hover:bg-golden-metallic/30"
+                        ? "bg-admin-active/10 text-admin-accent-text"
+                        : "hover:bg-admin-active/10"
                     )}
                   >
                     <span
                       className={cn(
                         "h-4 w-4 shrink-0 rounded border flex items-center justify-center transition-colors",
                         isSelected
-                          ? "bg-golden-classic border-golden-classic text-black"
-                          : "border-golden-classic/50"
+                          ? "bg-admin-accent border-admin-active text-black"
+                          : "border-admin-active/50"
                       )}
                     >
                       {isSelected && <CheckIcon className="h-3 w-3" />}
@@ -186,13 +186,13 @@ export function RoleMultiSelect({
           {selectedRoles.map((role) => (
             <span
               key={role.role_id}
-              className="inline-flex items-center gap-1 rounded-full bg-golden-metallic border border-golden-classic/40 text-golden-dark text-xs font-medium pl-2.5 pr-1 py-0.5"
+              className="inline-flex items-center gap-1 rounded-full bg-admin-active/10 border border-admin-active/40 text-admin-accent-text text-xs font-medium pl-2.5 pr-1 py-0.5"
             >
               {role.name}
               <button
                 type="button"
                 onClick={() => remove(role.role_id)}
-                className="rounded-full p-0.5 hover:bg-golden-classic/40 transition-colors"
+                className="rounded-full p-0.5 hover:bg-admin-active/40 transition-colors"
                 aria-label={`Remove ${role.name}`}
               >
                 <XIcon className="h-3 w-3" />

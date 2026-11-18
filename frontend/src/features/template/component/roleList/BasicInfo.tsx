@@ -28,18 +28,18 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
   setRoleType,
 }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className="bg-admin-surface border border-admin-border rounded-lg shadow-sm">
       <div className="p-6 border-b">
-        <h3 className="text-xl font-bold text-[#094C81]">Basic Information</h3>
+        <h3 className="text-xl font-bold text-admin-heading">Basic Information</h3>
       </div>
       <div className="p-6 space-y-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2 flex col-span-1 flex-col gap-2">
             <Label
               htmlFor="name"
-              className="text-sm font-medium text-[#094C81]"
+              className="text-sm font-medium text-admin-heading"
             >
-              Role Name <span className="text-red-500">*</span>
+              Role Name <span className="text-admin-bad">*</span>
             </Label>
             <Input
               id="name"
@@ -47,7 +47,7 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              className="w-full h-11 border border-admin-border-strong px-4 py-3 rounded-md focus:ring-2 focus:ring-golden-classic focus:border-transparent transition-all duration-200 outline-none"
             />
           </div>
 
@@ -55,15 +55,15 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
           {/* <div className="space-y-2 flex col-span-1 flex-col gap-2">
             <Label
               htmlFor="role_type"
-              className="text-sm font-medium text-[#094C81]"
+              className="text-sm font-medium text-admin-heading"
             >
-              Role Type <span className="text-red-500">*</span>
+              Role Type <span className="text-admin-bad">*</span>
             </Label>
             <Select
               value={roleType}
               onValueChange={(value) => setRoleType(value)}
             >
-              <SelectTrigger className="h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+              <SelectTrigger className="h-11 border border-admin-border-strong px-4 py-3 rounded-md focus:ring-2 focus:ring-golden-classic focus:border-transparent transition-all duration-200 outline-none">
                 <SelectValue placeholder="Select role type" />
               </SelectTrigger>
               <SelectContent>
@@ -76,9 +76,9 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
           <div className="space-y-2 flex col-span-1 flex-col gap-2">
             <Label
               htmlFor="description"
-              className="text-sm font-medium text-[#094C81]"
+              className="text-sm font-medium text-admin-heading"
             >
-              Description <span className="text-red-500">*</span>
+              Description <span className="text-admin-bad">*</span>
             </Label>
             <Textarea
               id="description"
@@ -87,7 +87,7 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="w-full min-h-[44px] border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none resize-none"
+              className="w-full min-h-[44px] border border-admin-border-strong px-4 py-3 rounded-md focus:ring-2 focus:ring-golden-classic focus:border-transparent transition-all duration-200 outline-none resize-none"
             />
           </div>
         </div>

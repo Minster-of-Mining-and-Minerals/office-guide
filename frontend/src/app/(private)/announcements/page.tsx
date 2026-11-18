@@ -116,7 +116,7 @@ function RowCheckbox({
       aria-label={ariaLabel}
       checked={checked}
       onChange={(e) => onCheckedChange(e.target.checked)}
-      className="h-4 w-4 rounded border-golden-classic/40 accent-golden-dark cursor-pointer"
+      className="h-4 w-4 rounded border-admin-active/40 accent-golden-dark cursor-pointer"
     />
   );
 }
@@ -196,26 +196,15 @@ function toLocalInput(iso: string | null): string {
 
 // ─── Status, sorting and floors ─────────────────────────────────────
 
+/** Status label + colour token (`--a-<tone>`). */
 const STATUS_META: Record<
   AnnouncementStatus,
-  { label: string; className: string }
+  { label: string; tone: "ok" | "info" | "bad" | "faint" }
 > = {
-  live: {
-    label: "Live",
-    className: "bg-emerald-400/15 text-emerald-300",
-  },
-  scheduled: {
-    label: "Scheduled",
-    className: "bg-sky-400/15 text-sky-300",
-  },
-  ended: {
-    label: "Ended",
-    className: "bg-rose-400/15 text-rose-300",
-  },
-  hidden: {
-    label: "Hidden",
-    className: "bg-white/10 text-white/60",
-  },
+  live: { label: "Live", tone: "ok" },
+  scheduled: { label: "Scheduled", tone: "info" },
+  ended: { label: "Ended", tone: "bad" },
+  hidden: { label: "Hidden", tone: "faint" },
 };
 
 const STATUS_TABS: { value: "all" | AnnouncementStatus; label: string }[] = [
@@ -245,13 +234,11 @@ const SORT_OPTIONS: {
 function StatusPill({ status }: { status: AnnouncementStatus }) {
   const meta = STATUS_META[status] ?? STATUS_META.live;
   return (
+    // Tinted by day, grey with a coloured dot at night (see globals.css).
     <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap",
-        meta.className
-      )}
+      className="admin-status-pill inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap"
+      style={{ "--tone": `var(--a-${meta.tone})` } as React.CSSProperties}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {meta.label}
     </span>
   );
@@ -263,7 +250,7 @@ const floorShort = (n: number) => (n === 0 ? "G" : String(n));
 function FloorBadges({ announcement }: { announcement: Announcement }) {
   if (announcement.all_floors) {
     return (
-      <span className="inline-flex items-center rounded-md bg-golden-classic/15 px-2 py-0.5 text-[11px] font-semibold text-golden-classic whitespace-nowrap">
+      <span className="inline-flex items-center rounded-md bg-admin-active/15 px-2 py-0.5 text-[11px] font-semibold text-admin-accent-text whitespace-nowrap">
         All floors
       </span>
     );
@@ -271,7 +258,7 @@ function FloorBadges({ announcement }: { announcement: Announcement }) {
   if (!announcement.floors?.length) {
     return (
       <span
-        className="inline-flex items-center rounded-md bg-rose-400/15 px-2 py-0.5 text-[11px] font-semibold text-rose-300 whitespace-nowrap"
+        className="inline-flex items-center rounded-md bg-admin-bad/15 px-2 py-0.5 text-[11px] font-semibold text-admin-bad whitespace-nowrap"
         title="Its floors were deleted, so it plays nowhere. Edit it to choose floors."
       >
         No floors
@@ -284,7 +271,7 @@ function FloorBadges({ announcement }: { announcement: Announcement }) {
         <span
           key={f.floor_id}
           title={f.name}
-          className="inline-grid h-[22px] min-w-[22px] place-items-center rounded-md bg-white/10 px-1.5 text-[11px] font-semibold text-white"
+          className="inline-grid h-[22px] min-w-[22px] place-items-center rounded-md bg-admin-chip px-1.5 text-[11px] font-semibold text-admin-text"
         >
           {floorShort(f.floor_number)}
         </span>
@@ -343,8 +330,8 @@ function FloorTilesPicker({
         className={cn(
           "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors",
           allFloors
-            ? "border-golden-classic bg-golden-classic/10"
-            : "border-white/15 bg-white/5 hover:border-golden-classic/60"
+            ? "border-admin-active bg-admin-active/10"
+            : "border-admin-border-strong bg-admin-raise hover:border-admin-active/60"
         )}
       >
         <input
@@ -361,8 +348,8 @@ function FloorTilesPicker({
           className="h-4 w-4 cursor-pointer accent-golden-dark"
         />
         <span>
-          <span className="block text-sm font-semibold text-white">All floors</span>
-          <span className="block text-[11px] text-white/50">
+          <span className="block text-sm font-semibold text-admin-text">All floors</span>
+          <span className="block text-[11px] text-admin-faint">
             Every kiosk in the building, including floors added later.
           </span>
         </span>
@@ -377,8 +364,8 @@ function FloorTilesPicker({
               className={cn(
                 "relative grid cursor-pointer gap-0.5 rounded-lg border p-2.5 transition-colors",
                 on
-                  ? "border-golden-classic bg-golden-classic/10"
-                  : "border-white/15 bg-white/5 hover:border-golden-classic/60"
+                  ? "border-admin-active bg-admin-active/10"
+                  : "border-admin-border-strong bg-admin-raise hover:border-admin-active/60"
               )}
             >
               <input
@@ -391,16 +378,16 @@ function FloorTilesPicker({
               <span
                 className={cn(
                   "text-xl font-bold leading-none",
-                  on ? "text-golden-classic" : "text-white"
+                  on ? "text-admin-accent-text" : "text-admin-text"
                 )}
               >
                 {floorShort(f.floor_number)}
               </span>
-              <span className="truncate text-[11px] text-white/60">
+              <span className="truncate text-[11px] text-admin-muted">
                 {f.name}
               </span>
               {f.name_am && (
-                <span className="truncate text-[11px] text-white/40">
+                <span className="truncate text-[11px] text-admin-faint">
                   {f.name_am}
                 </span>
               )}
@@ -410,20 +397,20 @@ function FloorTilesPicker({
       </div>
 
       {count === 0 ? (
-        <p className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+        <p className="rounded-md border border-admin-bad/30 bg-admin-bad/10 px-3 py-2 text-xs text-admin-bad">
           Choose at least one floor, or the announcement won&apos;t play
           anywhere.
         </p>
       ) : (
-        <p className="rounded-md bg-white/5 px-3 py-2 text-xs text-white/60">
+        <p className="rounded-md bg-admin-raise px-3 py-2 text-xs text-admin-muted">
           {allFloors ? (
             <>
-              Plays on <b className="text-white">all floors</b>.
+              Plays on <b className="text-admin-text">all floors</b>.
             </>
           ) : (
             <>
               Plays on{" "}
-              <b className="text-white">
+              <b className="text-admin-text">
                 {count} of {sorted.length}
               </b>{" "}
               floors: {names.join(", ")}.
@@ -465,28 +452,28 @@ function SortableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-xl border bg-white/5 p-3 text-white transition-all ${
+      className={`group flex items-center gap-3 rounded-xl border bg-admin-raise p-3 text-admin-text transition-all ${
         isDragging
-          ? "border-golden-classic shadow-lg ring-2 ring-golden-classic/40 opacity-95"
-          : "border-golden-classic/25 hover:border-golden-classic/60 hover:shadow-sm"
+          ? "border-admin-active shadow-lg ring-2 ring-golden-classic/40 opacity-95"
+          : "border-admin-active/25 hover:border-admin-active/60 hover:shadow-sm"
       }`}
     >
       <div className="flex items-center gap-2 shrink-0">
         <button
           type="button"
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-golden-dark hover:bg-golden-metallic p-1.5 rounded-md transition-colors"
+          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-admin-accent-text hover:bg-admin-active/10 p-1.5 rounded-md transition-colors"
           {...attributes}
           {...listeners}
           aria-label={`Drag ${announcement.title} to reorder`}
         >
           <GripVerticalIcon className="h-4 w-4" />
         </button>
-        <span className="h-7 w-7 rounded-full bg-golden-metallic border border-golden-classic/40 text-golden-dark text-xs font-semibold flex items-center justify-center tabular-nums">
+        <span className="h-7 w-7 rounded-full bg-admin-active/10 border border-admin-active/40 text-admin-accent-text text-xs font-semibold flex items-center justify-center tabular-nums">
           {position}
         </span>
       </div>
 
-      <div className="h-12 w-16 shrink-0 rounded-lg overflow-hidden border border-golden-classic/25 bg-black/70 flex items-center justify-center">
+      <div className="h-12 w-16 shrink-0 rounded-lg overflow-hidden border border-admin-active/25 bg-black/70 flex items-center justify-center">
         {announcement.media_type === "image" && thumb ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -496,7 +483,7 @@ function SortableRow({
             draggable={false}
           />
         ) : announcement.media_type === "video" ? (
-          <FilmIcon className="h-5 w-5 text-golden-classic" />
+          <FilmIcon className="h-5 w-5 text-admin-accent-text" />
         ) : (
           <ImageIcon className="h-5 w-5 text-muted-foreground" />
         )}
@@ -528,8 +515,9 @@ export default function AnnouncementsPage() {
   // "any" = no floor filter, "all" = only all-floor announcements, else a floor id.
   const [floorFilter, setFloorFilter] = useState<string>("any");
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("display_order");
-  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
+  // Newest uploads first by default; admins can switch to play order.
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -871,7 +859,7 @@ export default function AnnouncementsPage() {
         searchPlaceholder="Search title or caption…"
         filters={
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-white/50 whitespace-nowrap">Sort by</span>
+            <span className="text-xs text-admin-faint whitespace-nowrap">Sort by</span>
             <Select value={sortBy} onValueChange={changeSort}>
               <SelectTrigger className="w-40" aria-label="Sort by">
                 <SelectValue />
@@ -914,7 +902,7 @@ export default function AnnouncementsPage() {
             </Button>
             <Button
               onClick={openCreate}
-              className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+              className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
             >
               <PlusIcon className="h-4 w-4" />
               New Announcement
@@ -930,7 +918,7 @@ export default function AnnouncementsPage() {
           role="group"
           aria-label="Filter by floor"
         >
-          <span className="mr-1 text-xs text-white/50">Floor</span>
+          <span className="mr-1 text-xs text-admin-faint">Floor</span>
           {[
             { value: "any", label: "All" },
             { value: "all", label: "Set to all floors" },
@@ -947,8 +935,8 @@ export default function AnnouncementsPage() {
               className={cn(
                 "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                 floorFilter === o.value
-                  ? "border-golden-classic bg-golden-classic/15 text-golden-classic"
-                  : "border-white/10 text-white/60 hover:border-white/30 hover:text-white"
+                  ? "border-admin-active bg-admin-active/15 text-admin-accent-text"
+                  : "border-admin-border text-admin-muted hover:border-admin-border-strong hover:text-admin-text"
               )}
             >
               {o.label}
@@ -957,7 +945,7 @@ export default function AnnouncementsPage() {
         </div>
 
         <div
-          className="flex gap-1 overflow-x-auto border-b border-white/10"
+          className="flex gap-1 overflow-x-auto border-b border-admin-border"
           role="group"
           aria-label="Filter by status"
         >
@@ -973,19 +961,19 @@ export default function AnnouncementsPage() {
               className={cn(
                 "-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors",
                 statusFilter === t.value
-                  ? "border-golden-classic text-white"
-                  : "border-transparent text-white/50 hover:text-white"
+                  ? "border-admin-active text-admin-text"
+                  : "border-transparent text-admin-faint hover:text-admin-text"
               )}
             >
               {t.label}
-              <span className="ml-1.5 text-[11px] tabular-nums text-white/40">
+              <span className="ml-1.5 text-[11px] tabular-nums text-admin-faint">
                 {counts?.[t.value] ?? 0}
               </span>
             </button>
           ))}
         </div>
 
-        <p className="text-xs text-white/40">
+        <p className="text-xs text-admin-faint">
           {total} announcement{total === 1 ? "" : "s"} · sorted by{" "}
           {sortOption.label.toLowerCase()}, {sortDirWord}
         </p>
@@ -996,12 +984,12 @@ export default function AnnouncementsPage() {
           selected. Sticky so it stays visible while the admin scrolls a
           long list. */}
       {selectedIds.size > 0 && (
-        <div className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-golden-classic/30 bg-[#0D1F3C]/90 px-4 py-2.5 shadow-md backdrop-blur">
+        <div className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-admin-active/30 bg-admin-surface/90 px-4 py-2.5 shadow-md backdrop-blur">
           <div className="flex items-center gap-2 text-sm">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-golden-classic text-black text-xs font-semibold tabular-nums">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-admin-accent text-black text-xs font-semibold tabular-nums">
               {selectedIds.size}
             </span>
-            <span className="font-medium text-golden-classic">
+            <span className="font-medium text-admin-accent-text">
               selected for bulk action
             </span>
           </div>
@@ -1011,7 +999,7 @@ export default function AnnouncementsPage() {
               variant="outline"
               onClick={() => runBulkVisibility(true)}
               disabled={bulkUpdating}
-              className="border-emerald-500/30 text-emerald-400 bg-transparent hover:bg-emerald-500/15"
+              className="border-admin-ok/30 text-admin-ok bg-transparent hover:bg-admin-ok/15"
             >
               {bulkUpdating ? (
                 <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -1025,7 +1013,7 @@ export default function AnnouncementsPage() {
               variant="outline"
               onClick={() => runBulkVisibility(false)}
               disabled={bulkUpdating}
-              className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
+              className="border-admin-active/40 text-admin-accent-text bg-transparent hover:bg-admin-active/15"
             >
               {bulkUpdating ? (
                 <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -1038,7 +1026,7 @@ export default function AnnouncementsPage() {
               size="sm"
               variant="ghost"
               onClick={clearSelection}
-              className="text-white/40"
+              className="text-admin-faint"
             >
               <XIcon className="h-4 w-4" />
               Clear
@@ -1047,11 +1035,11 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
-      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
+      <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-10 text-golden-classic/70">
+              <TableHead className="w-10 text-admin-accent-text">
                 <RowCheckbox
                   checked={allOnPageSelected}
                   indeterminate={someOnPageSelected}
@@ -1059,61 +1047,61 @@ export default function AnnouncementsPage() {
                   ariaLabel="Select all rows on this page"
                 />
               </TableHead>
-              <TableHead className="w-24 text-golden-classic/70">Preview</TableHead>
+              <TableHead className="w-24 text-admin-accent-text">Preview</TableHead>
               <TableHead
-                className="cursor-pointer select-none text-golden-classic/70"
+                className="cursor-pointer select-none text-admin-accent-text"
                 onClick={() => toggleSort("title")}
               >
                 Title{sortIndicator("title")}
               </TableHead>
               <TableHead
-                className="cursor-pointer select-none text-golden-classic/70"
+                className="cursor-pointer select-none text-admin-accent-text"
                 onClick={() => toggleSort("floor")}
               >
                 Floors{sortIndicator("floor")}
               </TableHead>
-              <TableHead className="text-golden-classic/70">Type</TableHead>
+              <TableHead className="text-admin-accent-text">Type</TableHead>
               <TableHead
-                className="cursor-pointer select-none text-golden-classic/70"
+                className="cursor-pointer select-none text-admin-accent-text"
                 onClick={() => toggleSort("end_date")}
               >
                 Schedule{sortIndicator("end_date")}
               </TableHead>
               <TableHead
-                className="cursor-pointer select-none text-golden-classic/70"
+                className="cursor-pointer select-none text-admin-accent-text"
                 onClick={() => toggleSort("status")}
               >
                 Status{sortIndicator("status")}
               </TableHead>
-              <TableHead className="text-golden-classic/70">On kiosks</TableHead>
+              <TableHead className="text-admin-accent-text">On kiosks</TableHead>
               <TableHead
-                className="cursor-pointer select-none text-golden-classic/70"
+                className="cursor-pointer select-none text-admin-accent-text"
                 onClick={() => toggleSort("display_order")}
               >
                 #{sortIndicator("display_order")}
               </TableHead>
-              <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
+              <TableHead className="w-32 text-right text-admin-accent-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow className="border-white/5">
+              <TableRow className="border-admin-border">
                 <TableCell colSpan={10} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-admin-faint" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow className="border-white/5">
+              <TableRow className="border-admin-border">
                 <TableCell
                   colSpan={10}
-                  className="h-32 text-center text-white/40"
+                  className="h-32 text-center text-admin-faint"
                 >
                   <div className="flex flex-col items-center gap-2">
                     <MegaphoneIcon className="h-6 w-6 opacity-40" />
                     {counts?.all === 0 && !debouncedSearch && floorFilter === "any" ? (
                       <span>
                         No announcements yet. Click{" "}
-                        <span className="font-medium text-golden-classic">New Announcement</span>{" "}
+                        <span className="font-medium text-admin-accent-text">New Announcement</span>{" "}
                         to upload the first one.
                       </span>
                     ) : (
@@ -1130,7 +1118,7 @@ export default function AnnouncementsPage() {
                 return (
                   <TableRow
                     key={a.announcement_id}
-                    className={cn("border-white/5 hover:bg-white/5", isSelected && "bg-golden-classic/10")}
+                    className={cn("border-admin-border hover:bg-admin-raise", isSelected && "bg-admin-active/10")}
                   >
                     <TableCell>
                       <RowCheckbox
@@ -1142,7 +1130,7 @@ export default function AnnouncementsPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="h-12 w-16 rounded-lg overflow-hidden border border-golden-classic/25 bg-black/70 flex items-center justify-center">
+                      <div className="h-12 w-16 rounded-lg overflow-hidden border border-admin-active/25 bg-black/70 flex items-center justify-center">
                         {!isVideo && thumb ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -1151,16 +1139,16 @@ export default function AnnouncementsPage() {
                             className="h-full w-full object-cover"
                           />
                         ) : isVideo ? (
-                          <FilmIcon className="h-5 w-5 text-golden-classic" />
+                          <FilmIcon className="h-5 w-5 text-admin-accent-text" />
                         ) : (
                           <ImageIcon className="h-5 w-5 text-muted-foreground" />
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium text-white">{a.title}</p>
+                      <p className="font-medium text-admin-text">{a.title}</p>
                       {a.message && (
-                        <p className="text-[11px] text-white/40 line-clamp-1 max-w-md">
+                        <p className="text-[11px] text-admin-faint line-clamp-1 max-w-md">
                           {a.message}
                         </p>
                       )}
@@ -1174,7 +1162,7 @@ export default function AnnouncementsPage() {
                           "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
                           isVideo
                             ? "bg-purple-100 text-purple-800"
-                            : "bg-sky-100 text-sky-800"
+                            : "bg-admin-info/10 text-admin-info"
                         )}
                       >
                         {isVideo ? (
@@ -1186,14 +1174,14 @@ export default function AnnouncementsPage() {
                       </span>
                       {isVideo && a.audio_enabled && (
                         <span
-                          className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800"
+                          className="ml-1 inline-flex items-center gap-1 rounded-full bg-admin-warn/10 px-2 py-0.5 text-[11px] font-medium text-admin-warn"
                           title="Video plays with sound"
                         >
                           <Volume2Icon className="h-3 w-3" />
                           Sound
                         </span>
                       )}
-                      <p className="mt-1 text-[11px] text-white/40">
+                      <p className="mt-1 text-[11px] text-admin-faint">
                         {isVideo ? "Full clip" : `${a.duration_seconds}s on screen`}
                       </p>
                     </TableCell>
@@ -1266,7 +1254,7 @@ export default function AnnouncementsPage() {
         onOpenChange={submitting ? undefined : setDialogOpen}
       >
         <DialogContent className="sm:max-w-3xl p-0 gap-0 overflow-hidden max-h-[92vh] flex flex-col">
-          <div className="relative overflow-hidden bg-gradient-to-r from-golden-dark via-[#8b6a1a] to-golden-dark text-white px-6 pt-6 pb-5 shrink-0">
+          <div className="relative overflow-hidden admin-dialog-hero px-6 pt-6 pb-5 shrink-0">
             <div
               className="pointer-events-none absolute inset-0 opacity-20"
               style={{
@@ -1276,14 +1264,14 @@ export default function AnnouncementsPage() {
             />
             <DialogHeader className="relative">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur border border-white/25 flex items-center justify-center">
-                  <MegaphoneIcon className="h-5 w-5 text-golden-classic" />
+                <div className="h-10 w-10 rounded-xl bg-admin-chip backdrop-blur border border-admin-border-strong flex items-center justify-center">
+                  <MegaphoneIcon className="h-5 w-5 text-admin-accent-text" />
                 </div>
                 <div>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-admin-text">
                     {editing ? "Edit Announcement" : "New Announcement"}
                   </DialogTitle>
-                  <p className="text-xs text-white/70 mt-0.5">
+                  <p className="text-xs text-admin-muted mt-0.5">
                     Upload an image or video. It plays full-screen on the
                     floors you choose when their display mode includes
                     announcements.
@@ -1315,8 +1303,8 @@ export default function AnnouncementsPage() {
                 className={cn(
                   "block rounded-xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden",
                   form.media
-                    ? "border-golden-classic bg-golden-metallic/30"
-                    : "border-golden-classic/30 hover:border-golden-classic/60 bg-white/5"
+                    ? "border-admin-active bg-admin-active/10"
+                    : "border-admin-active/30 hover:border-admin-active/60 bg-admin-raise"
                 )}
               >
                 {mediaPreview ? (
@@ -1340,10 +1328,10 @@ export default function AnnouncementsPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
-                    <div className="h-12 w-12 rounded-full bg-golden-metallic/60 border border-golden-classic/40 flex items-center justify-center">
-                      <UploadCloudIcon className="h-5 w-5 text-golden-dark" />
+                    <div className="h-12 w-12 rounded-full bg-admin-active/10 border border-admin-active/40 flex items-center justify-center">
+                      <UploadCloudIcon className="h-5 w-5 text-admin-accent-text" />
                     </div>
-                    <p className="text-sm font-medium text-golden-dark">
+                    <p className="text-sm font-medium text-admin-accent-text">
                       Click to choose an image or video
                     </p>
                     <p className="text-[11px] text-muted-foreground">
@@ -1363,12 +1351,12 @@ export default function AnnouncementsPage() {
               </label>
 
               {form.media && (
-                <div className="flex items-center justify-between rounded-md bg-golden-metallic/40 border border-golden-classic/25 px-3 py-2">
+                <div className="flex items-center justify-between rounded-md bg-admin-active/10 border border-admin-active/25 px-3 py-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {form.media.type.startsWith("video/") ? (
-                      <FilmIcon className="h-4 w-4 text-golden-dark shrink-0" />
+                      <FilmIcon className="h-4 w-4 text-admin-accent-text shrink-0" />
                     ) : (
-                      <ImageIcon className="h-4 w-4 text-golden-dark shrink-0" />
+                      <ImageIcon className="h-4 w-4 text-admin-accent-text shrink-0" />
                     )}
                     <span className="text-xs truncate">
                       {form.media.name}{" "}
@@ -1400,7 +1388,7 @@ export default function AnnouncementsPage() {
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="title">
-                    Title<span className="text-red-500 ml-0.5">*</span>
+                    Title<span className="text-admin-bad ml-0.5">*</span>
                   </Label>
                   <Input
                     id="title"
@@ -1416,7 +1404,7 @@ export default function AnnouncementsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>
-                  Show on floors<span className="text-red-500 ml-0.5">*</span>
+                  Show on floors<span className="text-admin-bad ml-0.5">*</span>
                 </Label>
                 <FloorTilesPicker
                   floors={floors}
@@ -1471,9 +1459,9 @@ export default function AnnouncementsPage() {
                   </p>
                 </div>
                 <div className="flex flex-col justify-end gap-3">
-                  <div className="flex items-center justify-between rounded-md border border-white/15 bg-white/5 px-3 py-2">
+                  <div className="flex items-center justify-between rounded-md border border-admin-border-strong bg-admin-raise px-3 py-2">
                     <div>
-                      <Label className="text-xs font-medium text-white">Visible</Label>
+                      <Label className="text-xs font-medium text-admin-text">Visible</Label>
                       <p className="text-[11px] text-muted-foreground">
                         Off = hidden from every kiosk, kept as a template.
                       </p>
@@ -1485,9 +1473,9 @@ export default function AnnouncementsPage() {
                       }
                     />
                   </div>
-                  <div className="flex items-center justify-between rounded-md border border-white/15 bg-white/5 px-3 py-2">
+                  <div className="flex items-center justify-between rounded-md border border-admin-border-strong bg-admin-raise px-3 py-2">
                     <div>
-                      <Label className="text-xs font-medium text-white">
+                      <Label className="text-xs font-medium text-admin-text">
                         Video sound
                       </Label>
                       <p className="text-[11px] text-muted-foreground">
@@ -1536,13 +1524,13 @@ export default function AnnouncementsPage() {
             </section>
 
             {formError && (
-              <p className="text-sm text-destructive rounded-md bg-red-50 border border-red-200 px-3 py-2">
+              <p className="text-sm text-destructive rounded-md bg-admin-bad/10 border border-admin-bad/30 px-3 py-2">
                 {formError}
               </p>
             )}
           </form>
 
-          <div className="shrink-0 border-t border-white/10 bg-[#0D1F3C] px-6 py-3">
+          <div className="shrink-0 border-t border-admin-border bg-admin-surface px-6 py-3">
             <DialogFooter className="!m-0">
               <Button
                 type="button"
@@ -1556,7 +1544,7 @@ export default function AnnouncementsPage() {
                 type="submit"
                 form="announcement-form"
                 disabled={submitting}
-                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+                className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
               >
                 {submitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -1574,7 +1562,7 @@ export default function AnnouncementsPage() {
         onOpenChange={savingOrder ? undefined : setReorderOpen}
       >
         <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden max-h-[92vh] flex flex-col">
-          <div className="relative overflow-hidden bg-gradient-to-r from-golden-dark via-[#8b6a1a] to-golden-dark text-white px-6 pt-6 pb-5 shrink-0">
+          <div className="relative overflow-hidden admin-dialog-hero px-6 pt-6 pb-5 shrink-0">
             <div
               className="pointer-events-none absolute inset-0 opacity-20"
               style={{
@@ -1584,14 +1572,14 @@ export default function AnnouncementsPage() {
             />
             <DialogHeader className="relative">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur border border-white/25 flex items-center justify-center">
-                  <ArrowUpDownIcon className="h-5 w-5 text-golden-classic" />
+                <div className="h-10 w-10 rounded-xl bg-admin-chip backdrop-blur border border-admin-border-strong flex items-center justify-center">
+                  <ArrowUpDownIcon className="h-5 w-5 text-admin-accent-text" />
                 </div>
                 <div>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-admin-text">
                     Reorder announcements
                   </DialogTitle>
-                  <p className="text-xs text-white/70 mt-0.5">
+                  <p className="text-xs text-admin-muted mt-0.5">
                     Drag any item to change the order they play on the
                     kiosk carousel.
                   </p>
@@ -1602,14 +1590,14 @@ export default function AnnouncementsPage() {
 
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             {fetchingAll ? (
-              <div className="rounded-xl border border-golden-classic/25 bg-white/5 p-8 text-center">
+              <div className="rounded-xl border border-admin-active/25 bg-admin-raise p-8 text-center">
                 <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
                 <p className="mt-2 text-xs text-muted-foreground">
                   Loading announcements…
                 </p>
               </div>
             ) : reorderIds.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-golden-classic/40 bg-golden-metallic/20 p-8 text-center">
+              <div className="rounded-xl border border-dashed border-admin-active/40 bg-admin-active/10 p-8 text-center">
                 <p className="text-sm text-muted-foreground">
                   No announcements to reorder.
                 </p>
@@ -1650,7 +1638,7 @@ export default function AnnouncementsPage() {
             )}
           </div>
 
-          <div className="shrink-0 border-t border-white/10 bg-[#0D1F3C] px-6 py-3">
+          <div className="shrink-0 border-t border-admin-border bg-admin-surface px-6 py-3">
             <DialogFooter className="!m-0">
               <Button
                 type="button"
@@ -1664,7 +1652,7 @@ export default function AnnouncementsPage() {
                 type="button"
                 disabled={savingOrder || reorderIds.length === 0}
                 onClick={saveReorder}
-                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+                className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
               >
                 {savingOrder && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

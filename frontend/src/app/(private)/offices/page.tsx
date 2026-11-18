@@ -146,30 +146,30 @@ function SortableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-xl border bg-white p-3 transition-all ${
+      className={`group flex items-center gap-3 rounded-xl border bg-admin-surface p-3 transition-all ${
         isDragging
-          ? "border-golden-classic shadow-lg ring-2 ring-golden-classic/40 opacity-95"
-          : "border-golden-classic/25 hover:border-golden-classic/60 hover:shadow-sm"
+          ? "border-admin-active shadow-lg ring-2 ring-golden-classic/40 opacity-95"
+          : "border-admin-active/25 hover:border-admin-active/60 hover:shadow-sm"
       }`}
     >
       {/* Drag handle + position badge */}
       <div className="flex items-center gap-2 shrink-0">
         <button
           type="button"
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-golden-dark hover:bg-golden-metallic p-1.5 rounded-md transition-colors"
+          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-admin-accent-text hover:bg-admin-active/10 p-1.5 rounded-md transition-colors"
           {...attributes}
           {...listeners}
           aria-label={`Drag ${office.name} to reorder`}
         >
           <GripVerticalIcon className="h-4 w-4" />
         </button>
-        <span className="h-7 w-7 rounded-full bg-golden-metallic border border-golden-classic/40 text-golden-dark text-xs font-semibold flex items-center justify-center tabular-nums">
+        <span className="h-7 w-7 rounded-full bg-admin-active/10 border border-admin-active/40 text-admin-accent-text text-xs font-semibold flex items-center justify-center tabular-nums">
           {position}
         </span>
       </div>
 
       {/* Room chip */}
-      <span className="shrink-0 inline-flex items-center rounded-lg bg-golden-classic/15 border border-golden-classic/40 text-golden-dark px-2 py-1 text-xs font-mono font-semibold tabular-nums">
+      <span className="shrink-0 inline-flex items-center rounded-lg bg-admin-active/15 border border-admin-active/40 text-admin-accent-text px-2 py-1 text-xs font-mono font-semibold tabular-nums">
         {office.room_number}
       </span>
 
@@ -419,7 +419,7 @@ export default function OfficesPage() {
                 setPage(1);
               }}
               size="sm"
-              className={floorFilter === "all" ? "bg-golden-classic text-black hover:bg-golden-classic/80" : ""}
+              className={floorFilter === "all" ? "bg-admin-accent text-black hover:bg-admin-accent/80" : ""}
             >
               All floors
             </Button>
@@ -432,7 +432,7 @@ export default function OfficesPage() {
                   setPage(1);
                 }}
                 size="sm"
-                className={floorFilter === f.floor_id ? "bg-golden-classic text-black hover:bg-golden-classic/80" : ""}
+                className={floorFilter === f.floor_id ? "bg-admin-accent text-black hover:bg-admin-accent/80" : ""}
               >
                 {formatFloorLabel(f)}
               </Button>
@@ -458,7 +458,7 @@ export default function OfficesPage() {
             </Button>
             <Button
               onClick={openCreate}
-              className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+              className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
               disabled={floors.length === 0}
             >
               <PlusIcon className="h-4 w-4" />
@@ -468,35 +468,35 @@ export default function OfficesPage() {
         }
       />
 
-      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
+      <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("room_number")}>
+              <TableHead className="text-admin-accent-text cursor-pointer select-none" onClick={() => toggleSort("room_number")}>
                 Room #{sortIndicator("room_number")}
               </TableHead>
-              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("name")}>
+              <TableHead className="text-admin-accent-text cursor-pointer select-none" onClick={() => toggleSort("name")}>
                 Office{sortIndicator("name")}
               </TableHead>
-              <TableHead className="text-golden-classic/70">Department</TableHead>
-              <TableHead className="text-golden-classic/70">Contact</TableHead>
-              <TableHead className="text-golden-classic/70">Floor</TableHead>
-              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("display_order")}>
+              <TableHead className="text-admin-accent-text">Department</TableHead>
+              <TableHead className="text-admin-accent-text">Contact</TableHead>
+              <TableHead className="text-admin-accent-text">Floor</TableHead>
+              <TableHead className="text-admin-accent-text cursor-pointer select-none" onClick={() => toggleSort("display_order")}>
                 Order{sortIndicator("display_order")}
               </TableHead>
-              <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
+              <TableHead className="w-32 text-right text-admin-accent-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow className="border-white/5">
+              <TableRow className="border-admin-border">
                 <TableCell colSpan={7} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-admin-faint" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow className="border-white/5">
-                <TableCell colSpan={7} className="h-32 text-center text-white/40">
+              <TableRow className="border-admin-border">
+                <TableCell colSpan={7} className="h-32 text-center text-admin-faint">
                   No offices match your filters.
                 </TableCell>
               </TableRow>
@@ -510,15 +510,15 @@ export default function OfficesPage() {
                   (o.services?.length ?? 0) ===
                     (o.services_am?.length ?? 0);
                 return (
-                <TableRow key={o.office_id} className="border-white/5 hover:bg-white/5">
-                  <TableCell className="font-bold text-white">{o.room_number}</TableCell>
+                <TableRow key={o.office_id} className="border-admin-border hover:bg-admin-raise">
+                  <TableCell className="font-bold text-admin-text">{o.room_number}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span>{o.name}</span>
                       {amComplete ? (
                         <span
                           title="Amharic translations present"
-                          className="inline-flex items-center gap-0.5 rounded-full bg-white/5 border border-white/20 px-1.5 py-0.5 text-[10px] font-semibold text-golden-classic"
+                          className="inline-flex items-center gap-0.5 rounded-full bg-admin-raise border border-admin-border-strong px-1.5 py-0.5 text-[10px] font-semibold text-admin-accent-text"
                           lang="am-ET"
                         >
                           አማ ✓
@@ -534,14 +534,14 @@ export default function OfficesPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-white/60">
+                  <TableCell className="text-admin-muted">
                     {o.department || "—"}
                   </TableCell>
-                  <TableCell className="text-white/60">
+                  <TableCell className="text-admin-muted">
                     {o.contact_person || "—"}
                   </TableCell>
-                  <TableCell className="text-white/70">{o.floor?.name ?? "—"}</TableCell>
-                  <TableCell className="text-white/40">
+                  <TableCell className="text-admin-muted">{o.floor?.name ?? "—"}</TableCell>
+                  <TableCell className="text-admin-faint">
                     {o.display_order}
                   </TableCell>
                   <TableCell className="text-right">
@@ -550,7 +550,7 @@ export default function OfficesPage() {
                       size="icon"
                       onClick={() => openEdit(o)}
                       aria-label="Edit office"
-                      className="text-white/70 hover:text-golden-classic hover:bg-golden-classic/10"
+                      className="text-admin-muted hover:text-admin-accent-text hover:bg-admin-active/10"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </Button>
@@ -582,7 +582,7 @@ export default function OfficesPage() {
       </div>
 
       {isFetching && !isLoading && (
-        <p className="text-xs text-white/40">Refreshing…</p>
+        <p className="text-xs text-admin-faint">Refreshing…</p>
       )}
 
       {/* Create / edit dialog */}
@@ -592,7 +592,7 @@ export default function OfficesPage() {
       >
         <DialogContent className="sm:max-w-4xl p-0 gap-0 overflow-hidden max-h-[92vh] flex flex-col">
           {/* Gradient header */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-golden-dark via-[#8b6a1a] to-golden-dark text-white px-6 pt-6 pb-5 shrink-0">
+          <div className="relative overflow-hidden admin-dialog-hero px-6 pt-6 pb-5 shrink-0">
             <div
               className="pointer-events-none absolute inset-0 opacity-20"
               style={{
@@ -602,14 +602,14 @@ export default function OfficesPage() {
             />
             <DialogHeader className="relative">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur border border-white/25 flex items-center justify-center">
-                  <DoorOpenIcon className="h-5 w-5 text-golden-classic" />
+                <div className="h-10 w-10 rounded-xl bg-admin-chip backdrop-blur border border-admin-border-strong flex items-center justify-center">
+                  <DoorOpenIcon className="h-5 w-5 text-admin-accent-text" />
                 </div>
                 <div>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-admin-text">
                     {editing ? "Edit Office" : "New Office"}
                   </DialogTitle>
-                  <p className="text-xs text-white/70 mt-0.5">
+                  <p className="text-xs text-admin-muted mt-0.5">
                     Fill in both English and Amharic. Services are optional
                     but recommended for every office.
                   </p>
@@ -634,7 +634,7 @@ export default function OfficesPage() {
                 <div className="space-y-1.5 md:col-span-2">
                   <Label>
                     Floor
-                    <span className="text-red-500 ml-0.5">*</span>
+                    <span className="text-admin-bad ml-0.5">*</span>
                   </Label>
                   <Select
                     value={form.floor_id}
@@ -655,7 +655,7 @@ export default function OfficesPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="room_number">
                     Room number
-                    <span className="text-red-500 ml-0.5">*</span>
+                    <span className="text-admin-bad ml-0.5">*</span>
                   </Label>
                   <Input
                     id="room_number"
@@ -731,14 +731,14 @@ export default function OfficesPage() {
             </section>
 
             {formError && (
-              <p className="text-sm text-destructive rounded-md bg-red-50 border border-red-200 px-3 py-2">
+              <p className="text-sm text-destructive rounded-md bg-admin-bad/10 border border-admin-bad/30 px-3 py-2">
                 {formError}
               </p>
             )}
           </form>
 
           {/* Sticky footer so save button is always reachable in tall forms */}
-          <div className="shrink-0 border-t border-golden-classic/15 bg-white px-6 py-3">
+          <div className="shrink-0 border-t border-admin-active/15 bg-admin-surface px-6 py-3">
             <DialogFooter className="!m-0">
               <Button
                 type="button"
@@ -752,7 +752,7 @@ export default function OfficesPage() {
                 type="submit"
                 form="office-form"
                 disabled={submitting}
-                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+                className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
               >
                 {submitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -771,7 +771,7 @@ export default function OfficesPage() {
       >
         <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden max-h-[92vh] flex flex-col">
           {/* Gradient header — matches Floor/Office create dialogs */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-golden-dark via-[#8b6a1a] to-golden-dark text-white px-6 pt-6 pb-5 shrink-0">
+          <div className="relative overflow-hidden admin-dialog-hero px-6 pt-6 pb-5 shrink-0">
             <div
               className="pointer-events-none absolute inset-0 opacity-20"
               style={{
@@ -781,14 +781,14 @@ export default function OfficesPage() {
             />
             <DialogHeader className="relative">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur border border-white/25 flex items-center justify-center">
-                  <ArrowUpDownIcon className="h-5 w-5 text-golden-classic" />
+                <div className="h-10 w-10 rounded-xl bg-admin-chip backdrop-blur border border-admin-border-strong flex items-center justify-center">
+                  <ArrowUpDownIcon className="h-5 w-5 text-admin-accent-text" />
                 </div>
                 <div>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-admin-text">
                     Reorder offices
                   </DialogTitle>
-                  <p className="text-xs text-white/70 mt-0.5">
+                  <p className="text-xs text-admin-muted mt-0.5">
                     Drag any office to change the order visitors see on the
                     public guide.
                   </p>
@@ -842,20 +842,20 @@ export default function OfficesPage() {
               </div>
 
               {fetchingFloorOffices ? (
-                <div className="rounded-xl border border-golden-classic/25 bg-white p-8 text-center">
+                <div className="rounded-xl border border-admin-active/25 bg-admin-surface p-8 text-center">
                   <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
                   <p className="mt-2 text-xs text-muted-foreground">
                     Loading offices…
                   </p>
                 </div>
               ) : !reorderFloorId ? (
-                <div className="rounded-xl border border-dashed border-golden-classic/40 bg-golden-metallic/20 p-8 text-center">
+                <div className="rounded-xl border border-dashed border-admin-active/40 bg-admin-active/10 p-8 text-center">
                   <p className="text-sm text-muted-foreground">
                     Choose a floor above to see its offices.
                   </p>
                 </div>
               ) : reorderIds.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-golden-classic/40 bg-golden-metallic/20 p-8 text-center">
+                <div className="rounded-xl border border-dashed border-admin-active/40 bg-admin-active/10 p-8 text-center">
                   <p className="text-sm text-muted-foreground">
                     No offices on this floor yet.
                   </p>
@@ -898,7 +898,7 @@ export default function OfficesPage() {
           </div>
 
           {/* Sticky footer */}
-          <div className="shrink-0 border-t border-golden-classic/15 bg-white px-6 py-3">
+          <div className="shrink-0 border-t border-admin-active/15 bg-admin-surface px-6 py-3">
             <DialogFooter className="!m-0">
               <Button
                 type="button"
@@ -912,7 +912,7 @@ export default function OfficesPage() {
                 type="button"
                 disabled={savingOrder || reorderIds.length === 0}
                 onClick={saveReorder}
-                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+                className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
               >
                 {savingOrder && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

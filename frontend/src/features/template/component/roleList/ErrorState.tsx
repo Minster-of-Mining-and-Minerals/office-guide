@@ -11,13 +11,13 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ message, onRetry }) => {
   const router = useRouter();
 
   return (
-    <div className="w-full flex items-center justify-center bg-white rounded-lg p-4">
+    <div className="w-full flex items-center justify-center bg-admin-surface rounded-lg p-4">
       <div className="text-center py-12">
-        <p className="text-red-600 text-lg mb-4">{message}</p>
+        <p className="text-admin-bad text-lg mb-4">{message}</p>
         <div className="flex gap-3 justify-center">
           <Button
             onClick={() => router.push("/users/roles")}
-            className="bg-[#094C81] hover:bg-[#073954]"
+            className="bg-admin-accent hover:bg-admin-accent/90 text-admin-accent-ink"
           >
             Back to Roles
           </Button>

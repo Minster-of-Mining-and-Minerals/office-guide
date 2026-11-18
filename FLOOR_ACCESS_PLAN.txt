@@ -1,0 +1,235 @@
+FLOOR ACCESS PLAN — Office Guide admin
+======================================
+Written: 17 November 2026
+Status:  PLANNED, NOT STARTED. Do not start until the project owner says so.
+Version: "faster version" (about 3-4 hours of work)
+
+
+1. GOAL
+-------
+The building has 6 floors (Ground, 1st-5th). Each floor can be managed by
+different people. A floor manager must be able to manage everything about
+their own floor, and nothing on other floors.
+
+  Roles decide WHAT a user can do.  Floor access decides WHERE.
+
+
+2. WHY THIS FIRST NEEDS A SECURITY FIX (found while planning)
+---------------------------------------------------------------
+The admin API currently has NO login check on the server:
+
+  - Almost every admin route (floors, offices, announcements, settings,
+    theme, display modes, users, roles, permissions) works without a token.
+  - Checked on a local copy: GET /api/users returns all users (names,
+    emails, phone numbers) without logging in. A PATCH to
+    /api/settings/theme without a token reached validation (400, not 401).
+  - backend/middlewares/authMiddleware.js has authenticateToken and a
+    checkPermission helper, but almost no router uses them. Only
+    changePassword (and some role routes) use authenticateToken.
+  - Roles ("Content Editor", etc.) exist in the database but nothing on the
+    server checks them. The login page only protects the admin SCREENS,
+    not the data behind them.
+
+Floor access is meaningless until this is fixed, so Phase 1 does it.
+
+
+3. WHO CAN DO WHAT (agreed scope)
+---------------------------------
+                                  Central admin        Floor manager
+  Floor details (name, Amharic,   all floors           their floor(s) only
+    map image, active)
+  Add / delete floors             yes                  no
+  Offices (add/edit/delete/order) all floors           their floor(s) only
+  Announcements                   any floors,          create/edit/delete only
+                                  incl. "All floors"   if ALL its floors are
+                                                       theirs; shared and
+                                                       "All floors" ones are
+                                                       view-only for them
+  Announcement play order         yes (building-wide)  no (stays building-wide)
+  Display (mode + timer)          all floors           their floor(s) only
+  Theme (kiosk colours)           yes                  no (affects every floor)
+  Users / roles / permissions     yes                  no
+  Dashboard                       building-wide        building-wide numbers
+                                                       (not filtered, see 8)
+
+  - One manager can have several floors; one floor can have several managers.
+  - Central admins create all accounts and assign floors.
+  - Existing users start with "All floors" so nobody is locked out.
+
+
+4. TIME ESTIMATE
+----------------
+  Phase 1  Lock the system ..................... about 1 hour
+  Phase 2  Floor managers ...................... about 2-3 hours
+  Total ........................................ about 3-4 hours
+  (Plus the owner's own testing with real floor managers before relying
+   on it, and the deploy.)
+
+
+5. PHASE 1 — LOCK THE SYSTEM (can be deployed on its own)
+---------------------------------------------------------
+5.1 Routes that MUST stay public (used by the kiosk / login):
+      GET  /api/public/office-guide      (signageRoutes)
+      GET  /api/public/announcements     (announcementRoutes)
+      GET  /api/public/theme             (settingsRoutes)
+      GET  /api/public/display-mode      (settingsRoutes)
+      GET  /api/floors                   !! kiosk uses useGetAllFloorsQuery
+                                            (frontend/src/redux/api/floorApi.ts).
+                                            Either keep this GET public, or add
+                                            GET /api/public/floors and switch the
+                                            kiosk to it (preferred: then
+                                            /api/floors can be locked).
+      POST /api/auth/login, POST /api/auth/logout
+      Socket.IO connection (kiosk live updates)
+      Static files /uploads/...           (announcement images/videos)
+    Before locking, re-check with: grep the kiosk code
+    (frontend/src/components/signage/*, app/page.tsx, app/floor/*) for every
+    query hook it uses.
+
+5.2 Add authenticateToken to every other route in:
+      backend/routers/floorRoutes.js, officeRoutes.js, announcementRoutes.js
+      (non-public ones), settingsRoutes.js (PATCH/DELETE theme + display-mode),
+      signageRoutes.js (/dashboard/signage-summary), userRoutes.js,
+      roleRoutes.js, permissionRoutes.js, userRoleRoutes.js.
+    Simplest: in backend/app.js mount a router-level guard that skips the
+    public paths above, so new routes are protected by default.
+
+5.3 Load the user's permissions in authenticateToken:
+      user -> user_roles -> roles -> role_permissions -> permissions
+      Put req.user.permissions = Set of "resource:action" (e.g.
+      "offices:manage"). Inactive roles/permissions are ignored.
+      Super Admin keeps everything (it has all permissions already).
+
+5.4 Enforce permissions with checkPermission(resource, action) per route:
+      floors:manage, offices:manage, appearance:manage (theme),
+      users:manage, roles:manage, permissions:manage, dashboard:view.
+      NOTE: there is no "announcements" or "display" permission yet.
+      The permissions table has a UNIQUE constraint on `resource` alone
+      (see seeders/20260716200000-clean-permissions-office-guide.js), so add
+      new resources: "announcements" and "display" (action "manage") via
+      the NON-DESTRUCTIVE seeder (insert if missing). Give them to Super Admin
+      and Content Editor in the roles seeder for roles that already exist only
+      if missing (do not overwrite admin edits).
+
+5.5 Frontend:
+      - The JWT is already sent by baseApi (check frontend/src/redux/baseApi.ts
+        prepareHeaders). Confirm every admin call sends it.
+      - Return the user's permissions from login and GET /api/users/profile/me.
+      - Hide sidebar items / buttons the user cannot use
+        (frontend/src/components/layout/app-sidebar.tsx).
+      - On 401 from the API, log out cleanly (performLogout).
+
+5.6 Phase 1 tests:
+      - Without a token: every admin route returns 401; every public route
+        in 5.1 still works; kiosk /floor/1 still loads offices, theme,
+        display mode and announcements.
+      - With a "Content Editor" token: offices OK, users/theme refused (403).
+      - With the admin token: everything works as before.
+
+
+6. PHASE 2 — FLOOR MANAGERS
+---------------------------
+6.1 Database (new migration, reversible):
+      users.floor_scope   ENUM('all','selected') NOT NULL DEFAULT 'all'
+      user_floors         (user_id FK users ON DELETE CASCADE,
+                           floor_id FK floors ON DELETE CASCADE,
+                           PRIMARY KEY (user_id, floor_id))
+      Existing users -> 'all'. Same pattern as announcements.all_floors +
+      announcement_floors (migration 20261117090000-announcements-multi-floor).
+      NOTE: if a floor is deleted, its user_floors rows go; a 'selected'
+      user with no floors left can see nothing (show a clear message).
+
+6.2 New role "Floor Manager" (non-destructive seeder, insert if missing):
+      dashboard:view, floors:manage, offices:manage, announcements:manage,
+      display:manage.
+
+6.3 Backend floor checks (helper in a new file, e.g.
+    backend/utils/floorScope.js):
+      req.user.floorScope = 'all' | Set(floor_ids)   (load in authenticateToken)
+      canFloor(req, floorId)            -> boolean
+      scopeWhere(req, 'floor_id')       -> Sequelize where fragment for lists
+    Apply to:
+      floorController   list: only their floors; update: only their floors;
+                        create/delete: central admin only (floor_scope='all').
+      officeController  list/get: their floors; create/update: target floor
+                        (and the office's CURRENT floor on update/move) must be
+                        theirs; delete/reorder: same.
+      announcementController
+                        list: announcements that play on their floors (incl.
+                        all-floor ones, view-only); create: floor_ids must all
+                        be theirs, all_floors=true only for scope 'all';
+                        update/delete/visibility: only if all its floors are
+                        theirs and it is not all_floors; reorder: central only.
+      settingsController (display-mode PATCH): only floors in their scope may
+                        appear in the body; merge with stored settings so other
+                        floors are never overwritten. Reset: central only, or
+                        reset only their floors.
+      signageController (/dashboard/signage-summary): unchanged (building-wide).
+    Refusals return 403 with a clear message, e.g.
+      "You can only manage: 3rd Floor."
+
+6.4 Frontend:
+      - Users page (frontend/src/app/(private)/users/page.tsx and
+        components/common/UserFormDialog.tsx): add "Floor access":
+        All floors / Selected floors, using the floor-tile picker already in
+        the announcements page (FloorTilesPicker in
+        app/(private)/announcements/page.tsx — move it to a shared component).
+        Show floor access in the users table.
+      - Expose floor scope in the session/profile; add a small hook
+        useFloorScope() returning the allowed floors.
+      - Floors page: managers see only their floors; hide Add/Delete.
+      - Offices page: floor chips + floor select limited to their floors.
+      - Announcements page: floor filter + picker limited to their floors;
+        hide "All floors" option; show shared/all-floor announcements as
+        read-only (no edit/delete/switch); hide Reorder.
+      - Display page (app/(private)/appearance/page.tsx): list only their
+        floors; "Set all floors" applies to their floors only.
+      - Sidebar: hide Theme and Users for managers.
+
+6.5 Phase 2 tests (write one script that calls the API with each account):
+      Accounts: central admin; manager of 3rd Floor; manager of Ground + 1st.
+      For each: list/create/update/delete on floors, offices, announcements,
+      display-mode — allowed on own floors, 403 elsewhere, including
+      direct API calls with another floor's id and moving an office to
+      another floor. Then one browser pass per account in day + night mode.
+      Check: two managers saving Display at the same time do not overwrite
+      each other's floors. Kiosks unaffected. Existing admin keeps full access.
+
+
+7. DEPLOY NOTES
+---------------
+  - Take a database backup first:
+      docker compose exec -T db pg_dump -U <DB_USERNAME> -d <DB_NAME> > backup.sql
+  - Migrations run automatically on backend start.
+  - After `docker compose up -d --build`, run `docker compose restart nginx`
+    (nginx keeps old container addresses -> 502). Permanent nginx fix is
+    still open (see 9).
+  - Phase 1 changes who can call the API: deploy at a quiet time and check
+    a kiosk right after.
+
+
+8. LEFT OUT ON PURPOSE (can be added later)
+-------------------------------------------
+  - Per-floor announcement playlist (each floor hides/reorders announcements
+    independently, incl. ministry-wide ones). About 2 hours.
+  - Dashboard filtered to the manager's floors. About 30 minutes.
+  - "Required" ministry-wide announcements that floor managers cannot hide.
+  - Activity history (who changed what, when). About 1-2 hours.
+  - Floor managers creating assistant accounts for their floor.
+
+
+9. OTHER OPEN ITEMS FROM THE SAME SESSION (not part of this plan)
+-----------------------------------------------------------------
+  - All work from 17 Nov 2026 is UNCOMMITTED on branch update-announcement:
+    data-reset (seeder) fix, .gitattributes (LF for .sh), announcements
+    redesign + multi-floor, Display page redesign, admin day/night theme +
+    new sidebar, new Theme page. Commit before starting this plan.
+  - nginx: make upstreams re-resolve container addresses (nginx 1.27
+    `resolve` on upstream servers + `resolver 127.0.0.11`) so rebuilds do
+    not cause 502.
+  - Kiosk console errors: the kiosk clock fetches worldtimeapi.org, which
+    the site's Content Security Policy (connect-src) blocks. Pre-existing.
+  - The header on /appearance says "APPEARANCE" (built from the URL);
+    could be mapped to "Display".
+  - Default admin login is admin@gmail.com / password — change it on the
+    live server.

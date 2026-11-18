@@ -154,7 +154,7 @@ function LangTab({
       className={cn(
         "relative px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider transition-colors",
         active
-          ? "bg-white text-golden-dark shadow-sm border border-golden-dark/20"
+          ? "bg-admin-surface text-admin-accent-text shadow-sm border border-golden-dark/20"
           : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -163,7 +163,7 @@ function LangTab({
         <span
           className={cn(
             "absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full",
-            active ? "bg-golden-classic" : "bg-white/10 text-white/50"
+            active ? "bg-admin-accent" : "bg-admin-chip text-admin-faint"
           )}
           aria-hidden
         />

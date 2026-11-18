@@ -88,6 +88,125 @@
   }
 }
 
+/* ─── Admin panel palette: "Petrol & Brass" ───────────────────────────
+   Channels (`R G B`) consumed by the `admin-*` Tailwind colours.
+   Night values are the default so any admin component rendered outside
+   the private layout (e.g. before it mounts) keeps today's dark look.
+   The private layout sets <html data-admin-mode="day|night">; public
+   kiosk and login pages never set it, so they are unaffected. */
+/* Night = "Charcoal": neutral greys, one muted gold used only for the main
+   button, switches, focus and the current-page marker. */
+:root,
+html[data-admin-mode="night"] {
+  --a-bg: 17 19 24;            /* #111318 */
+  --a-surface: 23 26 32;       /* #171A20 */
+  --a-surface2: 28 32 39;      /* #1C2027 */
+  --a-raise: 31 35 42;         /* hover / zebra */
+  --a-chip: 35 39 48;          /* #232730 */
+  --a-input: 19 22 27;         /* #13161B */
+  --a-border: 38 42 50;        /* #262A32 */
+  --a-border-strong: 51 56 66; /* #333842 */
+  --a-text: 230 233 238;       /* #E6E9EE */
+  --a-heading: 242 244 247;    /* #F2F4F7 */
+  --a-muted: 154 161 171;      /* #9AA1AB */
+  --a-faint: 135 142 153;      /* #878E99 */
+  --a-accent: 226 179 60;      /* #E2B33C muted gold */
+  --a-accent-ink: 23 19 10;
+  --a-accent-text: 214 218 225;/* labels/icons stay neutral at night */
+  --a-active: 154 161 171;     /* selected chips/tabs/borders: soft grey at night */
+  --a-ok: 95 191 143;
+  --a-info: 127 167 214;
+  --a-warn: 217 169 74;
+  --a-bad: 224 122 110;
+  --a-sidebar: 12 14 18;       /* #0C0E12 */
+  --a-sb-text: 217 220 225;
+  --a-sb-muted: 125 131 141;
+  --a-sb-brand: 242 244 247;
+  --a-sb-active: 242 244 247;
+  --a-sb-bar: 226 179 60;
+  --a-sb-border: 30 33 39;
+}
+
+html[data-admin-mode="day"] {
+  --a-bg: 243 245 248;         /* #F3F5F8 */
+  --a-surface: 255 255 255;
+  --a-surface2: 247 249 251;
+  --a-raise: 243 246 249;
+  --a-chip: 237 241 245;       /* #EDF1F5 */
+  --a-input: 255 255 255;
+  --a-border: 221 228 236;     /* #DDE4EC */
+  --a-border-strong: 201 211 222;
+  --a-text: 15 30 51;          /* #0F1E33 */
+  --a-heading: 11 59 92;       /* #0B3B5C petrol */
+  --a-muted: 82 96 115;        /* #526073 */
+  --a-faint: 122 134 151;
+  --a-accent: 255 191 0;
+  --a-accent-ink: 26 18 0;
+  --a-accent-text: 138 101 16; /* #8A6510 dark gold, readable on white */
+  --a-active: 255 191 0;       /* selected chips/tabs: gold tint by day */
+  --a-ok: 12 107 62;
+  --a-info: 11 92 138;
+  --a-warn: 138 90 0;
+  --a-bad: 180 35 24;
+  --a-sidebar: 11 59 92;       /* petrol sidebar in daylight */
+  --a-sb-text: 227 236 244;
+  --a-sb-muted: 147 174 197;
+  --a-sb-brand: 255 203 61;
+  --a-sb-active: 255 203 61;
+  --a-sb-bar: 255 203 61;
+  --a-sb-border: 11 59 92;
+}
+
+/* shadcn tokens (popovers, muted text, borders) follow the admin mode too. */
+html[data-admin-mode="night"] {
+  --background: 220 16% 11%;
+  --foreground: 216 20% 92%;
+  --card: 220 16% 11%;
+  --card-foreground: 216 20% 92%;
+  --popover: 220 16% 11%;
+  --popover-foreground: 216 20% 92%;
+  --muted: 222 16% 16%;
+  --muted-foreground: 215 9% 64%;
+  --secondary: 222 16% 16%;
+  --secondary-foreground: 216 20% 92%;
+  --accent: 222 16% 16%;
+  --accent-foreground: 216 20% 92%;
+  --border: 220 14% 17%;
+  --input: 220 13% 23%;
+  --ring: 43 74% 56%;
+  --sidebar-background: 220 20% 6%;    /* #0C0E12 */
+  --sidebar-foreground: 216 9% 87%;
+  --sidebar-border: 220 13% 14%;
+  --sidebar-accent: 0 0% 100% / 0.07;
+  --sidebar-accent-foreground: 216 20% 95%;
+  --sidebar-ring: 43 74% 56%;
+  color-scheme: dark;
+}
+html[data-admin-mode="day"] {
+  --background: 0 0% 100%;
+  --foreground: 215 55% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 55% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 215 55% 13%;
+  --muted: 210 29% 95%;
+  --muted-foreground: 215 17% 39%;
+  --secondary: 210 29% 95%;
+  --secondary-foreground: 215 55% 13%;
+  --accent: 210 29% 95%;
+  --accent-foreground: 215 55% 13%;
+  --border: 212 27% 90%;
+  --input: 211 23% 83%;
+  --ring: 45 80% 40%;
+  --sidebar-background: 205 79% 20%;   /* #0B3B5C petrol */
+  --sidebar-foreground: 208 46% 92%;
+  --sidebar-border: 205 79% 20%;
+  --sidebar-accent: 44 100% 62% / 0.18;
+  --sidebar-accent-foreground: 44 100% 62%;
+  --sidebar-ring: 44 100% 62%;
+  color-scheme: light;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -109,6 +228,40 @@
       var(--font-geist-sans),
       ui-sans-serif, system-ui, sans-serif;
   }
+}
+
+/* Dialog header band: gold gradient by day, plain panel at night. */
+.admin-dialog-hero {
+  background-image: linear-gradient(to right, hsl(45 80% 40%), #8b6a1a, hsl(45 80% 40%));
+  color: #fff;
+}
+/* By day the band is gold, so keep its text white (as before the theme work). */
+html:not([data-admin-mode="night"]) .admin-dialog-hero [class*="text-admin-"] {
+  color: rgb(255 255 255 / 0.88);
+}
+html[data-admin-mode="night"] .admin-dialog-hero {
+  background-image: none;
+  background-color: rgb(var(--a-surface2));
+  border-bottom: 1px solid rgb(var(--a-border));
+  color: rgb(var(--a-text));
+}
+
+/* Status pill: tinted by day; grey with a coloured dot at night.
+   Set the colour with --tone (an `R G B` admin token). */
+.admin-status-pill {
+  background: rgb(var(--tone) / 0.15);
+  color: rgb(var(--tone));
+}
+.admin-status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(var(--tone));
+}
+html[data-admin-mode="night"] .admin-status-pill {
+  background: rgb(var(--a-chip));
+  color: rgb(var(--a-muted));
 }
 
 /* Success Toast */

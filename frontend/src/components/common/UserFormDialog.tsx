@@ -166,7 +166,7 @@ export function UserFormDialog({
     >
       <DialogContent className="sm:max-w-3xl p-0 gap-0 overflow-hidden max-h-[92vh] flex flex-col">
         {/* Gradient header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-golden-dark via-[#8b6a1a] to-golden-dark text-white px-6 pt-6 pb-5 shrink-0">
+        <div className="relative overflow-hidden admin-dialog-hero px-6 pt-6 pb-5 shrink-0">
           <div
             className="pointer-events-none absolute inset-0 opacity-20"
             style={{
@@ -176,16 +176,16 @@ export function UserFormDialog({
           />
           <DialogHeader className="relative">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur border border-white/25 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-xl bg-admin-chip backdrop-blur border border-admin-border-strong flex items-center justify-center">
                 {isEdit ? (
-                  <UserRoundCogIcon className="h-5 w-5 text-golden-classic" />
+                  <UserRoundCogIcon className="h-5 w-5 text-admin-accent-text" />
                 ) : (
-                  <UserPlusIcon className="h-5 w-5 text-golden-classic" />
+                  <UserPlusIcon className="h-5 w-5 text-admin-accent-text" />
                 )}
               </div>
               <div>
-                <DialogTitle className="text-white">{dialogTitle}</DialogTitle>
-                <p className="text-xs text-white/70 mt-0.5">
+                <DialogTitle className="text-admin-text">{dialogTitle}</DialogTitle>
+                <p className="text-xs text-admin-muted mt-0.5">
                   {dialogSubtitle}
                 </p>
               </div>
@@ -209,7 +209,7 @@ export function UserFormDialog({
               <div className="space-y-1.5 md:col-span-2">
                 <Label htmlFor="full_name">
                   Full name
-                  <span className="text-red-500 ml-0.5">*</span>
+                  <span className="text-admin-bad ml-0.5">*</span>
                 </Label>
                 <Input
                   id="full_name"
@@ -222,7 +222,7 @@ export function UserFormDialog({
               <div className="space-y-1.5">
                 <Label htmlFor="email">
                   Email
-                  <span className="text-red-500 ml-0.5">*</span>
+                  <span className="text-admin-bad ml-0.5">*</span>
                 </Label>
                 <Input
                   id="email"
@@ -263,7 +263,7 @@ export function UserFormDialog({
               <div className="space-y-1.5">
                 <Label>
                   User type
-                  <span className="text-red-500 ml-0.5">*</span>
+                  <span className="text-admin-bad ml-0.5">*</span>
                 </Label>
                 <Select
                   value={userTypeId}
@@ -304,7 +304,7 @@ export function UserFormDialog({
               />
               <label
                 htmlFor="is_active"
-                className="flex items-start gap-3 rounded-xl border border-golden-classic/25 bg-white p-3 hover:bg-golden-metallic/30 cursor-pointer transition-colors"
+                className="flex items-start gap-3 rounded-xl border border-admin-active/25 bg-admin-surface p-3 hover:bg-admin-active/10 cursor-pointer transition-colors"
               >
                 <input
                   id="is_active"
@@ -314,7 +314,7 @@ export function UserFormDialog({
                   className="mt-1 h-4 w-4 accent-golden-dark"
                 />
                 <div>
-                  <p className="text-sm font-medium text-golden-dark">
+                  <p className="text-sm font-medium text-admin-accent-text">
                     Account active
                   </p>
                   <p className="text-[11px] text-muted-foreground">
@@ -327,14 +327,14 @@ export function UserFormDialog({
           )}
 
           {formError && (
-            <p className="text-sm text-destructive rounded-md bg-red-50 border border-red-200 px-3 py-2">
+            <p className="text-sm text-destructive rounded-md bg-admin-bad/10 border border-admin-bad/30 px-3 py-2">
               {formError}
             </p>
           )}
         </form>
 
         {/* Sticky footer */}
-        <div className="shrink-0 border-t border-golden-classic/15 bg-white px-6 py-3">
+        <div className="shrink-0 border-t border-admin-active/15 bg-admin-surface px-6 py-3">
           <DialogFooter className="!m-0">
             <Button
               type="button"
@@ -348,7 +348,7 @@ export function UserFormDialog({
               type="submit"
               form="user-form"
               disabled={submitting || !canSubmit}
-              className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+              className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
             >
               {submitting && (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

@@ -12,6 +12,38 @@ const config = {
   theme: {
     extend: {
       colors: {
+        // Admin panel day/night palette ("Petrol & Brass"). Values live in
+        // globals.css as `R G B` channels so opacity modifiers work
+        // (e.g. bg-admin-ok/15).
+        admin: {
+          bg: "rgb(var(--a-bg) / <alpha-value>)",
+          surface: "rgb(var(--a-surface) / <alpha-value>)",
+          surface2: "rgb(var(--a-surface2) / <alpha-value>)",
+          raise: "rgb(var(--a-raise) / <alpha-value>)",
+          chip: "rgb(var(--a-chip) / <alpha-value>)",
+          input: "rgb(var(--a-input) / <alpha-value>)",
+          border: "rgb(var(--a-border) / <alpha-value>)",
+          "border-strong": "rgb(var(--a-border-strong) / <alpha-value>)",
+          text: "rgb(var(--a-text) / <alpha-value>)",
+          heading: "rgb(var(--a-heading) / <alpha-value>)",
+          muted: "rgb(var(--a-muted) / <alpha-value>)",
+          faint: "rgb(var(--a-faint) / <alpha-value>)",
+          accent: "rgb(var(--a-accent) / <alpha-value>)",
+          "accent-ink": "rgb(var(--a-accent-ink) / <alpha-value>)",
+          "accent-text": "rgb(var(--a-accent-text) / <alpha-value>)",
+          ok: "rgb(var(--a-ok) / <alpha-value>)",
+          info: "rgb(var(--a-info) / <alpha-value>)",
+          warn: "rgb(var(--a-warn) / <alpha-value>)",
+          bad: "rgb(var(--a-bad) / <alpha-value>)",
+          sidebar: "rgb(var(--a-sidebar) / <alpha-value>)",
+          "sb-text": "rgb(var(--a-sb-text) / <alpha-value>)",
+          "sb-muted": "rgb(var(--a-sb-muted) / <alpha-value>)",
+          "sb-brand": "rgb(var(--a-sb-brand) / <alpha-value>)",
+          "sb-active": "rgb(var(--a-sb-active) / <alpha-value>)",
+          "sb-bar": "rgb(var(--a-sb-bar) / <alpha-value>)",
+          active: "rgb(var(--a-active) / <alpha-value>)",
+          "sb-border": "rgb(var(--a-sb-border) / <alpha-value>)",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

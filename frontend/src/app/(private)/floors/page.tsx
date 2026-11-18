@@ -228,7 +228,7 @@ export default function FloorsPage() {
         right={
           <Button
             onClick={openCreate}
-            className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+            className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
           >
             <PlusIcon className="h-4 w-4" />
             New Floor
@@ -236,44 +236,44 @@ export default function FloorsPage() {
         }
       />
 
-      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
+      <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("floor_number")}>
+              <TableHead className="text-admin-accent-text cursor-pointer select-none" onClick={() => toggleSort("floor_number")}>
                 # {sortIndicator("floor_number")}
               </TableHead>
-              <TableHead className="text-golden-classic/70 cursor-pointer select-none" onClick={() => toggleSort("name")}>
+              <TableHead className="text-admin-accent-text cursor-pointer select-none" onClick={() => toggleSort("name")}>
                 Name{sortIndicator("name")}
               </TableHead>
-              <TableHead className="text-golden-classic/70">Status</TableHead>
-              <TableHead className="w-32 text-right text-golden-classic/70">Actions</TableHead>
+              <TableHead className="text-admin-accent-text">Status</TableHead>
+              <TableHead className="w-32 text-right text-admin-accent-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow className="border-white/5">
+              <TableRow className="border-admin-border">
                 <TableCell colSpan={4} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-admin-faint" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow className="border-white/5">
-                <TableCell colSpan={4} className="h-32 text-center text-white/40">
+              <TableRow className="border-admin-border">
+                <TableCell colSpan={4} className="h-32 text-center text-admin-faint">
                   No floors match your filters.
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((f) => (
-                <TableRow key={f.floor_id} className="border-white/5 hover:bg-white/5">
-                  <TableCell className="font-bold text-white tabular-nums">{f.floor_number}</TableCell>
+                <TableRow key={f.floor_id} className="border-admin-border hover:bg-admin-raise">
+                  <TableCell className="font-bold text-admin-text tabular-nums">{f.floor_number}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2 text-white">
+                    <div className="flex items-center gap-2 text-admin-text">
                       <span>{f.name}</span>
                       {f.name_am ? (
                         <span
                           title="Amharic translation present"
-                          className="inline-flex items-center gap-0.5 rounded-full bg-white/5 border border-white/20 px-1.5 py-0.5 text-[10px] font-semibold text-golden-classic"
+                          className="inline-flex items-center gap-0.5 rounded-full bg-admin-raise border border-admin-border-strong px-1.5 py-0.5 text-[10px] font-semibold text-admin-accent-text"
                           lang="am-ET"
                         >
                           አማ ✓
@@ -293,8 +293,8 @@ export default function FloorsPage() {
                     <span
                       className={
                         f.is_active
-                          ? "inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/30"
-                          : "inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-xs font-medium text-white/40 border border-white/10"
+                          ? "inline-flex items-center rounded-full bg-admin-ok/15 px-2 py-0.5 text-xs font-medium text-admin-ok border border-admin-ok/30"
+                          : "inline-flex items-center rounded-full bg-admin-raise px-2 py-0.5 text-xs font-medium text-admin-faint border border-admin-border"
                       }
                     >
                       {f.is_active ? "Active" : "Inactive"}
@@ -306,7 +306,7 @@ export default function FloorsPage() {
                       size="icon"
                       onClick={() => openEdit(f)}
                       aria-label="Edit floor"
-                      className="text-white/70 hover:text-golden-classic hover:bg-golden-classic/10"
+                      className="text-admin-muted hover:text-admin-accent-text hover:bg-admin-active/10"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </Button>
@@ -338,7 +338,7 @@ export default function FloorsPage() {
       </div>
 
       {isFetching && !isLoading && (
-        <p className="text-xs text-white/40">Refreshing…</p>
+        <p className="text-xs text-admin-faint">Refreshing…</p>
       )}
 
       <Dialog
@@ -347,7 +347,7 @@ export default function FloorsPage() {
       >
         <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden">
           {/* Header — gradient bar + icon + subtitle */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-golden-dark via-[#8b6a1a] to-golden-dark text-white px-6 pt-6 pb-5">
+          <div className="relative overflow-hidden admin-dialog-hero px-6 pt-6 pb-5">
             <div
               className="pointer-events-none absolute inset-0 opacity-20"
               style={{
@@ -357,14 +357,14 @@ export default function FloorsPage() {
             />
             <DialogHeader className="relative">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur border border-white/25 flex items-center justify-center">
-                  <Building2Icon className="h-5 w-5 text-golden-classic" />
+                <div className="h-10 w-10 rounded-xl bg-admin-chip backdrop-blur border border-admin-border-strong flex items-center justify-center">
+                  <Building2Icon className="h-5 w-5 text-admin-accent-text" />
                 </div>
                 <div>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-admin-text">
                     {editing ? "Edit Floor" : "New Floor"}
                   </DialogTitle>
-                  <p className="text-xs text-white/70 mt-0.5">
+                  <p className="text-xs text-admin-muted mt-0.5">
                     {editing
                       ? "Update the floor number, display name, or activity status."
                       : "Add a new floor to the building. Both English and Amharic names are required."}
@@ -384,7 +384,7 @@ export default function FloorsPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="floor_number">
                   Floor number
-                  <span className="text-red-500 ml-0.5">*</span>
+                  <span className="text-admin-bad ml-0.5">*</span>
                 </Label>
                 <Input
                   id="floor_number"
@@ -432,7 +432,7 @@ export default function FloorsPage() {
               />
               <label
                 htmlFor="is_active"
-                className="flex items-start gap-3 rounded-xl border border-golden-classic/25 bg-white p-3 hover:bg-golden-metallic/30 cursor-pointer transition-colors"
+                className="flex items-start gap-3 rounded-xl border border-admin-active/25 bg-admin-surface p-3 hover:bg-admin-active/10 cursor-pointer transition-colors"
               >
                 <input
                   id="is_active"
@@ -444,7 +444,7 @@ export default function FloorsPage() {
                   className="mt-1 h-4 w-4 accent-golden-dark"
                 />
                 <div>
-                  <p className="text-sm font-medium text-golden-dark">
+                  <p className="text-sm font-medium text-admin-accent-text">
                     Active
                   </p>
                   <p className="text-[11px] text-muted-foreground">
@@ -456,12 +456,12 @@ export default function FloorsPage() {
             </section>
 
             {formError && (
-              <p className="text-sm text-destructive rounded-md bg-red-50 border border-red-200 px-3 py-2">
+              <p className="text-sm text-destructive rounded-md bg-admin-bad/10 border border-admin-bad/30 px-3 py-2">
                 {formError}
               </p>
             )}
 
-            <DialogFooter className="pt-2 border-t border-golden-classic/15">
+            <DialogFooter className="pt-2 border-t border-admin-active/15">
               <Button
                 type="button"
                 variant="outline"
@@ -473,7 +473,7 @@ export default function FloorsPage() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+                className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
               >
                 {submitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

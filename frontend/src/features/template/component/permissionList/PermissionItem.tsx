@@ -21,16 +21,16 @@ export const PermissionItem: React.FC<PermissionItemProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between py-1 px-3 border border-white/10 rounded-lg hover:bg-white/5 bg-transparent transition-colors">
+    <div className="flex items-center justify-between py-1 px-3 border border-admin-border rounded-lg hover:bg-admin-raise bg-transparent transition-colors">
       <div className="flex items-center space-x-3 flex-1">
-        <span className="text-sm font-medium text-white/80 capitalize">
+        <span className="text-sm font-medium text-admin-text capitalize">
           {permission.action.replace("_", " ")}
         </span>
       </div>
 
       <button
         className={`p-0 transition-all duration-200 ${
-          isActive ? "text-emerald-400" : "text-white/30"
+          isActive ? "text-admin-ok" : "text-admin-faint"
         }`}
         onClick={handleToggle}
         disabled={isToggling}
@@ -41,9 +41,9 @@ export const PermissionItem: React.FC<PermissionItemProps> = ({
             <div className="h-6 w-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
           </div>
         ) : isActive ? (
-          <ToggleRight className="h-10 w-10 text-emerald-400 hover:text-emerald-500" />
+          <ToggleRight className="h-10 w-10 text-admin-ok hover:text-admin-ok" />
         ) : (
-          <ToggleLeft className="h-10 w-10 text-white/30 hover:text-white/50" />
+          <ToggleLeft className="h-10 w-10 text-admin-faint hover:text-admin-faint" />
         )}
       </button>
     </div>

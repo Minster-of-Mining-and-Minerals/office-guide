@@ -84,7 +84,7 @@ const columns: ColumnDef<Evaluation>[] = [
       return (
         <span
           className={
-            score >= 70 ? "text-green-600 font-medium" : "text-red-600 font-medium"
+            score >= 70 ? "text-admin-ok font-medium" : "text-admin-bad font-medium"
           }
         >
           {score}%

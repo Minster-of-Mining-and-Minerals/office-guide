@@ -86,13 +86,13 @@ export function DataTable<TData, TValue>({
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow
 							key={headerGroup.id}
-							className="bg-primary rounded-md hover:bg-primary/90 overflow-clip"
+							className="bg-admin-surface2 rounded-md hover:bg-admin-surface2 overflow-clip"
 						>
 							{headerGroup.headers.map((header) => {
 								return (
 									<TableHead
 										key={header.id}
-										className="text-primary-foreground font-bold first:rounded-l-md last:rounded-r-md py-5"
+										className="text-admin-muted font-semibold first:rounded-l-md last:rounded-r-md py-5"
 									>
 										{header.isPlaceholder
 											? null
@@ -113,8 +113,8 @@ export function DataTable<TData, TValue>({
 								key={row.id}
 								data-state={row.getIsSelected() ? "selected" : undefined}
 								className={`
-                                           bg-white shadow-sm transition-shadow duration-200
-                                            even:bg-[#F7F9FF]
+                                           bg-admin-surface shadow-sm transition-shadow duration-200
+                                            even:bg-admin-surface2
                                             ${
 																							i === 0
 																								? "first:rounded-t-lg"

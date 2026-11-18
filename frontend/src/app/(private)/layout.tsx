@@ -9,6 +9,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { performLogout } from "@/utils/logout";
+import { AdminThemeProvider } from "@/components/common/AdminThemeProvider";
 
 /**
  * Browsers may restore this page from the back-forward cache (bfcache)
@@ -85,28 +86,34 @@ export default function PrivateLayout({
   // torn down. Never render private content in either state.
   if (status === "loading" || status === "unauthenticated") {
     return (
-      <div className="min-h-screen w-full grid place-items-center bg-background">
-        <Loader2Icon className="h-6 w-6 animate-spin text-golden-classic" />
-      </div>
+      <AdminThemeProvider>
+        <div className="min-h-screen w-full grid place-items-center bg-admin-bg">
+          <Loader2Icon className="h-6 w-6 animate-spin text-admin-accent-text" />
+        </div>
+      </AdminThemeProvider>
     );
   }
 
   // Waiting for the change-password redirect to fire.
   if (isFirstLogin && !isChangePasswordPage) {
     return (
-      <div className="min-h-screen w-full grid place-items-center bg-background">
-        <Loader2Icon className="h-6 w-6 animate-spin text-golden-classic" />
-      </div>
+      <AdminThemeProvider>
+        <div className="min-h-screen w-full grid place-items-center bg-admin-bg">
+          <Loader2Icon className="h-6 w-6 animate-spin text-admin-accent-text" />
+        </div>
+      </AdminThemeProvider>
     );
   }
 
   return (
-    <SidebarProvider>
-      {!isFirstLogin && <AppSidebar />}
-      <SidebarInset className="min-h-screen bg-[#0A1628]">
-        <Header title={title || "Dashboard"} />
-        <div className="p-6 min-h-[calc(100vh-5rem)]">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+    <AdminThemeProvider>
+      <SidebarProvider>
+        {!isFirstLogin && <AppSidebar />}
+        <SidebarInset className="min-h-screen bg-admin-bg text-admin-text">
+          <Header title={title || "Dashboard"} />
+          <div className="p-6 min-h-[calc(100vh-5rem)]">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+    </AdminThemeProvider>
   );
 }

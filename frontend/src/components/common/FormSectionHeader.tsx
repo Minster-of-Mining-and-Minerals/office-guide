@@ -18,11 +18,11 @@ export function FormSectionHeader({
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
         {icon && (
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-golden-metallic border border-golden-classic/30 text-golden-dark">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-admin-active/10 border border-admin-active/30 text-admin-accent-text">
             {icon}
           </span>
         )}
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-golden-dark">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-admin-accent-text">
           {label}
         </span>
         {subtitle && (

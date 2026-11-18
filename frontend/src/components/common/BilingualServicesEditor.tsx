@@ -42,9 +42,9 @@ function CountBadge({
       className={cn(
         "inline-flex items-center gap-1 text-[11px] tabular-nums font-medium transition-colors",
         atMax
-          ? "text-red-600"
+          ? "text-admin-bad"
           : warn
-            ? "text-amber-600"
+            ? "text-admin-warn"
             : "text-muted-foreground"
       )}
     >
@@ -143,17 +143,17 @@ export function BilingualServicesEditor({
         />
       </div>
 
-      <div className="rounded-md border border-input bg-white px-2 py-1.5 focus-within:ring-1 focus-within:ring-golden-dark focus-within:border-golden-dark">
+      <div className="rounded-md border border-input bg-admin-surface px-2 py-1.5 focus-within:ring-1 focus-within:ring-golden-dark focus-within:border-golden-dark">
         <div className="flex flex-wrap gap-1.5">
           {servicesEn.map((s, idx) => (
             <span
               key={`${s}-${idx}`}
-              className="group inline-flex items-center gap-0.5 rounded-full bg-golden-metallic border border-golden-dark/20 pl-2.5 pr-1 py-0.5 text-xs font-medium text-golden-dark max-w-full"
+              className="group inline-flex items-center gap-0.5 rounded-full bg-admin-active/10 border border-golden-dark/20 pl-2.5 pr-1 py-0.5 text-xs font-medium text-admin-accent-text max-w-full"
               title={`${s} · ${servicesAm[idx] ?? ""}`}
             >
               <span className="flex items-center gap-1 min-w-0">
                 <span className="truncate max-w-[220px]">{s}</span>
-                <span className="text-golden-dark/50 shrink-0">·</span>
+                <span className="text-admin-accent-text shrink-0">·</span>
                 <span
                   lang="am-ET"
                   className="truncate max-w-[220px]"
@@ -164,7 +164,7 @@ export function BilingualServicesEditor({
               <button
                 type="button"
                 onClick={() => removeAt(idx)}
-                className="h-4 w-4 shrink-0 rounded-full hover:bg-golden-classic/10 flex items-center justify-center text-golden-classic/70 hover:text-golden-classic"
+                className="h-4 w-4 shrink-0 rounded-full hover:bg-admin-active/10 flex items-center justify-center text-admin-accent-text hover:text-admin-accent-text"
                 aria-label={`Remove ${s}`}
               >
                 <XIcon className="h-3 w-3" />
@@ -178,7 +178,7 @@ export function BilingualServicesEditor({
                 className={cn(
                   "shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border",
                   step === "en"
-                    ? "bg-golden-classic text-black border-golden-classic"
+                    ? "bg-admin-accent text-black border-admin-active"
                     : "text-muted-foreground border-input"
                 )}
               >
@@ -199,7 +199,7 @@ export function BilingualServicesEditor({
                 className={cn(
                   "shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border",
                   step === "am"
-                    ? "bg-golden-classic text-black border-golden-classic"
+                    ? "bg-admin-accent text-black border-admin-active"
                     : "text-muted-foreground border-input"
                 )}
               >
@@ -236,7 +236,7 @@ export function BilingualServicesEditor({
       </div>
 
       {draftOverLimit && (
-        <p className="text-[11px] text-red-600">
+        <p className="text-[11px] text-admin-bad">
           A single service is capped at {SERVICE_TAG_CHAR_MAX} characters. Shorten the
           tag to keep it readable on the kiosk.
         </p>

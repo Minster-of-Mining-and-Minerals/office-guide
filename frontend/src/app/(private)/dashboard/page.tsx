@@ -14,7 +14,7 @@
  *     a mini radial gauge (matches CMS `VariantStatasCard`)
  *  4. Charts row — offices per floor (vertical bars) + translation
  *     status distribution (donut) — matches CMS `DashboardLayout`
- *  5. Bottom split — floors table on the left, appearance preview +
+ *  5. Bottom split — floors table on the left, Amharic gaps +
  *     "needs Amharic" panel on the right
  */
 
@@ -22,6 +22,7 @@ import Link from "next/link";
 import React, { useMemo } from "react";
 import {
   ArrowRightIcon,
+  MonitorPlayIcon,
   Building2,
   CircleAlertIcon,
   DoorOpen,
@@ -68,7 +69,6 @@ import {
   useGetSignageSummaryQuery,
 } from "@/redux/api/signageApi";
 import { useGetAllFloorsQuery } from "@/redux/api/floorApi";
-import { useGetPublicThemeQuery } from "@/redux/api/themeApi";
 import type { Office } from "@/redux/types/signage";
 
 // ─── Domain helpers ────────────────────────────────────────────────
@@ -101,7 +101,6 @@ export default function DashboardPage() {
   const { data: floors = [], isLoading: floorsLoading } =
     useGetAllFloorsQuery();
   const { data: guide } = useGetOfficeGuideQuery();
-  const { data: theme } = useGetPublicThemeQuery();
 
   const officesByFloor: Record<string, Office[]> = useMemo(() => {
     const map: Record<string, Office[]> = {};
@@ -258,16 +257,16 @@ export default function DashboardPage() {
       {/* ── 1. Page header ─────────────────── */}
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-golden-classic">Dashboard</h1>
-          <p className="mt-1 max-w-2xl text-sm text-white/50">
+          <h1 className="text-2xl font-bold text-admin-heading">Dashboard</h1>
+          <p className="mt-1 max-w-2xl text-sm text-admin-faint">
             Live snapshot of the ministry office guide — floors, offices,
-            bilingual coverage, and current public appearance.
+            and bilingual coverage.
           </p>
         </div>
         <Link
           href="/"
           target="_blank"
-          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-golden-classic/40 bg-white/5 px-4 text-sm font-medium text-golden-classic shadow-sm hover:bg-golden-classic/15 backdrop-blur"
+          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-admin-active/40 bg-admin-raise px-4 text-sm font-medium text-admin-accent-text shadow-sm hover:bg-admin-active/15 backdrop-blur"
         >
           <ShieldCheckIcon className="h-4 w-4" />
           Open public office guide
@@ -277,32 +276,33 @@ export default function DashboardPage() {
 
       {/* ── 2. Quick actions ───────────────────────────────── */}
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-golden-classic/50">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-admin-accent-text">
           Quick actions
         </h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
           <QuickAction href="/floors" label="New floor" hint="Add a level" Icon={Building2} />
           <QuickAction href="/offices" label="New office" hint="Add a room" Icon={DoorOpen} />
-          <QuickAction href="/appearance" label="Display" hint="Mode & theme" Icon={PaletteIcon} />
+          <QuickAction href="/appearance" label="Display" hint="What floors show" Icon={MonitorPlayIcon} />
+          <QuickAction href="/theme" label="Theme" hint="Kiosk colours" Icon={PaletteIcon} />
           <QuickAction href="/users" label="Users & roles" hint="Access control" Icon={ShieldCheckIcon} />
         </div>
       </section>
 
       {/* ── 3. Unified stat strip ────────────── */}
-      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl relative overflow-hidden">
+      <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur shadow-xl relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 opacity-20" style={{backgroundImage:"radial-gradient(ellipse at 0% 0%, hsl(45,100%,50%,0.2) 0, transparent 60%)"}} />
         <div className="relative p-4 md:p-6">
           {(summaryLoading || !guide) && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/40 backdrop-blur-[1px]">
-              <Loader2Icon className="h-5 w-5 animate-spin text-golden-classic" />
+              <Loader2Icon className="h-5 w-5 animate-spin text-admin-accent-text" />
             </div>
           )}
-          <div className="grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+          <div className="grid grid-cols-1 divide-y divide-admin-border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
             {stats.map((s) => (
               <div
                 key={s.id}
                 className={cn(
-                  "sm:border-r sm:border-white/10",
+                  "sm:border-r sm:border-admin-border",
                   "sm:[&:nth-child(2n)]:border-r-0",
                   "lg:[&:nth-child(2n)]:border-r",
                   "lg:[&:nth-child(4n)]:border-r-0"
@@ -327,13 +327,13 @@ export default function DashboardPage() {
       {/* ── 4. Charts row ──────────────────────────────────── */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         {/* Offices per floor (bar) — spans 3/5 */}
-        <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl lg:col-span-3">
+        <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur shadow-xl lg:col-span-3">
           <div className="flex flex-row items-start justify-between p-6 pb-2">
             <div>
-              <p className="text-base font-semibold text-golden-classic">Offices per floor</p>
-              <p className="text-[11px] text-white/40">Room count on every level.</p>
+              <p className="text-base font-semibold text-admin-accent-text">Offices per floor</p>
+              <p className="text-[11px] text-admin-faint">Room count on every level.</p>
             </div>
-            <Building2 className="h-4 w-4 text-golden-classic/60" />
+            <Building2 className="h-4 w-4 text-admin-accent-text" />
           </div>
           <div className="px-6 pb-6">
             {!hasAnyOffice ? (
@@ -347,29 +347,29 @@ export default function DashboardPage() {
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="rgba(255,255,255,0.08)"
+                      stroke="rgb(var(--a-border))"
                       vertical={false}
                     />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
+                      tick={{ fontSize: 12, fill: "rgb(var(--a-muted))" }}
                       tickLine={false}
-                      axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                      axisLine={{ stroke: "rgb(var(--a-border-strong))" }}
                     />
                     <YAxis
                       allowDecimals={false}
-                      tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
+                      tick={{ fontSize: 12, fill: "rgb(var(--a-muted))" }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <Tooltip
-                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
+                      cursor={{ fill: "rgb(var(--a-text) / 0.05)" }}
                       contentStyle={{
                         borderRadius: 8,
-                        border: "1px solid rgba(255,255,255,0.15)",
+                        border: "1px solid rgb(var(--a-border-strong))",
                         fontSize: 12,
-                        background: "#0D1F3C",
-                        color: "#fff",
+                        background: "rgb(var(--a-surface))",
+                        color: "rgb(var(--a-text))",
                       }}
                       formatter={(v: number, _n, p: any) => [
                         `${v} offices`,
@@ -390,13 +390,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Translation distribution (donut) — spans 2/5 */}
-        <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl lg:col-span-2">
+        <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur shadow-xl lg:col-span-2">
           <div className="flex flex-row items-start justify-between p-6 pb-2">
             <div>
-              <p className="text-base font-semibold text-golden-classic">Translation status</p>
-              <p className="text-[11px] text-white/40">Fully translated vs. gaps.</p>
+              <p className="text-base font-semibold text-admin-accent-text">Translation status</p>
+              <p className="text-[11px] text-admin-faint">Fully translated vs. gaps.</p>
             </div>
-            <LanguagesIcon className="h-4 w-4 text-golden-classic/60" />
+            <LanguagesIcon className="h-4 w-4 text-admin-accent-text" />
           </div>
           <div className="px-6 pb-6">
             {!hasAnyOffice ? (
@@ -408,10 +408,10 @@ export default function DashboardPage() {
                     <Tooltip
                       contentStyle={{
                         borderRadius: 8,
-                        border: "1px solid rgba(255,255,255,0.15)",
+                        border: "1px solid rgb(var(--a-border-strong))",
                         fontSize: 12,
-                        background: "#0D1F3C",
-                        color: "#fff",
+                        background: "rgb(var(--a-surface))",
+                        color: "rgb(var(--a-text))",
                       }}
                     />
                     <Pie
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                       innerRadius={55}
                       outerRadius={90}
                       paddingAngle={2}
-                      stroke="rgba(255,255,255,0.1)"
+                      stroke="rgb(var(--a-surface))"
                       strokeWidth={2}
                     >
                       {translationDistribution.map((entry, idx) => (
@@ -440,14 +440,14 @@ export default function DashboardPage() {
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy || 0) - 4}
-                                className="fill-golden-classic text-2xl font-bold"
+                                className="fill-admin-accent-text text-2xl font-bold"
                               >
                                 {translation.pct}%
                               </tspan>
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy || 0) + 16}
-                                fill="rgba(255,255,255,0.4)"
+                                fill="rgb(var(--a-faint))"
                               className="text-[10px]"
                               >
                                 translated
@@ -461,7 +461,7 @@ export default function DashboardPage() {
                       verticalAlign="bottom"
                       height={32}
                       iconType="circle"
-                      wrapperStyle={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}
+                      wrapperStyle={{ fontSize: 11, color: "rgb(var(--a-muted))" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -473,15 +473,15 @@ export default function DashboardPage() {
 
       {/* ── 5. Bottom split: floors table + sidebar ────────── */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl">
+        <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur shadow-xl">
           <div className="flex flex-row items-center justify-between p-6 pb-2">
             <div>
-              <p className="text-base font-semibold text-golden-classic">Floors</p>
-              <p className="text-[11px] text-white/40">Offices per floor + translation status.</p>
+              <p className="text-base font-semibold text-admin-accent-text">Floors</p>
+              <p className="text-[11px] text-admin-faint">Offices per floor + translation status.</p>
             </div>
             <Link
               href="/floors"
-              className="inline-flex items-center gap-1 text-xs text-golden-classic hover:underline"
+              className="inline-flex items-center gap-1 text-xs text-admin-accent-text hover:underline"
             >
               View all <ArrowRightIcon className="h-3.5 w-3.5" />
             </Link>
@@ -490,11 +490,11 @@ export default function DashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 text-golden-classic/70">#</TableHead>
-                  <TableHead className="text-golden-classic/70">Name</TableHead>
-                  <TableHead className="w-24 text-right text-golden-classic/70">Offices</TableHead>
-                  <TableHead className="w-32 text-golden-classic/70">Translation</TableHead>
-                  <TableHead className="w-24 text-golden-classic/70">Status</TableHead>
+                  <TableHead className="w-12 text-admin-accent-text">#</TableHead>
+                  <TableHead className="text-admin-accent-text">Name</TableHead>
+                  <TableHead className="w-24 text-right text-admin-accent-text">Offices</TableHead>
+                  <TableHead className="w-32 text-admin-accent-text">Translation</TableHead>
+                  <TableHead className="w-24 text-admin-accent-text">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -505,8 +505,8 @@ export default function DashboardPage() {
                     </TableCell>
                   </TableRow>
                 ) : floors.length === 0 ? (
-                  <TableRow className="border-white/5">
-                    <TableCell colSpan={5} className="h-20 text-center text-white/40">
+                  <TableRow className="border-admin-border">
+                    <TableCell colSpan={5} className="h-20 text-center text-admin-faint">
                       No floors yet. Head to the Floors page to add the first
                       one.
                     </TableCell>
@@ -520,24 +520,24 @@ export default function DashboardPage() {
                         ? 100
                         : Math.round((translated / offices.length) * 100);
                     return (
-                      <TableRow key={f.floor_id} className="border-white/5 hover:bg-white/5">
-                        <TableCell className="font-bold text-white">
+                      <TableRow key={f.floor_id} className="border-admin-border hover:bg-admin-raise">
+                        <TableCell className="font-bold text-admin-text">
                           {f.floor_number}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="text-white">{f.name}</span>
+                            <span className="text-admin-text">{f.name}</span>
                             {f.name_am && (
                               <span
                                 lang="am-ET"
-                                className="text-[11px] text-white/40"
+                                className="text-[11px] text-admin-faint"
                               >
                                 {f.name_am}
                               </span>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right tabular-nums text-white/70">
+                        <TableCell className="text-right tabular-nums text-admin-muted">
                           {offices.length}
                         </TableCell>
                         <TableCell>
@@ -547,8 +547,8 @@ export default function DashboardPage() {
                           <span
                             className={
                               f.is_active
-                                ? "inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-400"
-                                : "inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/40"
+                                ? "inline-flex items-center rounded-full border border-admin-ok/30 bg-admin-ok/15 px-2 py-0.5 text-[11px] font-medium text-admin-ok"
+                                : "inline-flex items-center rounded-full border border-admin-border bg-admin-raise px-2 py-0.5 text-[11px] font-medium text-admin-faint"
                             }
                           >
                             {f.is_active ? "Active" : "Inactive"}
@@ -564,120 +564,46 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl overflow-hidden">
+          <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur shadow-xl">
             <div className="flex flex-row items-center justify-between p-6 pb-2">
               <div>
-                <p className="text-base font-semibold text-golden-classic">Current theme</p>
-                <p className="text-[11px] text-white/40">Live on the public guide.</p>
+                <p className="text-base font-semibold text-admin-accent-text">Needs Amharic</p>
+                <p className="text-[11px] text-admin-faint">Offices missing translated fields.</p>
               </div>
-              <PaletteIcon className="h-4 w-4 text-golden-classic/60" />
-            </div>
-            <div className="space-y-3 px-6 pb-6">
-              {theme ? (
-                <>
-                  <div
-                    className="rounded-xl border border-white/10 p-4"
-                    style={{ backgroundColor: theme.page_bg }}
-                  >
-                    <div
-                      className="rounded-lg border p-3 shadow-inner"
-                      style={{
-                        backgroundColor: theme.card_bg,
-                        color: theme.card_text,
-                        borderColor: `${theme.accent}55`,
-                      }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest opacity-70">
-                        Office
-                      </p>
-                      <p className="mt-0.5 text-sm font-semibold leading-tight">
-                        Sample office
-                      </p>
-                      <span
-                        className="mt-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                        style={{
-                          backgroundColor: theme.accent,
-                          color: theme.accent_dark,
-                        }}
-                      >
-                        Aa
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      {(
-                        ["card_bg", "card_text", "accent", "page_bg"] as const
-                      ).map((k) => (
-                        <span
-                          key={k}
-                          title={theme[k]}
-                          className="h-5 w-5 rounded-md border border-white/20 shadow-inner"
-                          style={{ backgroundColor: theme[k] }}
-                        />
-                      ))}
-                    </div>
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="border-golden-classic/40 text-golden-classic bg-transparent hover:bg-golden-classic/15"
-                    >
-                      <Link href="/appearance">
-                        Edit
-                        <ArrowRightIcon className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex h-24 items-center justify-center">
-                  <Loader2Icon className="h-4 w-4 animate-spin text-white/40" />
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur shadow-xl">
-            <div className="flex flex-row items-center justify-between p-6 pb-2">
-              <div>
-                <p className="text-base font-semibold text-golden-classic">Needs Amharic</p>
-                <p className="text-[11px] text-white/40">Offices missing translated fields.</p>
-              </div>
-              <LanguagesIcon className="h-4 w-4 text-golden-classic/60" />
+              <LanguagesIcon className="h-4 w-4 text-admin-accent-text" />
             </div>
             <div className="p-0">
               {!guide ? (
                 <div className="flex h-20 items-center justify-center">
-                  <Loader2Icon className="h-4 w-4 animate-spin text-white/40" />
+                  <Loader2Icon className="h-4 w-4 animate-spin text-admin-faint" />
                 </div>
               ) : translation.gaps.length === 0 ? (
                 <div className="p-6 text-center">
-                  <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/15 text-emerald-400">
+                  <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-admin-ok/30 bg-admin-ok/15 text-admin-ok">
                     <TrendingUpIcon className="h-4 w-4" />
                   </div>
-                  <p className="text-sm font-medium text-emerald-400">
+                  <p className="text-sm font-medium text-admin-ok">
                     All caught up!
                   </p>
-                  <p className="mt-0.5 text-[11px] text-white/40">
+                  <p className="mt-0.5 text-[11px] text-admin-faint">
                     Every office has full Amharic content.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-white/5">
+                <ul className="divide-y divide-admin-border">
                   {translation.gaps.map((o) => (
                     <li
                       key={o.office_id}
                       className="flex items-center justify-between gap-3 px-4 py-2.5"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-white">{o.name}</p>
-                        <p className="text-[11px] text-white/40">
+                        <p className="truncate text-sm font-medium text-admin-text">{o.name}</p>
+                        <p className="text-[11px] text-admin-faint">
                           Room {o.room_number}
                         </p>
                       </div>
                       <span
-                        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-400"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-admin-warn/30 bg-admin-warn/15 px-2 py-0.5 text-[10px] font-semibold text-admin-warn"
                         title="Missing at least one Amharic field"
                       >
                         <CircleAlertIcon className="h-3 w-3" />
@@ -688,7 +614,7 @@ export default function DashboardPage() {
                   <li className="px-4 py-2">
                     <Link
                       href="/offices"
-                      className="inline-flex items-center gap-1 text-xs text-golden-classic hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-admin-accent-text hover:underline"
                     >
                       Fix in Offices
                       <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -730,7 +656,7 @@ function StatItem({
   ];
 
   const body = (
-    <div className="group flex items-center justify-between gap-3 rounded-xl p-3 transition-colors hover:bg-white/5">
+    <div className="group flex items-center justify-between gap-3 rounded-xl p-3 transition-colors hover:bg-admin-raise">
       <div className="flex min-w-0 flex-col gap-2">
         <div className="flex items-center gap-2">
           <span
@@ -743,22 +669,22 @@ function StatItem({
           >
             <Icon className="h-3.5 w-3.5" />
           </span>
-          <p className="truncate text-[11px] font-medium uppercase tracking-wider text-white/40">
+          <p className="truncate text-[11px] font-medium uppercase tracking-wider text-admin-faint">
             {title}
           </p>
         </div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold tabular-nums text-golden-classic">
+          <span className="text-3xl font-bold tabular-nums text-admin-accent-text">
             {typeof value === "number" ? value.toLocaleString() : value}
           </span>
           {suffix && (
-            <span className="text-lg font-semibold text-golden-classic/70">
+            <span className="text-lg font-semibold text-admin-accent-text">
               {suffix}
             </span>
           )}
         </div>
         {secondary && (
-          <p className="truncate text-[11px] text-white/40">
+          <p className="truncate text-[11px] text-admin-faint">
             {secondary}
           </p>
         )}
@@ -782,7 +708,7 @@ function StatItem({
             />
             <RadialBar
               dataKey="value"
-              background={{ fill: "rgba(255,255,255,0.08)" }}
+              background={{ fill: "rgb(var(--a-chip))" }}
               cornerRadius={10}
             />
             <PolarRadiusAxis tick={false} axisLine={false}>
@@ -798,7 +724,7 @@ function StatItem({
                     >
                       <tspan
                         className="text-[11px] font-bold"
-                        style={{ fill: color }}
+                        style={{ fill: "rgb(var(--a-text))" }}
                       >
                         {percent}%
                       </tspan>
@@ -830,17 +756,17 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-xl border border-white/10 bg-[#0D1F3C]/80 p-3 backdrop-blur transition-all hover:border-golden-classic/40 hover:shadow-md"
+      className="group flex items-center gap-3 rounded-xl border border-admin-border bg-admin-surface/80 p-3 backdrop-blur transition-all hover:border-admin-active/40 hover:shadow-md"
     >
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-golden-classic/30 bg-golden-classic/10 text-golden-classic group-hover:bg-golden-classic/25">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-admin-active/30 bg-admin-active/10 text-admin-accent-text group-hover:bg-admin-active/25">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1 text-sm font-medium text-golden-classic">
+        <p className="flex items-center gap-1 text-sm font-medium text-admin-accent-text">
           {label}
           <PlusIcon className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
         </p>
-        <p className="truncate text-[11px] text-white/40">{hint}</p>
+        <p className="truncate text-[11px] text-admin-faint">{hint}</p>
       </div>
     </Link>
   );
@@ -851,13 +777,13 @@ function TranslationBar({ pct }: { pct: number }) {
     pct >= 90 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-500" : "bg-red-500";
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-admin-chip">
         <div
           className={cn("h-full transition-all", tone)}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 text-right text-[11px] tabular-nums text-white/50">
+      <span className="w-8 text-right text-[11px] tabular-nums text-admin-faint">
         {pct}%
       </span>
     </div>
@@ -866,8 +792,8 @@ function TranslationBar({ pct }: { pct: number }) {
 
 function EmptyChart({ hint }: { hint: string }) {
   return (
-    <div className="flex h-[260px] items-center justify-center rounded-md border border-dashed border-white/15 bg-white/5">
-      <p className="text-sm text-white/40">{hint}</p>
+    <div className="flex h-[260px] items-center justify-center rounded-md border border-dashed border-admin-border-strong bg-admin-raise">
+      <p className="text-sm text-admin-faint">{hint}</p>
     </div>
   );
 }

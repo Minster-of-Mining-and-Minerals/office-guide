@@ -62,7 +62,7 @@ export function PairedBilingualField({
       <div className="flex items-baseline justify-between gap-2">
         <Label htmlFor={id}>
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-admin-bad ml-0.5">*</span>}
         </Label>
         {hint && (
           <span className="text-[11px] text-muted-foreground">{hint}</span>
@@ -148,8 +148,8 @@ function LangColumn({
           className={cn(
             "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border transition-colors",
             filled
-              ? "bg-golden-classic text-black border-golden-classic"
-              : "bg-white text-golden-dark/70 border-golden-classic/40"
+              ? "bg-admin-accent text-black border-admin-active"
+              : "bg-admin-surface text-admin-accent-text border-admin-active/40"
           )}
         >
           {langLabel}

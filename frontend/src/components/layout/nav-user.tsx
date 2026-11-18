@@ -53,13 +53,13 @@ export function NavUser({ user }: NavUserProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-lg p-2 hover:bg-accent focus:outline-none">
-          <Avatar className="h-8 w-8 rounded-lg border border-golden-classic/40">
+          <Avatar className="h-8 w-8 rounded-lg border border-admin-active/40">
             <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="rounded-lg bg-golden-classic/20 text-golden-classic font-semibold">{initials}</AvatarFallback>
+            <AvatarFallback className="rounded-lg bg-admin-active/20 text-admin-accent-text font-semibold">{initials}</AvatarFallback>
           </Avatar>
-          <div className="hidden md:grid flex-1 text-left text-sm leading-tight text-white">
+          <div className="hidden md:grid flex-1 text-left text-sm leading-tight text-admin-text">
             <span className="truncate font-semibold">{user.name}</span>
-            <span className="truncate text-xs text-white/50">
+            <span className="truncate text-xs text-admin-faint">
               {user.email}
             </span>
           </div>
@@ -73,13 +73,13 @@ export function NavUser({ user }: NavUserProps) {
       >
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="h-8 w-8 rounded-lg border border-golden-classic/40">
+            <Avatar className="h-8 w-8 rounded-lg border border-admin-active/40">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="rounded-lg bg-golden-classic/20 text-golden-classic font-semibold">{initials}</AvatarFallback>
+              <AvatarFallback className="rounded-lg bg-admin-active/20 text-admin-accent-text font-semibold">{initials}</AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight text-white">
+            <div className="grid flex-1 text-left text-sm leading-tight text-admin-text">
               <span className="truncate font-semibold">{user.name}</span>
-              <span className="truncate text-xs text-white/50">
+              <span className="truncate text-xs text-admin-faint">
                 {user.email}
               </span>
             </div>

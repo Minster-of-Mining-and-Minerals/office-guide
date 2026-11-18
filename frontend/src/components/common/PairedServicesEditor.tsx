@@ -80,10 +80,10 @@ export function PairedServicesEditor({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-6 text-center">
-          <p className="text-sm text-white/60">
+        <div className="rounded-xl border border-dashed border-admin-border-strong bg-admin-raise p-6 text-center">
+          <p className="text-sm text-admin-muted">
             No services yet. Add the first one below — you can list up to{" "}
-            <span className="font-medium text-golden-classic">{max}</span> per
+            <span className="font-medium text-admin-accent-text">{max}</span> per
             office.
           </p>
         </div>
@@ -97,11 +97,11 @@ export function PairedServicesEditor({
             return (
               <div
                 key={idx}
-                className="group rounded-xl border border-white/10 bg-white/5 p-3 hover:border-golden-classic/40 transition-colors"
+                className="group rounded-xl border border-admin-border bg-admin-raise p-3 hover:border-admin-active/40 transition-colors"
               >
                 <div className="flex items-start gap-2">
                   {/* Index badge — helps admin see the pair number */}
-                  <div className="shrink-0 mt-1.5 h-6 w-6 rounded-full bg-white/10 border border-white/20 text-white/70 text-[11px] font-semibold flex items-center justify-center">
+                  <div className="shrink-0 mt-1.5 h-6 w-6 rounded-full bg-admin-chip border border-admin-border-strong text-admin-muted text-[11px] font-semibold flex items-center justify-center">
                     {idx + 1}
                   </div>
 
@@ -109,17 +109,17 @@ export function PairedServicesEditor({
                     {/* EN */}
                     <div className="min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 text-white/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center rounded-full bg-admin-chip border border-admin-border-strong text-admin-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
                           EN
                         </span>
                         <span
                           className={cn(
                             "text-[10px] tabular-nums",
                             enOver
-                              ? "text-red-600"
+                              ? "text-admin-bad"
                               : enWarn
-                                ? "text-amber-600"
-                                : "text-white/40"
+                                ? "text-admin-warn"
+                                : "text-admin-faint"
                           )}
                         >
                           {row.en.length}/{SERVICE_TAG_CHAR_MAX}
@@ -133,7 +133,7 @@ export function PairedServicesEditor({
                         className={cn(
                           "text-sm",
                           enOver &&
-                            "border-red-400 focus-visible:ring-red-500"
+                            "border-admin-bad/30 focus-visible:ring-red-500"
                         )}
                       />
                     </div>
@@ -141,17 +141,17 @@ export function PairedServicesEditor({
                     {/* AM */}
                     <div className="min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 text-white/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center rounded-full bg-admin-chip border border-admin-border-strong text-admin-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
                           አማ
                         </span>
                         <span
                           className={cn(
                             "text-[10px] tabular-nums",
                             amOver
-                              ? "text-red-600"
+                              ? "text-admin-bad"
                               : amWarn
-                                ? "text-amber-600"
-                                : "text-white/40"
+                                ? "text-admin-warn"
+                                : "text-admin-faint"
                           )}
                         >
                           {row.am.length}/{SERVICE_TAG_CHAR_MAX}
@@ -166,7 +166,7 @@ export function PairedServicesEditor({
                         className={cn(
                           "text-sm",
                           amOver &&
-                            "border-red-400 focus-visible:ring-red-500"
+                            "border-admin-bad/30 focus-visible:ring-red-500"
                         )}
                       />
                     </div>
@@ -176,7 +176,7 @@ export function PairedServicesEditor({
                     type="button"
                     onClick={() => removeAt(idx)}
                     aria-label={`Remove service ${idx + 1}`}
-                    className="shrink-0 mt-1 h-8 w-8 rounded-lg border border-transparent hover:border-red-500/30 hover:bg-red-500/20 text-white/40 hover:text-red-400 flex items-center justify-center transition-colors"
+                    className="shrink-0 mt-1 h-8 w-8 rounded-lg border border-transparent hover:border-admin-bad/30 hover:bg-admin-bad/20 text-admin-faint hover:text-admin-bad flex items-center justify-center transition-colors"
                   >
                     <XIcon className="h-4 w-4" />
                   </button>
@@ -188,7 +188,7 @@ export function PairedServicesEditor({
       )}
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-[11px] text-white/50">
+        <p className="text-[11px] text-admin-faint">
           Both languages are required for every service. The order shown
           here is how they appear on the office guide card.
         </p>
@@ -198,7 +198,7 @@ export function PairedServicesEditor({
           size="sm"
           onClick={addRow}
           disabled={atMax}
-          className="border-golden-classic/50 text-golden-classic bg-transparent hover:bg-golden-classic/10"
+          className="border-admin-active/50 text-admin-accent-text bg-transparent hover:bg-admin-active/10"
         >
           <PlusIcon className="h-3.5 w-3.5" />
           {atMax ? `Max ${max} reached` : "Add service"}
@@ -226,10 +226,10 @@ function CountBadge({
       className={cn(
         "inline-flex items-center gap-1 text-[11px] tabular-nums font-medium transition-colors",
         atMax
-          ? "text-red-600"
+          ? "text-admin-bad"
           : warn
-            ? "text-amber-500"
-            : "text-white/50"
+            ? "text-admin-warn"
+            : "text-admin-faint"
       )}
     >
       {atMax && <AlertTriangleIcon className="h-3 w-3" />}

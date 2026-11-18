@@ -202,7 +202,7 @@ export default function UsersPage() {
         right={
           <Button
             onClick={openCreate}
-            className="bg-golden-classic hover:bg-golden-soft text-black hover:text-black"
+            className="bg-admin-accent hover:bg-admin-accent/90 text-black hover:text-black"
           >
             <UserPlusIcon className="h-4 w-4" />
             New User
@@ -210,30 +210,30 @@ export default function UsersPage() {
         }
       />
 
-      <div className="rounded-xl border border-white/10 bg-[#0D1F3C]/80 backdrop-blur overflow-hidden shadow-xl">
+      <div className="rounded-xl border border-admin-border bg-admin-surface/80 backdrop-blur overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-golden-classic/70">User</TableHead>
-              <TableHead className="text-golden-classic/70">Contact</TableHead>
-              <TableHead className="text-golden-classic/70">Type</TableHead>
-              <TableHead className="text-golden-classic/70">Roles</TableHead>
-              <TableHead className="text-golden-classic/70">Status</TableHead>
-              <TableHead className="w-16 text-right text-golden-classic/70">Actions</TableHead>
+              <TableHead className="text-admin-accent-text">User</TableHead>
+              <TableHead className="text-admin-accent-text">Contact</TableHead>
+              <TableHead className="text-admin-accent-text">Type</TableHead>
+              <TableHead className="text-admin-accent-text">Roles</TableHead>
+              <TableHead className="text-admin-accent-text">Status</TableHead>
+              <TableHead className="w-16 text-right text-admin-accent-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow className="border-white/5">
+              <TableRow className="border-admin-border">
                 <TableCell colSpan={6} className="h-32 text-center">
-                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-white/40" />
+                  <Loader2Icon className="mx-auto h-5 w-5 animate-spin text-admin-faint" />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
-              <TableRow className="border-white/5">
+              <TableRow className="border-admin-border">
                 <TableCell
                   colSpan={6}
-                  className="h-32 text-center text-white/40"
+                  className="h-32 text-center text-admin-faint"
                 >
                   {debouncedSearch ||
                   statusFilter !== "all" ||
@@ -244,18 +244,18 @@ export default function UsersPage() {
               </TableRow>
             ) : (
               rows.map((u) => (
-                <TableRow key={u.user_id} className="align-top border-white/5 hover:bg-white/5">
+                <TableRow key={u.user_id} className="align-top border-admin-border hover:bg-admin-raise">
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <div className="h-8 w-8 rounded-full bg-golden-classic/10 border border-golden-classic/30 flex items-center justify-center text-golden-classic shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-admin-active/10 border border-admin-active/30 flex items-center justify-center text-admin-accent-text shrink-0">
                         <UserRoundIcon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-medium text-admin-text truncate">
                           {u.full_name}
                         </p>
                         {u.is_first_logged_in && (
-                          <p className="text-[10px] uppercase tracking-wide text-amber-400/80">
+                          <p className="text-[10px] uppercase tracking-wide text-admin-warn">
                             Awaiting first login
                           </p>
                         )}
@@ -264,14 +264,14 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-0.5 text-sm">
-                      <p className="flex items-center gap-1.5 text-white/50">
+                      <p className="flex items-center gap-1.5 text-admin-faint">
                         <MailIcon className="h-3.5 w-3.5" />
                         <span className="truncate max-w-[220px]">
                           {u.email}
                         </span>
                       </p>
                       {u.phone_number && (
-                        <p className="flex items-center gap-1.5 text-white/50">
+                        <p className="flex items-center gap-1.5 text-admin-faint">
                           <PhoneIcon className="h-3.5 w-3.5" />
                           <span>{u.phone_number}</span>
                         </p>
@@ -280,11 +280,11 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>
                     {u.userType?.name ? (
-                      <span className="inline-flex items-center rounded-full bg-golden-classic/10 border border-golden-classic/30 px-2 py-0.5 text-xs font-medium text-golden-classic">
+                      <span className="inline-flex items-center rounded-full bg-admin-active/10 border border-admin-active/30 px-2 py-0.5 text-xs font-medium text-admin-accent-text">
                         {u.userType.name}
                       </span>
                     ) : (
-                      <span className="text-xs text-white/30">—</span>
+                      <span className="text-xs text-admin-faint">—</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -293,33 +293,33 @@ export default function UsersPage() {
                         {u.roles.slice(0, 3).map((r) => (
                           <span
                             key={r.role_id}
-                            className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 text-golden-classic/80 px-2 py-0.5 text-[11px] font-medium"
+                            className="inline-flex items-center gap-1 rounded-full bg-admin-raise border border-admin-border text-admin-accent-text px-2 py-0.5 text-[11px] font-medium"
                           >
                             <ShieldIcon className="h-2.5 w-2.5" />
                             {r.name}
                           </span>
                         ))}
                         {u.roles.length > 3 && (
-                          <span className="text-[11px] text-white/30">
+                          <span className="text-[11px] text-admin-faint">
                             +{u.roles.length - 3} more
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs text-white/30">
+                      <span className="text-xs text-admin-faint">
                         No roles
                       </span>
                     )}
                   </TableCell>
                   <TableCell>
                     {u.is_active ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-admin-ok/15 border border-admin-ok/30 px-2 py-0.5 text-xs font-medium text-admin-ok">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-xs font-medium text-white/40">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
+                      <span className="inline-flex items-center gap-1 rounded-full bg-admin-raise border border-admin-border px-2 py-0.5 text-xs font-medium text-admin-faint">
+                        <span className="h-1.5 w-1.5 rounded-full bg-admin-chip" />
                         Inactive
                       </span>
                     )}
@@ -372,7 +372,7 @@ export default function UsersPage() {
         </div>
 
         {isFetching && !isLoading && (
-          <div className="pointer-events-none absolute right-6 top-6 text-xs text-white/40">
+          <div className="pointer-events-none absolute right-6 top-6 text-xs text-admin-faint">
             Updating…
           </div>
         )}

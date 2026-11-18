@@ -207,11 +207,11 @@ export default function CreateRole() {
   const getSelectionStatusClass = useCallback((status: string) => {
     switch (status) {
       case "all":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-admin-ok/10 text-admin-ok border-admin-ok/30";
       case "some":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-admin-warn/10 text-admin-warn border-admin-warn/30";
       default:
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return "bg-admin-raise text-admin-muted border-admin-border";
     }
   }, []);
 
@@ -302,7 +302,7 @@ export default function CreateRole() {
   }
 
   return (
-    <div className="w-full flex items-center justify-center bg-white rounded-lg p-4">
+    <div className="w-full flex items-center justify-center bg-admin-surface rounded-lg p-4">
       <div className="w-full" onClick={(e) => e.stopPropagation()}>
         <CreateRoleHeader isEditMode={isEditMode} />
 
